@@ -2702,7 +2702,7 @@ const T={
  stockAdj:{hy:"Փոփոխել մնացորդը",ru:"Изменить остаток",en:"Adjust stock"},newStock:{hy:"Նոր մնացորդ",ru:"Новый остаток",en:"New stock"}
 };
 let lang="hy";try{lang=localStorage.getItem("incheve-bo-lang")||"hy"}catch(e){}
-const t=k=>(T[k]&&(T[k][lang]||T[k].en))||k;
+const t=k=>{const o=T[k];if(!o)return k;const v=o[lang];return v!=null?v:(o.en!=null?o.en:k)};
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const money=n=>(Math.round(n||0)).toLocaleString("en-US")+"\u00a0֏";
@@ -4350,7 +4350,10 @@ async function closeTab(x,tot,disc,sub){const tb=S.tabs[x.id];if(!tb)return;cons
   const prev=JSON.parse(JSON.stringify(tb.items));const tp0=tipOf(tot,S.ttip);const dep=tb.paid||[];const dSum=dep.reduce((a,p)=>a+p.amount,0);const pays=dep.length?[...dep.map(p=>({pay:p.pay,amount:p.amount})),{pay:S.pay,amount:Math.max(0,tot+tp0-dSum)}]:null;try{const r=await payTable(x,JSON.parse(JSON.stringify(tb.items)),{disc,tip:tp0,pay:S.pay,...(pays?{payments:pays}:{})});S.tdisc=0;S.ttip=null;S.pay=null;S.openTable=null;renderTables();fx("ok");$("layer").innerHTML="";toastAct(t("sold")+" · "+money(r.sale.total+(r.sale.tip||0))+" · "+t("hdmToast"),t("undo"),()=>undoSale(r.sale,prev,x.id),8000)}
   catch(e){dis(false);toast(errMsg(e))}}
 setInterval(()=>{if(S.tab==="tables"&&!S.openTable&&!$("layer").innerHTML&&!document.querySelector(".vsheet")&&!(document.activeElement&&/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)))renderTables()},60000);
-const fmtT=ts=>{const d=new Date(ts||Date.now());return pad(d.getHours())+":"+pad(d.getMinutes())};
+let _yvF=null;try{_yvF=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Yerevan",hour:"2-digit",minute:"2-digit",hourCycle:"h23"})}catch(e){}
+const fmtL=ts=>{const d=new Date(ts||Date.now());return pad(d.getHours())+":"+pad(d.getMinutes())};
+const fmtT=ts=>{const d=new Date(ts||Date.now());try{if(_yvF)return _yvF.format(d).replace(/^24/,"00")}catch(e){}return fmtL(d)};
+const fmtT2=(ts,suf="")=>{const a=fmtT(ts),b=fmtL(ts);return a===b?a+suf:`${a}${suf} (${b} ${lang==="ru"?"по вашему":lang==="en"?"your time":"ձեր ժամով"})`};
 function openTabMeta(id){const tb=S.tabs[id]||{};const x=tableList().find(z=>z.id===id);const el=document.createElement("div");el.className="vsheet";
   const Q=["2 "+t("tm_ppl"),"4 "+t("tm_ppl"),"6 "+t("tm_ppl"),t("tm_ru"),t("tm_en"),t("tm_bday"),t("tm_reg"),t("tm_kids")];
   el.innerHTML=`<div class="vbox infobox wedit" role="dialog" aria-label="${t("tm_title")}"><div class="vh ih"><div class="iht"><b>${t("tm_title")}</b><small class="muted">${esc(x?tLabel(x):"")}</small></div><div class="iha"><button class="iac vcancel" aria-label="${t("close")}">${icoSvg("close")}</button></div></div>
@@ -5355,7 +5358,7 @@ function applySession(){const se=S.session;
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261106133941";
+const BUILD="20261106134319";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span>✨ Կա նոր տարբերակ</span><button type="button">Թարմացնել</button>`;document.body.appendChild(el);
@@ -5677,7 +5680,7 @@ function setFx(v){FX=v;try{localStorage.setItem("incheve-bo-fx",v?"1":"0")}catch
 function shiftStartHTML(){if(!S.write)return"";const low=lowCount();
   const xp=expList().length;const lowB=(low?`<button class="sst-low" id="ss_low">${icoSvg("alert")} ${low} ${t("ss_lowS")}</button>`:"")+(xp?`<button class="sst-low sst-exp" id="ss_exp">⏳ ${xp} ${t("ex_soonS")}</button>`:"");
   if(S.register){const r=S.register;const tm=new Date(r.openedAt||Date.now());
-  return`<div class="sstrip sst1l" id="sstrip"><span class="sst-dot"></span><span class="sst-t" id="sst_t"><b><span class="sst-lg">${t("ss_open")}</span><span class="sst-sm">${t("ss_openS")}</span></b><span class="sst-l2" id="sstL2">${sstL2()}</span><span class="sst-meta"><span class="sst-tm"><i class="sst-d"> · </i>${pad(tm.getHours())}:${pad(tm.getMinutes())}${t("ss_from")}</span> · ${t("ss_today")} <b class="num" id="sstSales">${sstSales()}</b></span></span><button class="sst-sum" id="tb_sum" title="${t("ds_title")}" aria-label="${t("ds_title")}"><svg class="li" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16"/><path d="M7 16v-5M12 16V6M17 16v-8"/></svg><span>${t("bn_rep")}</span></button><button class="sst-sum sst-close" id="tb_close" title="${t("cz_close")}" aria-label="${t("cz_close")}"><svg class="li" viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="9.5" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg><span>${t("cz_close")}</span></button></div>`}
+  return`<div class="sstrip sst1l" id="sstrip"><span class="sst-dot"></span><span class="sst-t" id="sst_t"><b><span class="sst-lg">${t("ss_open")}</span><span class="sst-sm">${t("ss_openS")}</span></b><span class="sst-l2" id="sstL2">${sstL2()}</span><span class="sst-meta"><span class="sst-tm"><i class="sst-d"> · </i>${lang==="hy"?fmtT2(tm,t("ss_from")):(lang==="ru"?"с ":"since ")+fmtT2(tm)}</span> · ${t("ss_today")} <b class="num" id="sstSales">${sstSales()}</b></span></span><button class="sst-sum" id="tb_sum" title="${t("ds_title")}" aria-label="${t("ds_title")}"><svg class="li" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16"/><path d="M7 16v-5M12 16V6M17 16v-8"/></svg><span>${t("bn_rep")}</span></button><button class="sst-sum sst-close" id="tb_close" title="${t("cz_close")}" aria-label="${t("cz_close")}"><svg class="li" viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="9.5" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg><span>${t("cz_close")}</span></button></div>`}
   const today=dayKey(new Date());if(!workDays().includes(new Date().getDay()))return"";
   const picks=Object.entries(WINFO).filter(([k,v])=>v.staff).map(([k])=>S.products.find(p=>p.name===k&&p.variant==="Glass"&&p.active!==false)||S.products.find(p=>p.name===k&&p.active!==false)).filter(Boolean);
   const who=loginOn()&&S.session?sessName():"";
