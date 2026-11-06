@@ -2587,7 +2587,7 @@ body::after{display:none!important;content:none!important}
 @media(max-width:760px){.rsec{display:flex!important}.rsec .chip{flex:1 1 auto;padding:9px 6px!important;font-size:12.5px!important;overflow:visible!important}}
 
 .rpsh{display:grid!important;place-items:center;background:var(--surface)!important;border:0!important;border-radius:14px!important;box-shadow:0 1px 3px rgba(0,0,0,.08)!important;color:var(--ink);min-height:44px;cursor:pointer}.rpsh svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-@media(max-width:760px){.filt{grid-template-columns:minmax(0,1fr) 50px 50px!important}.rpsh{width:100%;padding:0!important;font-size:0!important}.rpsh svg{width:21px!important;height:21px!important;margin:0!important}}
+@media(max-width:760px){.filt{grid-template-columns:minmax(0,1fr) 50px!important}.rpsh{width:100%;padding:0!important;font-size:0!important}.rpsh svg{width:21px!important;height:21px!important;margin:0!important}}
 @media(min-width:761px){.rpsh{width:44px;padding:0!important;font-size:0}}
 .nx-ti[data-tinfo]{cursor:pointer;border-radius:12px;transition:background .12s}.nx-ti[data-tinfo]:active,.nx-ti[data-tinfo]:hover{background:var(--raise)}
 @media(max-width:760px){.filt>.fbox{overflow:hidden}.filt>.fbox>button.lab{min-width:0;overflow:hidden;text-overflow:ellipsis;gap:6px;padding:0 6px;font-size:14px}.filt>.fbox:has(.rtoday)>button.lab .ico{display:none}.filt>.fbox>.arr{padding:0 8px}.filt>.fbox>.rtoday{flex:none;padding:0 10px!important;border-left:1px solid var(--line)}}
@@ -3964,10 +3964,10 @@ async function renderRep(){
   const m=$("main");if(!S.rep._u0){S.rep._u0=1;if(!S.rep.p||S.rep.p==="p_today"){S.rep.p="u";S.rep.u="day";S.rep.anc=dayKey(new Date())}}const P=period();S.rep.m=S.rep.m||"gross";
   const L=Math.round((P.b-P.a)/864e5);const wk=L===1;const pa=new Date(P.a.getFullYear(),P.a.getMonth(),P.a.getDate()-(wk?7:L)),pb=wk?new Date(pa.getFullYear(),pa.getMonth(),pa.getDate()+1):P.a;S.rep.vsW=wk;
   const lab=S.rep.p==="u"?unitLabel(P):P.da===P.db?longDay(P.da):`${longDay(P.da)} – ${longDay(P.db)}`;const today=dayKey(new Date());
-  const emps=S.staff;const empName=S.rep.emp?(staffName(S.rep.emp)||"—"):t("r_allEmp");
+  const emps=S.staff;S.rep.emp=null;const empName=S.rep.emp?(staffName(S.rep.emp)||"—"):t("r_allEmp");
   m.innerHTML=`<h2>${t("t_rep")}</h2><div class="filt">
     <div class="useg" role="tablist">${["day","week","month","year"].map(u=>`<button role="tab" data-unit="${u}" aria-pressed="${S.rep.p==="u"&&(S.rep.u||"day")===u}">${t("u_"+u)}</button>`).join("")}</div><div class="fbox"><button class="arr" id="rp_prev" aria-label="‹"><svg class="ico" viewBox="0 0 24 24"><path d="m14.5 6-6 6 6 6"/></svg></button><button class="lab" id="rp_per"><svg class="ico" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>${lab}</button><button class="arr" id="rp_next" aria-label="›"${P.db>=today||(S.rep.p==="u"&&dayKey(P.b)>today)?" disabled":""}><svg class="ico" viewBox="0 0 24 24"><path d="m9.5 6 6 6-6 6"/></svg></button>${S.rep.p==="u"&&dayKey(new Date(+P.b-1))<today?`<button class="rtoday" id="rp_today">${t("rp_today")}</button>`:""}<div id="rp_pm"></div></div>
-    <button class="lab rpsh" id="rp_share" aria-label="${t("ds_more")||"Կիսվել"}" title="Կիսվել"><svg class="ico" viewBox="0 0 24 24"><path d="M12 15V4M8 8l4-4 4 4M5 13v6h14v-6"/></svg></button><div class="fbox"><button class="lab${S.rep.emp?" on":""}" id="rp_emp" aria-label="${esc(empName)}" title="${esc(empName)}"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>${esc(empName)} <svg class="ico" viewBox="0 0 24 24" style="width:16px"><path d="m7 10 5 5 5-5"/></svg></button><div id="rp_em"></div></div>
+    <button class="lab rpsh" id="rp_share" aria-label="${t("ds_more")||"Կիսվել"}" title="Կիսվել"><svg class="ico" viewBox="0 0 24 24"><path d="M12 15V4M8 8l4-4 4 4M5 13v6h14v-6"/></svg></button>
    </div><button class="btn tonal wkbtn" id="rp_wk"><svg class="li" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg> ${t("wk_title")}</button><div id="repBody"><div class="summ">${loaderHTML()}</div></div>`;
   $("rp_wk").onclick=()=>openWeek();$("rp_share").onclick=async()=>{const u=S.rep.u||"day";if(S.rep.p==="u"&&u==="day"){openSummary(S.rep.anc||today);return}
     const L=S._repLast;if(!L){toast(t("loading")||"…");return}const R0=L.R,P0=L.Rp;const pc=(c,p)=>p?` (${c>=p?"+":"−"}${Math.abs(Math.round((c-p)/Math.abs(p)*100))}%)`:"";
@@ -3982,7 +3982,7 @@ async function renderRep(){
     $("rp_pm").querySelectorAll("[data-pp]").forEach(b=>b.onclick=()=>{S.rep.p=b.dataset.pp;renderRep()});
     $("rp_pm").onclick=e=>e.stopPropagation();
     $("rp_go").onclick=()=>{const a=$("rp_a").value,b=$("rp_b").value;if(!a||!b)return;S.rep.p="p_custom";S.rep.from=a<=b?a:b;S.rep.to=a<=b?b:a;renderRep()}};
-  $("rp_emp").onclick=e=>{e.stopPropagation();if($("rp_em").innerHTML){closeMenus();return}closeMenus();
+  if($("rp_emp"))$("rp_emp").onclick=e=>{e.stopPropagation();if($("rp_em").innerHTML){closeMenus();return}closeMenus();
     $("rp_em").innerHTML=`<div class="dmenu"><button data-emp="" aria-pressed="${!S.rep.emp}">${t("r_allEmp")}</button>${emps.map(s=>`<button data-emp="${esc(s.id)}" aria-pressed="${S.rep.emp===s.id}">${esc(dn(s.name))}</button>`).join("")}</div>`;
     $("rp_em").querySelectorAll("[data-emp]").forEach(b=>b.onclick=()=>{S.rep.emp=b.dataset.emp;renderRep()})};
   if(!S._repDoc){S._repDoc=true;document.addEventListener("click",()=>{if($("rp_pm"))$("rp_pm").innerHTML="";if($("rp_em"))$("rp_em").innerHTML=""})}
@@ -5359,7 +5359,7 @@ function applySession(){const se=S.session;
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261106135205";
+const BUILD="20261106135245";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span>✨ Կա նոր տարբերակ</span><button type="button">Թարմացնել</button>`;document.body.appendChild(el);
