@@ -2591,7 +2591,7 @@ body::after{display:none!important;content:none!important}
 @media(min-width:761px){.rpsh{width:44px;padding:0!important;font-size:0}}
 .nx-ti[data-tinfo]{cursor:pointer;border-radius:12px;transition:background .12s}.nx-ti[data-tinfo]:active,.nx-ti[data-tinfo]:hover{background:var(--raise)}
 @media(max-width:760px){.filt>.fbox{overflow:hidden}.filt>.fbox>button.lab{min-width:0;overflow:hidden;text-overflow:ellipsis;gap:6px;padding:0 6px;font-size:14px}.filt>.fbox:has(.rtoday)>button.lab .ico{display:none}.filt>.fbox>.arr{padding:0 8px}.filt>.fbox>.rtoday{flex:none;padding:0 10px!important;border-left:1px solid var(--line)}}
-.aclk{display:flex;flex-direction:column;align-items:flex-end;justify-content:center;line-height:1.05;margin-right:6px;color:inherit;opacity:.92;white-space:nowrap}.aclk span{display:flex;align-items:baseline;gap:4px}.aclk b{font-size:14px;font-weight:700}.aclk small{font-size:10.5px;opacity:.75}.aclk .me b{font-size:12px;font-weight:600;opacity:.8}.aclk:empty{display:none}@media(max-width:560px){.aclk small{display:none}.aclk{margin-right:2px}.aclk b{font-size:13px}.aclk .me b{font-size:11px}}
+.aclk{display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.05;margin-right:6px;padding:3px 8px;border-radius:10px;background:rgba(255,255,255,.12);color:inherit;white-space:nowrap;cursor:default}.aclk small{font-size:10px;opacity:.8}.aclk b{font-size:14px;font-weight:700}.aclk:empty{display:none}@media(max-width:560px){.aclk{padding:2px 5px;margin-right:0}.aclk b{font-size:13px}.aclk small{font-size:9.5px}.appbar .who{gap:2px!important}}
 .upbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:100001;display:flex;align-items:center;gap:12px;padding:8px 8px 8px 16px;border-radius:999px;background:var(--ink);color:var(--surface);box-shadow:0 6px 20px rgba(0,0,0,.25);font-size:14px;font-weight:600;white-space:nowrap}.upbar button{border:0;border-radius:999px;padding:8px 14px;background:var(--surface);color:var(--ink);font-weight:700;cursor:pointer}@media(min-width:761px){.upbar{bottom:24px}}
 </style>
 
@@ -5360,7 +5360,7 @@ function applySession(){const se=S.session;
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261106135718";
+const BUILD="20261106140125";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span>✨ Կա նոր տարբերակ</span><button type="button">Թարմացնել</button>`;document.body.appendChild(el);
@@ -5370,7 +5370,7 @@ addEventListener("scroll",()=>{const h=document.querySelector(".mhead");if(h)h.c
 /* header clock: Yerevan time, plus the viewer's own time when it differs */
 function clkTick(){const el=document.getElementById("clkSlot");if(!el)return;const n=Date.now(),a=fmtT(n),b=fmtL(n);
   const yl=lang==="ru"?"Ереван":lang==="en"?"Yerevan":"Երևան",ml=lang==="ru"?"у вас":lang==="en"?"you":"ձեր";
-  el.innerHTML=a===b?`<b class="num">${a}</b>`:`<span><b class="num">${a}</b><small>${yl}</small></span><span class="me"><b class="num">${b}</b><small>${ml}</small></span>`;el.title=a===b?yl:`${yl} ${a} · ${ml} ${b}`}
+  if(a===b){el.innerHTML="";el.title="";return}el.innerHTML=`<small>${yl}</small><b class="num">${a}</b>`;el.title=`${yl} ${a} · ${ml} ${b}`}
 setTimeout(clkTick,0);setInterval(clkTick,15000);setTimeout(()=>{const el=document.getElementById("clkSlot");if(el)el.onclick=()=>toast(el.title)},0);document.addEventListener("click",e=>{if(e.target.closest&&e.target.closest("[data-lang]"))setTimeout(clkTick,50)},true);
 async function migDone(k){try{const d=await S.db.doc("settings/main").get();const v=(d.exists&&d.data())||{};if(v[k]){S.settings={...S.settings,[k]:v[k]};return true}return false}catch(e){return true}}
 let _migSnap=false;async function migSnap1(){if(_migSnap||!S.db||!(S.admin||S.mgr)||!S.products.length||(S.settings&&S.settings.mig_snap1))return;_migSnap=true;if(await migDone("mig_snap1"))return;
