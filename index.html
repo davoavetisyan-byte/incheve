@@ -5359,7 +5359,7 @@ function applySession(){const se=S.session;
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261106134920";
+const BUILD="20261106135205";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span>✨ Կա նոր տարբերակ</span><button type="button">Թարմացնել</button>`;document.body.appendChild(el);
@@ -5763,7 +5763,7 @@ const L3=(hy,ru,en)=>lang==="ru"?ru:lang==="en"?en:hy;const CLN=()=>lang==="hy"?
 const CASHOK=()=>L3("դրամարկղը ճիշտ է","касса сходится","till is correct");const CASHD=d=>L3(`դրամարկղում ${d<0?"պակաս":"ավել"}`,`в кассе ${d<0?"недостача":"излишек"}`,`till ${d<0?"short":"over"}`);
 function dsCash(D){if(!D.hasCnt)return"";const a=Math.round(Math.abs(D.diff));return a<1?L3("Դրամարկղը ճիշտ է","Касса сходится","Till is correct")+" ✓":`${L3("Դրամարկղ","Касса","Till")} · ${D.diff<0?L3("պակաս","недостача","short"):L3("ավել","излишек","over")} ${money(a)}`}
 function dsFoot(D){const f=[];if(D.sal)f.push(`${L3("Աշխատավարձը վերցված է","Зарплата взята","Salary taken")} · ${money(D.sal)}`);if(D.tipTk)f.push(`${L3("Թեյավճարը վերցված է","Чаевые взяты","Tips taken")} · ${money(D.tipTk)}`);if(D.xs+D.xt){const fn=D.who?dn(D.who).split(/\s+/)[0]:"";f.push(`${XFP()}${fn?" "+(lang==="hy"?hyDat(fn):lang==="en"?"to "+fn:ruDat(fn)):""} · ${money(D.xs+D.xt)}`)}if(D.closed&&!D.sal&&!D.xs)f.unshift(L3("Աշխատավարձ · չի վերցվել, փոխանցում նշված չէ","Зарплата · не взята, перевод не указан","Salary · not taken, no transfer set"));return f}
-function summaryText(D){const f=dsFoot(D);const cc=dsCash(D);if(cc)f.unshift(cc);const L=[`*Incheve · ${t("ds_title")}* · ${D.day.slice(8)}.${D.day.slice(5,7)}`];if(D.bar.length)L.push(`${D.barR}${CLN()}${D.bar.join(", ")}`);L.push("");
+function summaryText(D){const f=dsFoot(D);const cc=dsCash(D);if(cc)f.unshift(cc);const L=[`*Incheve · ${t("ds_title")} · ${D.day.slice(8)}.${D.day.slice(5,7)}.${D.day.slice(2,4)}*`];if(D.bar.length)L.push(`${D.barR}${CLN()}${D.bar.join(", ")}`);L.push("");
   L.push(`${t("r_net")} — *${money(D.net)}*`,`${t("cash")} — ${money(D.by.cash)}`,`${t("card")} — ${money(D.by.card)}`);if(D.by.transfer)L.push(`${t("transfer")} — ${money(D.by.transfer)}`);L.push(`${t("tipsK")} — ${money(D.tips)}`,`${t("k_rcpt")} — ${D.n}`);
   if(f.length){L.push("");f.forEach(x=>L.push(x.replace(" · "," — ")))}return L.join("\n")}
 function summaryTextOld(D){return[`${S.settings.name||"Incheve Wine Bar"} · ${t("ds_title")} · ${longDay(D.day)}`,`${t("r_net")}: ${money(D.net)}`,`${t("k_rcpt")}: ${D.n} · ${t("k_avg")}: ${money(D.avg)}`,`${t("tipsK")}: ${money(D.tips)}`,
