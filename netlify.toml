@@ -1,0 +1,47 @@
+[build]
+  publish = "."
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/config.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+[[headers]]
+  for = "/shim.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+# Google sign-in pages from our own domain (needed for iPhone / home-screen app)
+[[redirects]]
+  from = "/__/auth/*"
+  to = "https://incheve-managment.firebaseapp.com/__/auth/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/__/firebase/*"
+  to = "https://incheve-managment.firebaseapp.com/__/firebase/:splat"
+  status = 200
+  force = true
+
+# Gemini AI through our own domain (fallback when the browser cannot reach Google directly)
+[[redirects]]
+  from = "/__/gem/*"
+  to = "https://generativelanguage.googleapis.com/:splat"
+  status = 200
+  force = true
