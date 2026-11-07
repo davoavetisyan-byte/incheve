@@ -2608,6 +2608,7 @@ div.chips.subnav.sichips.sichips{flex-wrap:wrap!important;overflow:visible!impor
 .toast:not(.act){width:max-content!important;-webkit-line-clamp:unset!important;display:block!important;overflow:visible!important;white-space:normal!important;text-overflow:clip!important;max-width:min(92vw,420px)!important;box-sizing:border-box}
 html body .tpick .tp.on{position:relative;background:color-mix(in srgb,var(--good) 16%,var(--surface))!important;border-color:var(--good)!important;border-width:2px!important;color:var(--good)!important;font-weight:800!important;transform:none!important;box-shadow:none!important}
 .tpsel{display:flex;align-items:center;gap:8px;margin:2px 0 10px;padding:8px 12px;border-radius:12px;background:color-mix(in srgb,var(--good) 12%,transparent);color:var(--good);font-size:14px}.tpsel .li{width:18px;height:18px;flex:none}.tpsel b{font-weight:800}.tpsel small{color:var(--muted)}
+@media(min-width:700px){html body .sst0{grid-template-columns:auto minmax(0,1fr) 200px auto auto!important;grid-template-areas:"d t c g s"!important}html body .sst0 .sst0s{position:static!important}}
 </style>
 
 <header class="appbar"><button class="iconbtn" id="menuBtn" aria-label="Menu"><svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><h1 id="pageTitle">Incheve</h1>
@@ -5385,7 +5386,7 @@ function applySession(){const se=S.session;const bz=boundStaff();
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261106232155";
+const BUILD="20261106232536";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span>✨ Կա նոր տարբերակ</span><button type="button">Թարմացնել</button>`;document.body.appendChild(el);
