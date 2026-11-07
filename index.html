@@ -2594,6 +2594,7 @@ body::after{display:none!important;content:none!important}
 .aclk{display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.05;margin-right:6px;padding:3px 8px;border-radius:10px;background:rgba(255,255,255,.12);color:inherit;white-space:nowrap;cursor:default}.aclk small{font-size:10px;opacity:.8}.aclk b{font-size:14px;font-weight:700}.aclk:empty{display:none}@media(max-width:560px){.aclk{padding:2px 5px;margin-right:0}.aclk b{font-size:13px}.aclk small{font-size:9.5px}.appbar .who{gap:2px!important}}
 .upbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:100001;display:flex;align-items:center;gap:12px;padding:8px 8px 8px 16px;border-radius:999px;background:var(--ink);color:var(--surface);box-shadow:0 6px 20px rgba(0,0,0,.25);font-size:14px;font-weight:600;white-space:nowrap}.upbar button{border:0;border-radius:999px;padding:8px 14px;background:var(--surface);color:var(--ink);font-weight:700;cursor:pointer}@media(min-width:761px){.upbar{bottom:24px}}
 #pgrid .mcath{grid-column:1/-1}
+.wkgp{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px;margin:-6px 20px 16px;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--good) 12%,transparent)}.wkgp span{font-size:13px;opacity:.85;flex-basis:100%}.wkgp b{font-size:20px;font-weight:700;color:var(--good)}.wkgp small{font-size:12px;opacity:.8}.wkgp .wkd{opacity:1}
 </style>
 
 <header class="appbar"><button class="iconbtn" id="menuBtn" aria-label="Menu"><svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><h1 id="pageTitle">Incheve</h1>
@@ -5366,7 +5367,7 @@ function applySession(){const se=S.session;
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261106190938";
+const BUILD="20261106193413";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span>✨ Կա նոր տարբերակ</span><button type="button">Թարմացնել</button>`;document.body.appendChild(el);
@@ -5787,7 +5788,7 @@ function summaryTextOld(D){return[`${S.settings.name||"Incheve Wine Bar"} · ${t
   `${t("cash")}: ${money(D.by.cash)}`,`${t("card")}: ${money(D.by.card)}`,`${t("ds_gl")}: ${D.gl} / ${D.bt}`].join("\n")}
 async function weekSummary(){const d0=new Date();d0.setHours(0,0,0,0);const b=new Date(+d0+864e5),a=new Date(+b-7*864e5),pa=new Date(+a-7*864e5);
   const get=async(x,y)=>{try{return(await S.db.collection("sales").where("ts",">=",+x).where("ts","<",+y).get()).docs.map(d=>d.data()).filter(s=>s.status!=="void")}catch(e){return[]}};
-  const [L,P]=await Promise.all([get(a,b),get(pa,a)]);const net=L.reduce((x,s)=>x+s.total,0),pnet=P.reduce((x,s)=>x+s.total,0),tips=L.reduce((x,s)=>x+(s.tip||0),0);
+  const [L,P]=await Promise.all([get(a,b),get(pa,a)]);const net=L.reduce((x,s)=>x+s.total,0),pnet=P.reduce((x,s)=>x+s.total,0),cogsOf=A=>A.reduce((x,s)=>x+(s.items||[]).reduce((y,l)=>y+(lineCost(l.id)||0)*(+l.qty||0),0),0),gp=net-cogsOf(L),pgp=pnet-cogsOf(P),tips=L.reduce((x,s)=>x+(s.tip||0),0);
   const byD={};L.forEach(s=>byD[s.day]=(byD[s.day]||0)+s.total);const dS=Object.entries(byD).sort((x,y)=>y[1]-x[1]);const bestD=dS[0];const worstD=dS.length>1?dS[dS.length-1]:null;
   const pay={cash:0,card:0,transfer:0};L.forEach(s=>goodsParts(s).forEach(p=>pay[p.pay]=(pay[p.pay]||0)+p.amount));
   let regs=[];try{regs=(await S.db.collection("registers").where("openedAt",">=",+a).where("openedAt","<",+b).get()).docs.map(d=>d.data()).filter(r=>r.status==="closed"&&r.transfer)}catch(e){}const xf={};regs.forEach(r=>{const k=r.transfer.staffId||"";xf[k]=(xf[k]||0)+(+r.transfer.salary||0)+(+r.transfer.tips||0)});
@@ -5798,12 +5799,13 @@ async function weekSummary(){const d0=new Date();d0.setHours(0,0,0,0);const b=ne
   const sc=salesCount();const low=S.products.filter(p=>p.active!==false&&!p.bottleId&&p.stock!=null&&(isLow(p)||p.stock<=0)&&(sc[p.name]||0)>0).sort((x,y)=>(sc[y.name]||0)-(sc[x.name]||0)).slice(0,8);
   let ex=[];const me=dayKey(new Date(+d0+8*864e5));try{ex=(await S.db.collection("expenses").where("date",">=",dayKey(new Date(d0.getFullYear(),d0.getMonth(),1))).where("date","<=",me).get()).docs.map(d=>d.data())}catch(e){}
   const bills=[];billList().forEach(bl=>{for(const dd of [new Date(d0.getFullYear(),d0.getMonth(),1),new Date(d0.getFullYear(),d0.getMonth()+1,1)]){const due=billDue(bl,dd.getFullYear(),dd.getMonth()+1);if(!due)continue;const dt=new Date(due+"T23:59");if(dt<d0&&dd.getMonth()!==d0.getMonth())continue;if(dt>new Date(+d0+8*864e5))continue;const paid=ex.some(e=>e.billId===bl.id&&e.date.slice(0,7)===due.slice(0,7));if(!paid)bills.push({name:bl.name,due,amount:bl.amount,late:dt<d0})}});
-  return{pay,worstD,xf,reord,exp:expList(),a:dayKey(a),b:dayKey(d0),n:L.length,net,pnet,tips,avg:L.length?net/L.length:0,bestD,top,low,bills:bills.sort((x,y)=>x.due.localeCompare(y.due))}}
+  return{pay,worstD,xf,reord,exp:expList(),a:dayKey(a),b:dayKey(d0),n:L.length,net,pnet,gp,pgp,tips,avg:L.length?net/L.length:0,bestD,top,low,bills:bills.sort((x,y)=>x.due.localeCompare(y.due))}}
 function weekText(W){const pct=W.pnet?Math.round((W.net-W.pnet)/W.pnet*100):null;const sd=k=>{const d=new Date(k+"T00:00");return`${pad(d.getDate())}.${pad(d.getMonth()+1)}`};const dname=k=>t("d"+new Date(k+"T00:00").getDay());const c_=CLN();
   const nm=p=>{try{return dName(p)}catch(e){return p.name}};
   const xf=Object.entries(W.xf||{}).filter(([,v])=>v>0);
   return[`Incheve · ${L3("Շաբաթ","Неделя","Week")} ${sd(W.a)} – ${sd(W.b)}`,
   `${t("r_net")}${c_}${money(W.net)}${pct!=null?` (${pct>0?"+":""}${pct}%)`:""}`,
+  ...(S.admin?[`${t("r_gp")}${c_}${money(Math.round(W.gp))}${W.net?` · ${Math.round(W.gp/W.net*100)}%`:""}${W.pgp>0?` (${W.gp>=W.pgp?"+":""}${Math.round((W.gp-W.pgp)/W.pgp*100)}%)`:""}`]:[]),
   `${t("cash")}${c_}${money(W.pay.cash)} · ${t("card")}${c_}${money(W.pay.card)}${W.pay.transfer?` · ${t("transfer")}${c_}${money(W.pay.transfer)}`:""}`,
   `${t("tipsK")}${c_}${money(W.tips)}`,
   W.bestD?`\n${L3("Լավագույն օրը","Лучший день","Best day")}${c_}${dname(W.bestD[0])} ${sd(W.bestD[0])} · ${money(W.bestD[1])}`:"",
@@ -5816,6 +5818,7 @@ async function openWeek(){const W=await weekSummary();const txt=weekText(W);cons
   $("layer").innerHTML=`<div class="overlay" id="wkov"><div class="sheet dsum wksum" role="dialog" aria-label="${t("wk_title")}"><div class="dscard">
    <div class="dsh"><small>${esc(S.settings.name||"Incheve Wine Bar")}</small><b>${t("wk_title")}</b><span>${longDay(W.a)} – ${longDay(W.b)}</span></div>
    <div class="dsbig"><span>${t("r_net")}</span><b class="num">${money(W.net)}</b>${pct!=null?`<small class="wkd ${pct>=0?"up":"dn"}">${pct>0?"+":""}${pct}% ${t("wk_vs")}</small>`:""}</div>
+   ${S.admin?(()=>{const gpc=W.pgp>0?Math.round((W.gp-W.pgp)/W.pgp*100):null;return`<div class="wkgp"><span>${t("r_gp")}</span><b class="num">${money(Math.round(W.gp))}</b>${W.net?`<small>${Math.round(W.gp/W.net*100)}% ${L3("վաճառքից","от продаж","of sales")}</small>`:""}${gpc!=null?`<small class="wkd ${gpc>=0?"up":"dn"}">${gpc>0?"+":""}${gpc}%</small>`:""}</div>`})():""}
    <div class="dsg">${[["k_rcpt",W.n],["k_avg",money(W.avg)],["tipsK",money(W.tips)],["wk_best",W.bestD?shortDay(W.bestD[0]):"—"]].map(([k,v])=>`<div><span>${t(k)}</span><b class="num">${v}</b></div>`).join("")}</div></div>
    <div class="wkl">${W.top.length?`<h4>${t("wk_top")}</h4>${W.top.map(([n,v],i)=>`<div><span>${i+1}. ${esc(n)}</span><b class="num">${money(v.a)}</b></div>`).join("")}`:""}
     ${W.low.length?`<h4 class="attn">${t("wk_low")}</h4>${W.low.map(p=>`<div><span>${esc(dName(p))}</span>${stockPill(p)}</div>`).join("")}`:""}
