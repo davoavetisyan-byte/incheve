@@ -4247,7 +4247,7 @@ const GPB=()=>Math.max(1,+(S.settings.gpb||6));
 function prodOf(id){return S.products.find(x=>x.id===id)}
 function bottleOf(p){return p&&p.bottleId?prodOf(p.bottleId):null}
 function glassesLeft(b){return b&&b.stock!=null?Math.round(b.stock*GPB()):null}
-function fmtBottles(s){if(s==null)return"";const g=GPB();const tot=Math.round(s*g);const full=Math.floor(tot/g);const rem=tot%g;if(!full&&rem)return`բաց շիշ · ${rem} ${t("gls")}`;return rem?`${full} ${t("btl")} + բաց (${rem} ${t("gls")})`:`${full} ${t("btl")}`}
+function fmtBottles(s){if(s==null)return"";const g=GPB();const tot=Math.round(s*g);const full=Math.floor(tot/g);const rem=tot%g;if(!full&&rem)return`${L3("բաց շիշ","открытая бут.","open btl")} · ${rem} ${t("gls")}`;return rem?`${full} ${t("btl")} + ${L3("բաց","откр.","open")} (${rem} ${t("gls")})`:`${full} ${t("btl")}`}
 async function deductStockOld(items,sign){ // replaced by the recipe/tasting aware version
   const need={};
   for(const l of items){const p=prodOf(l.id);if(!p)continue;const b=bottleOf(p);
@@ -5124,9 +5124,9 @@ function wDisp(p){if(!p)return null;if(p.bottleId){const b=prodOf(p.bottleId);if
   else if(f==="c"){N=[n,g.includes(",")?"":g,vin].filter(Boolean).join(" ");sub=[cs,g.includes(",")?g:""].filter(Boolean).join(" · ")}
   else sub=[cs,g,vin].filter(Boolean).join(" · ");
   return _wd[ck]={n:N,sub,csL:_c2||csL,dot:(tint==="Rosé"?WCOL_DOT["Rosé"]:tint==="Red"?WCOL_DOT.Red:WCOL_DOT[color])||"#999",base:n,cs,vin,g,prod,rest,color,sw:sw2}}
-function critOf(p){if(!p||p.stock==null||p.active===false)return null;const q=+p.stock;if(isBtlP(p)){const g=GPB(),tot=Math.round(q*g),f=Math.floor(tot/g),r=tot%g;if(f>1||(f===1&&r>0))return null;if(tot<=0)return{out:1,txt:t("outStock")};return{out:0,txt:f?`մնաց 1 շիշ${r?` + բաց (${r} գավ.)`:""}`:`բաց շիշ · ${r} գավ.`}}if(q>1+1e-6)return null;const u=isBtlP(p)||p.variant==="Bottle"?t("btl"):String(t(uKey(p.variant)||"pc")).toLowerCase();return q<=1e-4?{out:1,txt:t("outStock")}:{out:0,txt:`մնաց ${Math.round(q*100)/100} ${u}`}}
+function critOf(p){if(!p||p.stock==null||p.active===false)return null;const q=+p.stock;if(isBtlP(p)){const g=GPB(),tot=Math.round(q*g),f=Math.floor(tot/g),r=tot%g;if(f>1||(f===1&&r>0))return null;if(tot<=0)return{out:1,txt:t("outStock")};return{out:0,txt:f?`${t("stockLeft")} 1 ${t("btl")}${r?` + ${L3("բաց","откр.","open")} (${r} ${t("gls")})`:""}`:`${L3("բաց շիշ","открытая бут.","open btl")} · ${r} ${t("gls")}`}}if(q>1+1e-6)return null;const u=isBtlP(p)||p.variant==="Bottle"?t("btl"):String(t(uKey(p.variant)||"pc")).toLowerCase();return q<=1e-4?{out:1,txt:t("outStock")}:{out:0,txt:`${t("stockLeft")} ${Math.round(q*100)/100} ${u}`}}
 function critHTML(own){const c=(own||[]).map(p=>{const x=critOf(p);return x?{...x,p}:null}).filter(Boolean);if(!c.length)return"";const o=c.find(x=>x.out)||c[0];const q=Math.max(0,Math.round(+o.p.stock||0));const inL=shOpen().some(x=>x.pid===o.p.id)||(S._critAdded&&S._critAdded.has(o.p.id));
-  return`<span class="crit${o.out?" out":""}${inL?" inl":""}" role="button" tabindex="0" data-crit="${esc(o.p.id)}" title="${esc(o.txt)} · ${inL?"արդեն գնումների ցուցակում է":"սեղմեք՝ ավելացնել գնումների ցուցակ"}"><i class="cn">${q}</i><span class="ct">${esc(o.txt)}</span><span class="ci" aria-hidden="true">${inL?"✓":`<svg viewBox="0 0 24 24"><path d="M3 4h2l2.2 10.2a1 1 0 0 0 1 .8h8.9a1 1 0 0 0 1-.8L20 8H6.2"/><circle cx="9" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/></svg>`}</span><span class="cb">${inL?"գնումներում է":"+ գնումների ցուցակ"}</span></span>`}
+  return`<span class="crit${o.out?" out":""}${inL?" inl":""}" role="button" tabindex="0" data-crit="${esc(o.p.id)}" title="${esc(o.txt)} · ${inL?L3("արդեն գնումների ցուցակում է","уже в списке покупок","already on the shopping list"):L3("սեղմեք՝ ավելացնել գնումների ցուցակ","нажмите, чтобы добавить в покупки","tap to add to the shopping list")}"><i class="cn">${q}</i><span class="ct">${esc(o.txt)}</span><span class="ci" aria-hidden="true">${inL?"✓":`<svg viewBox="0 0 24 24"><path d="M3 4h2l2.2 10.2a1 1 0 0 0 1 .8h8.9a1 1 0 0 0 1-.8L20 8H6.2"/><circle cx="9" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/></svg>`}</span><span class="cb">${inL?"գնումներում է":"+ գնումների ցուցակ"}</span></span>`}
 document.addEventListener("click",e=>{const c=e.target.closest&&e.target.closest("[data-crit]");if(!c)return;e.preventDefault();e.stopPropagation();const p=prodOf(c.dataset.crit);if(!p)return;
   if(c.classList.contains("inl")){toast("✓ "+dName(p)+" · արդեն գնումների ցուցակում է");return}
   if(!c.classList.contains("open")){c.classList.add("open")}
@@ -5407,7 +5407,7 @@ function applySession(){const se=S.session;const bz=boundStaff();
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261106235724";
+const BUILD="20261107000734";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span>✨ Կա նոր տարբերակ</span><button type="button">Թարմացնել</button>`;document.body.appendChild(el);
@@ -5833,7 +5833,7 @@ function dsStat(D,st2,ic){const v=window.DSS||"C";if(!st2.length)return"";
 const RU_F=/^(Гоар|Анаит|Ашхен|Сатеник|Астхик|Шушан|Мариам|Кнарик|Асмик|Сирануш|Нвард|Арусяк|Тагуи|Тамар|Лилит|Эрмине|Нуне|Ануш|Рузан|Гоарик|Жасмин|Эстер|Кармен|Ирен|Нелли|Элен|Мэри)$/i;
 const ruDat=f=>{if(!f||RU_F.test(f))return f;if(/ия$/.test(f))return f.slice(0,-1)+"и";if(/[ая]$/.test(f))return f.slice(0,-1)+"е";if(/й$/.test(f))return f.slice(0,-1)+"ю";if(/ь$/.test(f))return f.slice(0,-1)+"ю";if(/[бвгджзклмнпрстфхцчшщ]$/i.test(f))return f+"у";return f};
 const hyDat=f=>f+(/[աեէըիոօ]$|ու$/.test(f)?"յին":"ին");
-const L3=(hy,ru,en)=>lang==="ru"?ru:lang==="en"?en:hy;const CLN=()=>lang==="hy"?"՝ ":": ";const XFP=()=>L3("Փոխանցել","Перевести","Transfer");const RCP=n=>lang==="ru"?n+" чек"+(n%10==1&&n%100!=11?"":n%10>=2&&n%10<=4&&(n%100<10||n%100>=20)?"а":"ов"):lang==="en"?n+" receipt"+(n==1?"":"s"):n+" կտրոն";
+function L3(hy,ru,en){return lang==="ru"?ru:lang==="en"?en:hy}const CLN=()=>lang==="hy"?"՝ ":": ";const XFP=()=>L3("Փոխանցել","Перевести","Transfer");const RCP=n=>lang==="ru"?n+" чек"+(n%10==1&&n%100!=11?"":n%10>=2&&n%10<=4&&(n%100<10||n%100>=20)?"а":"ов"):lang==="en"?n+" receipt"+(n==1?"":"s"):n+" կտրոն";
 const CASHOK=()=>L3("դրամարկղը ճիշտ է","касса сходится","till is correct");const CASHD=d=>L3(`դրամարկղում ${d<0?"պակաս":"ավել"}`,`в кассе ${d<0?"недостача":"излишек"}`,`till ${d<0?"short":"over"}`);
 function dsCash(D){if(!D.hasCnt)return"";const a=Math.round(Math.abs(D.diff));return a<1?L3("Դրամարկղը ճիշտ է","Касса сходится","Till is correct")+" ✓":`${L3("Դրամարկղ","Касса","Till")} · ${D.diff<0?L3("պակաս","недостача","short"):L3("ավել","излишек","over")} ${money(a)}`}
 function xfLine(fn,amt){return`${XFP()}${fn?" "+(lang==="hy"?hyDat(fn):lang==="en"?"to "+fn:ruDat(fn)):""} · ${money(amt)}`}
