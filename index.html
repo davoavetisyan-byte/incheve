@@ -2620,6 +2620,15 @@ html body #cart .btn.gadd.gtab{background:var(--primary)!important;color:var(--o
 #cart .sec2 #cmore>summary .muted{font-size:12px;font-weight:500}#cart .sec2 #cguest{order:2}#cart .sec2 #cmore{order:1}#cart .sec2 #cmore[open]{grid-column:1/-1;order:3}#cart .sec2 #cmore[open]>summary{border-color:var(--primary)!important;color:var(--primary)}
 @media(hover:hover){#cart .sec2 #cmore>summary:hover,#cart .sec2 #cguest:hover{border-color:var(--primary)!important;color:var(--primary)}}
 #cart .sec2:has(#cmore[open]) #cguest{order:4;grid-column:1/-1}
+html body details.more .morein{display:grid!important;grid-template-columns:auto minmax(0,1fr);text-align:left!important;justify-items:start;align-items:start;gap:10px 14px;margin-top:8px!important;padding:10px 12px!important;border:1px solid var(--line);border-radius:12px;background:var(--surface)!important}
+html body details.more .morein>label.f{width:auto!important;margin:0!important;font-size:11.5px!important;font-weight:600;color:var(--muted);gap:4px}
+html body details.more .morein #cdisc,html body details.more .morein #tdisc{width:64px!important;min-height:36px!important;height:36px;padding:0 8px!important;font-size:15px;text-align:center}
+html body details.more .tipw{margin:0!important;min-width:0;width:100%}html body details.more .morein>label.f:has(select){grid-column:1/-1}html body details.more .morein label.f{display:flex!important;flex-direction:column;align-items:flex-start;text-align:left!important}html body details.more .tipw label.f{margin:0!important;font-size:11.5px!important;gap:4px}
+html body details.more .tipc{display:flex!important;gap:6px!important;flex-wrap:wrap!important;align-items:center;max-width:100%}html body details.more .morein{max-width:100%;box-sizing:border-box;overflow:hidden}
+html body details.more .tipin{width:84px!important;min-height:36px!important;height:36px;padding:0 8px!important;font-size:15px}
+html body details.more .tpct,html body details.more .tipc .chip{min-height:36px!important;height:36px;padding:0 10px!important;font-size:13px!important;flex:none}
+html body details.more .morein select{min-height:36px;height:36px;font-size:13.5px}
+html body details.more .tipbar{display:none}@media(max-width:400px){html body details.more .tipin{width:70px!important}html body details.more .tpct{padding:0 8px!important}html body details.more .morein{gap:8px 10px;padding:10px!important}}
 </style>
 
 <header class="appbar"><button class="iconbtn" id="menuBtn" aria-label="Menu"><svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><h1 id="pageTitle">Incheve</h1>
@@ -5281,7 +5290,7 @@ Object.assign(T,{
 function tipOf(base,st){if(!st)return 0;return Math.max(0,st.mode==="pct"?Math.round(base*(+st.v||0)/100/100)*100:Math.round(+st.v||0))}
 const TIP_PCTS=[10,20,30];
 function tipHTML(st,key){const pct=st&&st.mode==="pct"?+st.v:0;const v=st&&st.v&&!pct?st.v:"";
-  return`<div clas<div role="group"w"><label class="f" style="font-size:12px;font-weight:600;color:var(--muted)">${t("tip")} · ${t("tipBar")}<span class="tipc"><input type="number" inputmode="numeric" min="0" step="100" class="num tipin" data-tipin="${key}" placeholder="${pct?pct+"%":"0 ֏"}" value="${v}" aria-label="${t("tip")}">${TIP_PCTS.map(n=>`<button type="button" class="chip tpct" data-tpct="${key}" data-pv="${n}" aria-pressed="${pct===n}">${n}%</button>`).join("")}${v||pct?`<button type="button" class="chip" data-tip="${key}" data-tv="0" aria-label="${t("tipNo")}">✕</button>`:""}</span></div></div>`}
+  return`<div class="tipw" role="group"><label class="f" style="font-size:12px;font-weight:600;color:var(--muted)">${t("tip")}<small class="tipbar"> · ${t("tipBar")}</small><span class="tipc"><input type="number" inputmode="numeric" min="0" step="100" class="num tipin" data-tipin="${key}" placeholder="${pct?pct+"%":"0 ֏"}" value="${v}" aria-label="${t("tip")}">${TIP_PCTS.map(n=>`<button type="button" class="chip tpct" data-tpct="${key}" data-pv="${n}" aria-pressed="${pct===n}">${n}%</button>`).join("")}${v||pct?`<button type="button" class="chip" data-tip="${key}" data-tv="0" aria-label="${t("tipNo")}">✕</button>`:""}</span></label></div>`}
 function wireTip(root,key,get,set,redraw){root.querySelectorAll(`[data-tip="${key}"]`).forEach(b=>b.onclick=e=>{e.preventDefault();set(null);redraw()});
   root.querySelectorAll(`[data-tpct="${key}"]`).forEach(b=>b.onclick=e=>{e.preventDefault();const n=+b.dataset.pv;const cur=get();set(cur&&cur.mode==="pct"&&+cur.v===n?null:{mode:"pct",v:n});redraw()});
   const i=root.querySelector(`[data-tipin="${key}"]`);if(i)i.onchange=()=>{const nv=i.value?Math.max(0,+i.value||0):0;const cur=get();if((cur&&cur.v||0)===nv)return;set(nv?{mode:"amt",v:nv}:null);setTimeout(redraw,0)}}
@@ -5397,7 +5406,7 @@ function applySession(){const se=S.session;const bz=boundStaff();
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261106234710";
+const BUILD="20261106235357";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span>✨ Կա նոր տարբերակ</span><button type="button">Թարմացնել</button>`;document.body.appendChild(el);
