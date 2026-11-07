@@ -2598,6 +2598,14 @@ body::after{display:none!important;content:none!important}
 .wkmon{display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid var(--line);border-radius:12px;margin-bottom:12px;cursor:pointer;font-size:14px;line-height:1.4}.wkmon input{width:20px;height:20px;flex:none;margin:0;accent-color:var(--primary)}#wkm_to{width:100%;box-sizing:border-box;font:inherit;font-size:15px}
 div.chips.subnav.sichips.sichips{flex-wrap:wrap!important;overflow:visible!important;max-width:100%}div.sichips.sichips .chip{flex:0 0 auto;max-width:100%}
 .lkacc{display:block;margin-bottom:8px;font-size:12px}
+@media(hover:hover) and (pointer:fine){
+ .vbtn:not(:disabled),.mvbtn:not(:disabled),#pgrid button.acol:not(:disabled),.tpick .tp{transition:background-color .15s,border-color .15s,color .15s,transform .15s,box-shadow .15s!important}
+ .vbtn:not(:disabled):hover,.mvbtn:not(:disabled):hover,#pgrid button.acol:not(:disabled):hover{background:var(--primary)!important;border-color:var(--primary)!important;color:var(--on-primary)!important;transform:translateY(-1px);box-shadow:0 4px 12px color-mix(in srgb,var(--primary) 35%,transparent)!important;filter:none!important}
+ .vbtn:not(:disabled):hover *,.mvbtn:not(:disabled):hover *,#pgrid button.acol:not(:disabled):hover *:not(.aq){color:inherit!important}
+ .tpick .tp:not(.on):hover{background:color-mix(in srgb,var(--primary) 14%,var(--surface))!important;border-color:var(--primary)!important;color:var(--primary)!important;transform:translateY(-2px)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 22%,transparent)!important}
+}
+.vbtn:not(:disabled):active,.mvbtn:not(:disabled):active{transform:scale(.97)}
+.toast:not(.act){width:max-content!important;-webkit-line-clamp:unset!important;display:block!important;overflow:visible!important;white-space:normal!important;text-overflow:clip!important;max-width:min(92vw,420px)!important;box-sizing:border-box}
 </style>
 
 <header class="appbar"><button class="iconbtn" id="menuBtn" aria-label="Menu"><svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><h1 id="pageTitle">Incheve</h1>
@@ -5374,7 +5382,7 @@ function applySession(){const se=S.session;const bz=boundStaff();
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261106225611";
+const BUILD="20261106230539";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span>✨ Կա նոր տարբերակ</span><button type="button">Թարմացնել</button>`;document.body.appendChild(el);
