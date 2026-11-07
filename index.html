@@ -2630,6 +2630,9 @@ html body details.more .tpct,html body details.more .tipc .chip{min-height:36px!
 html body details.more .morein select{min-height:36px;height:36px;font-size:13.5px}
 html body details.more .tipbar{display:none}@media(max-width:400px){html body details.more .tipin{width:70px!important}html body details.more .tpct{padding:0 8px!important}html body details.more .morein{gap:8px 10px;padding:10px!important}}
 @media(min-width:761px) and (max-width:900px){.cartbar{left:72px!important}}
+.appbar::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:240px;background:var(--bar);pointer-events:none}
+@media(max-width:760px){body:has(.cart.open)::before{top:-240px!important}#cart .tpick{grid-template-columns:repeat(auto-fill,minmax(40px,1fr))!important}#cart .tpick .tp{height:40px;min-height:40px!important}}
+@media(max-width:760px){html body:has(.cart.open) .toast{top:calc(68px + env(safe-area-inset-top,0px))!important;bottom:auto!important}}
 </style>
 
 <header class="appbar"><button class="iconbtn" id="menuBtn" aria-label="Menu"><svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><h1 id="pageTitle">Incheve</h1>
@@ -4301,7 +4304,7 @@ function tilesHTML(){if(sellView()==="list")return listHTML();const G=groupedTil
 
 /* ---------- tables ---------- */
 function tableBlock(){const x=tableList().find(z=>z.id===S.tableId);const busy=x&&S.tabs[x.id]&&S.tabs[x.id].items&&S.tabs[x.id].items.length;
-  const wide=matchMedia("(min-width:1100px) and (hover:hover)").matches;
+  const wide=true;
   if(S.tableId&&!S.tpOpen&&!wide)return`<div class="tsel"><span>${ico("tables")}<b>${S.tableId==="bar"?t("noTable"):esc(tLabel(x||{name:""}))}</b>${busy?`<small class="muted">${t("openBill")} ${money(tabTotal(S.tabs[x.id]))}</small>`:""}</span><button class="btn sm ghost" id="tchg">${t("change")}</button></div>`;
   return`<div class="tpick">${tableList().map(z=>{const b=S.tabs[z.id]&&S.tabs[z.id].items&&S.tabs[z.id].items.length;return`<button class="tp${S.tableId===z.id?" on":""}${b?" busy":""}" data-tp="${esc(z.id)}" title="${esc(tLabel(z))}${S.tabs[z.id]?.label?" · "+esc(S.tabs[z.id].label):""}">${z.area==="out"?"☀ ":""}${esc(z.name)}</button>`}).join("")}<button class="tp tpbar${S.tableId==="bar"?" on":""}" data-tp="bar">${t("noTable")}</button></div>${!S.tableId?`<div class="needt" role="status">⚠ ${t("needTable")}</div>`:""}`}
 function moreSummary(disc,tip,base){const a=[];if(+disc)a.push("−"+(+disc)+"%");const tp=tipOf(base,tip);if(tp)a.push(t("tip")+" "+money(tp));return a.length?" · "+a.join(" · "):""}
@@ -5407,7 +5410,7 @@ function applySession(){const se=S.session;const bz=boundStaff();
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261107000734";
+const BUILD="20261107001708";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span>✨ Կա նոր տարբերակ</span><button type="button">Թարմացնել</button>`;document.body.appendChild(el);
