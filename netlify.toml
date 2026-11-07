@@ -45,3 +45,9 @@
   to = "https://generativelanguage.googleapis.com/:splat"
   status = 200
   force = true
+
+# server functions: weekly e-mail summary (keys live in Netlify environment variables, never in the repo)
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+  external_node_modules = ["firebase-admin"]

@@ -2595,6 +2595,7 @@ body::after{display:none!important;content:none!important}
 .upbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:100001;display:flex;align-items:center;gap:12px;padding:8px 8px 8px 16px;border-radius:999px;background:var(--ink);color:var(--surface);box-shadow:0 6px 20px rgba(0,0,0,.25);font-size:14px;font-weight:600;white-space:nowrap}.upbar button{border:0;border-radius:999px;padding:8px 14px;background:var(--surface);color:var(--ink);font-weight:700;cursor:pointer}@media(min-width:761px){.upbar{bottom:24px}}
 #pgrid .mcath{grid-column:1/-1}
 .wkgp{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px;margin:-6px 20px 16px;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--good) 12%,transparent)}.wkgp span{font-size:13px;opacity:.85;flex-basis:100%}.wkgp b{font-size:20px;font-weight:700;color:var(--good)}.wkgp small{font-size:12px;opacity:.8}.wkgp .wkd{opacity:1}
+.wkmon{display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid var(--line);border-radius:12px;margin-bottom:12px;cursor:pointer;font-size:14px;line-height:1.4}.wkmon input{width:20px;height:20px;flex:none;margin:0;accent-color:var(--primary)}#wkm_to{width:100%;box-sizing:border-box;font:inherit;font-size:15px}
 </style>
 
 <header class="appbar"><button class="iconbtn" id="menuBtn" aria-label="Menu"><svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><h1 id="pageTitle">Incheve</h1>
@@ -4786,7 +4787,7 @@ function renderSet(){const st=S.settings;const nIn=allTables().filter(x=>x.area=
    ${grp(t("sg_bar"),[row("biz","house",t("st_biz"),esc([st.name,st.address].filter(Boolean).join(" · ")||"—")),row("tab","tables",t("st_tables"),`${nIn} ${t("hall").toLowerCase()} · ${nOut} ${t("outside").toLowerCase()}${outdoorOn()?" ☀":""}`),row("hrs","clock",t("st_hours"),esc(scheduleText())),row("gpb","glass",t("st_glass"),`${GPB()} ${t("gls")} / ${t("btl")}`)])}
    ${grp(t("sg_orders"),[row("sup","truck",t("ctg_sup"),`${supList().length} · ${esc(supList().slice(0,3).map(x=>dn(x.person||x.name)).join(", "))}${supList().length>3?"…":""}`),row("msg","chat",t("su_msg"),esc([st.ordLegal||ORD_DEF.legal,recvText(st.ordRecv||ORD_DEF.recv)].join(" · ")))])}
    ${grp(t("sg_sec"),[row("pin","lock",t("s_login"),st.pinLogin?t("sg_on"):t("sg_off")),row("tax","receipt",t("tx_title"),t({none:"tx_none",vat:"tx_vat",turnover:"tx_turn",micro:"tx_micro"}[tx.mode]||"tx_none")),row("qr","qr",t("qr_title"),t("sg_qr"))])}
-   ${grp(t("sg_data"),[row("bk","clip",t("bk_title"),t("bk_sub")),row("imp","clip",t("t_imp"),t("sg_imph")),row("off","clock",t("of_title"),navigator.onLine?t("of_on"):t("of_off")),...(S.admin||S.mgr?[row("std","glass",t("sw_title"),t("sw_sub")),row("stdi","pen",t("si_title2"),t("si_sub2"))]:[])])}
+   ${grp(t("sg_data"),[row("bk","clip",t("bk_title"),t("bk_sub")),row("imp","clip",t("t_imp"),t("sg_imph")),row("off","clock",t("of_title"),navigator.onLine?t("of_on"):t("of_off")),...(S.admin?[row("wkm","chart",L3("Շաբաթական ամփոփում email-ով","Итоги недели на e-mail","Weekly summary by e-mail"),(()=>{const w=S.settings.wkMail||{};const n=(w.to||[]).length;return w.on&&n?L3(`միացված · ${n} հասցե · կիրակի 23:30`,`включено · ${n} адр. · вс 23:30`,`on · ${n} address${n>1?"es":""} · Sun 23:30`):L3("անջատված","выключено","off")})())]:[]),...(S.admin||S.mgr?[row("std","glass",t("sw_title"),t("sw_sub")),row("stdi","pen",t("si_title2"),t("si_sub2"))]:[])])}
    </div><div class="notice" style="margin-top:16px;max-width:720px">${t("accessHelp")}</div>`;
   const sq=$("set_q");const flt=()=>{const q=(sq.value||"").trim().toLowerCase();S._setQ=sq.value;document.querySelectorAll(".setgrp").forEach(g=>{let n=0;g.querySelectorAll(".setrow").forEach(r=>{const on=!q||r.textContent.toLowerCase().includes(q)||g.querySelector("h3").textContent.toLowerCase().includes(q);r.hidden=!on;if(on)n++});g.hidden=!n})};sq.oninput=flt;flt();
   const titles={biz:"st_biz",tab:"st_tables",hrs:"st_hours",gpb:"st_glass",msg:"su_msg",pin:"s_login"};
@@ -4799,6 +4800,7 @@ function renderSet(){const st=S.settings;const nIn=allTables().filter(x=>x.area=
     if(k==="bk"){openSetSheet(t("bk_title"),bkHTML(),el=>wireBk(el));return}
     if(k==="std"){openStdWines();return}if(k==="stdi"){openStdItems("wine");return}
     if(k==="off"){openSetSheet(t("of_title"),offHTML(),el=>wireOff(el));return}
+    if(k==="wkm"){openSetSheet(L3("Շաբաթական ամփոփում email-ով","Итоги недели на e-mail","Weekly summary by e-mail"),wkmHTML(),el=>wireWkm(el));return}
     openSetSheet(t(titles[k]),setSecHTML(k),el=>{el.querySelectorAll(".wdc").forEach(w=>w.onclick=()=>w.setAttribute("aria-pressed",w.getAttribute("aria-pressed")!=="true"));el.querySelector("#ss_save").onclick=async()=>{if(await saveSetSec(k)){el.remove();renderSet()}}})})}
 
 /* ---------- contacts ---------- */
@@ -5367,7 +5369,7 @@ function applySession(){const se=S.session;
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261106193413";
+const BUILD="20261106195142";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span>✨ Կա նոր տարբերակ</span><button type="button">Թարմացնել</button>`;document.body.appendChild(el);
@@ -5379,6 +5381,24 @@ function clkTick(){const el=document.getElementById("clkSlot");if(!el)return;con
   const yl=lang==="ru"?"Ереван":lang==="en"?"Yerevan":"Երևան",ml=lang==="ru"?"у вас":lang==="en"?"you":"ձեր";
   if(a===b){el.innerHTML="";el.title="";return}el.innerHTML=`<small>${yl}</small><b class="num">${a}</b>`;el.title=`${yl} ${a} · ${ml} ${b}`}
 setTimeout(clkTick,0);setInterval(clkTick,15000);setTimeout(()=>{const el=document.getElementById("clkSlot");if(el)el.onclick=()=>toast(el.title)},0);document.addEventListener("click",e=>{if(e.target.closest&&e.target.closest("[data-lang]"))setTimeout(clkTick,50)},true);
+/* weekly summary by e-mail: settings/main.wkMail = {on, to:[...], lang}; the Netlify function sends it every Sunday 23:30 Yerevan */
+function wkmHTML(){const w=S.settings.wkMail||{};const L=w.lang||"hy";const net=!!window.INCHEVE_FIREBASE;
+  return`<label class="wkmon"><input type="checkbox" id="wkm_on"${w.on?" checked":""}><span>${L3("Ուղարկել ամեն կիրակի 23:30-ին (Երևանի ժամով)","Отправлять каждое воскресенье в 23:30 (по Еревану)","Send every Sunday at 23:30 (Yerevan time)")}</span></label>
+   <label class="f"><span>${L3("Էլ. հասցեներ · յուրաքանչյուրը նոր տողում","E-mail · каждый с новой строки","E-mail addresses · one per line")}</span><textarea id="wkm_to" rows="4" placeholder="name@gmail.com" autocapitalize="off" spellcheck="false" inputmode="email">${esc((w.to||[]).join("\n"))}</textarea></label>
+   <label class="f"><span>${L3("Նամակի լեզուն","Язык письма","E-mail language")}</span><select id="wkm_lang">${[["hy","Հայերեն"],["ru","Русский"],["en","English"]].map(([k,l])=>`<option value="${k}"${k===L?" selected":""}>${l}</option>`).join("")}</select></label>
+   <p class="muted" style="font-size:13px;line-height:1.5;margin:6px 0 12px">${L3("Նամակում՝ մաքուր վաճառք, շահույթ, կտրոններ, կանխիկ/քարտ, թեյավճար, լավագույն և թույլ օրը, թոփ 5, փոխանցումներ և քիչ մնացածներ։","В письме: продажи, прибыль, чеки, наличные/карта, чаевые, лучший и слабый день, топ 5, переводы и что заканчивается.","Includes net sales, profit, receipts, cash/card, tips, best and slowest day, top 5, transfers and what is running low.")}</p>
+   <div class="wact">${net?`<button class="btn ghost" id="wkm_test">${L3("Ուղարկել փորձնական նամակ","Отправить тестовое письмо","Send a test e-mail")}</button>`:"<span></span>"}<button class="btn primary" id="wkm_save">${t("save")}</button></div>`}
+function wkmList(v){return[...new Set(String(v||"").split(/[\s,;]+/).map(x=>x.trim().toLowerCase()).filter(x=>/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(x)))].slice(0,20)}
+function wireWkm(el){const val=()=>({on:el.querySelector("#wkm_on").checked,to:wkmList(el.querySelector("#wkm_to").value),lang:el.querySelector("#wkm_lang").value});
+  el.querySelector("#wkm_save").onclick=async()=>{const w=val();if(w.on&&!w.to.length){toast(L3("Գրեք գոնե մեկ էլ. հասցե","Укажите хотя бы один e-mail","Add at least one e-mail"));return}
+    try{S.settings={...S.settings,wkMail:w};await S.db.doc("settings/main").set(S.settings);el.remove();toast(t("saved"));if(S.tab==="set")renderSet()}catch(e){toast(errMsg(e))}};
+  const tb=el.querySelector("#wkm_test");if(tb)tb.onclick=async()=>{const w=val();if(!w.to.length){toast(L3("Գրեք գոնե մեկ էլ. հասցե","Укажите хотя бы один e-mail","Add at least one e-mail"));return}
+    tb.disabled=true;const o=tb.textContent;tb.textContent="…";
+    try{const u=window.firebase&&firebase.auth&&firebase.auth().currentUser;if(!u)throw new Error(L3("Մուտք գործեք Google-ով","Войдите через Google","Sign in with Google"));const tok=await u.getIdToken();
+      const r=await fetch("/.netlify/functions/weekly-mail-test",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+tok},body:JSON.stringify({to:w.to,lang:w.lang})});
+      const j=await r.json().catch(()=>({}));if(!r.ok||!j.ok)throw new Error(j.error||("HTTP "+r.status));
+      toast(L3(`Ուղարկված է · ${j.to.length} հասցե`,`Отправлено · ${j.to.length} адр.`,`Sent · ${j.to.length} address(es)`))}
+    catch(e){toast(L3("Չստացվեց՝ ","Не получилось: ","Failed: ")+(e&&e.message||e))}finally{tb.disabled=false;tb.textContent=o}}}
 async function migDone(k){try{const d=await S.db.doc("settings/main").get();const v=(d.exists&&d.data())||{};if(v[k]){S.settings={...S.settings,[k]:v[k]};return true}return false}catch(e){return true}}
 let _migSnap=false;async function migSnap1(){if(_migSnap||!S.db||!(S.admin||S.mgr)||!S.products.length||(S.settings&&S.settings.mig_snap1))return;_migSnap=true;if(await migDone("mig_snap1"))return;
   try{for(const p of S.products){if(p.stock==null||!(isBtlP(p)||p.variant==="Bottle"))continue;const v=stSnap(p,+p.stock);if(Math.abs(v-p.stock)>1e-9&&Math.abs(v-p.stock)<0.01){await S.db.doc("products/"+p.id).update({stock:v});p.stock=v}}
