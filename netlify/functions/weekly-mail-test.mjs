@@ -1,4 +1,4 @@
-// "Send a test e-mail" button in Settings. Only signed-in owners (admin e-mails) may call it.
+// "Send a test e-mail" (Settings) and "Send by e-mail" (weekly summary) buttons. Only signed-in owners (admin e-mails) may call it.
 import { ADMINS, auth, buildWeek, render, recipients, send } from "../lib/week.mjs";
 const J = (o, s = 200) => new Response(JSON.stringify(o), { status: s, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
 export default async (req) => {
@@ -12,7 +12,7 @@ export default async (req) => {
     const W = await buildWeek();
     const to = recipients(W.st, body.to != null ? body.to : null);
     if (!to.length) return J({ error: "no recipients" }, 400);
-    const via = await send(to, render(W, body.lang || (W.st.wkMail && W.st.wkMail.lang) || "hy", true));
+    const via = await send(to, render(W, body.lang || (W.st.wkMail && W.st.wkMail.lang) || "hy", !body.real));
     return J({ ok: true, to, via });
   } catch (e) { return J({ error: (e && e.message) || "failed" }, 500); }
 };
