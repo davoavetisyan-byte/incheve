@@ -1496,7 +1496,7 @@ html,body{max-width:100%;overflow-x:hidden}@supports(overflow:clip){html,body{ov
 @media(max-width:760px){body:has(.thead2)::after,body:has(.pfix)::after,body:has(.gview)::after{content:"";position:fixed;left:0;top:46%;width:5px;height:56px;border-radius:0 5px 5px 0;background:color-mix(in srgb,var(--ink) 22%,transparent);z-index:100000;pointer-events:none;animation:edgeHint 1.4s ease-out .3s 1}
  body:has(.vsheet)::after{display:none}
  @keyframes edgeHint{0%,100%{transform:none}30%{transform:translateX(0);width:5px}50%{width:12px}70%{width:5px}}}
-@media(max-width:760px){body:has(.vsheet),body:has(.cart.open){overflow:hidden!important;overscroll-behavior:none}.vsheet>.vbox,.cart.open{overscroll-behavior:contain}}
+@media(max-width:760px){body:has(.vsheet){overflow:hidden!important;overscroll-behavior:none}html:has(.cart.open),body:has(.cart.open){overscroll-behavior:none}.vsheet>.vbox,.cart.open{overscroll-behavior:contain}}
 /* minus: solid red */
 
 .wbsec{padding:4px 18px 10px}.wbsec h4{margin:8px 0 6px;font-size:12.5px;color:var(--muted);font-weight:700}
@@ -2633,6 +2633,7 @@ html body details.more .tipbar{display:none}@media(max-width:400px){html body de
 .appbar::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:240px;background:var(--bar);pointer-events:none}
 @media(max-width:760px){body:has(.cart.open)::before{top:-240px!important}#cart .tpick{grid-template-columns:repeat(auto-fill,minmax(40px,1fr))!important}#cart .tpick .tp{height:40px;min-height:40px!important}}
 @media(max-width:760px){html body:has(.cart.open) .toast{top:calc(68px + env(safe-area-inset-top,0px))!important;bottom:auto!important}}
+@media(max-width:760px){.cart.open{overscroll-behavior:contain;touch-action:pan-y}body:has(.cart.open)::before{touch-action:none}}
 </style>
 
 <header class="appbar"><button class="iconbtn" id="menuBtn" aria-label="Menu"><svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><h1 id="pageTitle">Incheve</h1>
@@ -5410,7 +5411,7 @@ function applySession(){const se=S.session;const bz=boundStaff();
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261107001708";
+const BUILD="20261107002241";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span>✨ Կա նոր տարբերակ</span><button type="button">Թարմացնել</button>`;document.body.appendChild(el);
