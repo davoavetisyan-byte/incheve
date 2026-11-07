@@ -2600,7 +2600,7 @@ div.chips.subnav.sichips.sichips{flex-wrap:wrap!important;overflow:visible!impor
 .lkacc{display:block;margin-bottom:8px;font-size:12px}
 @media(hover:hover) and (pointer:fine){
  .vbtn:not(:disabled),.mvbtn:not(:disabled),#pgrid button.acol:not(:disabled),.tpick .tp{transition:background-color .15s,border-color .15s,color .15s,transform .15s,box-shadow .15s!important}
- .vbtn:not(:disabled):hover,.mvbtn:not(:disabled):hover,#pgrid button.acol:not(:disabled):hover{background:var(--primary)!important;border-color:var(--primary)!important;color:var(--on-primary)!important;transform:translateY(-1px);box-shadow:0 4px 12px color-mix(in srgb,var(--primary) 35%,transparent)!important;filter:none!important}
+ .vbtn:not(:disabled):hover,.mvbtn:not(:disabled):hover,#pgrid button.acol:not(:disabled):hover{background:color-mix(in srgb,var(--primary) 12%,var(--surface))!important;border-color:var(--primary)!important;color:var(--primary)!important;transform:translateY(-1px);box-shadow:0 0 0 2px color-mix(in srgb,var(--primary) 25%,transparent),0 4px 10px rgba(0,0,0,.08)!important;filter:none!important}
  .vbtn:not(:disabled):hover *,.mvbtn:not(:disabled):hover *,#pgrid button.acol:not(:disabled):hover *:not(.aq){color:inherit!important}
  .tpick .tp:not(.on):hover{background:color-mix(in srgb,var(--primary) 14%,var(--surface))!important;border-color:var(--primary)!important;color:var(--primary)!important;transform:translateY(-2px)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 22%,transparent)!important}
 }
@@ -5382,7 +5382,7 @@ function applySession(){const se=S.session;const bz=boundStaff();
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261106230539";
+const BUILD="20261106230811";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span>✨ Կա նոր տարբերակ</span><button type="button">Թարմացնել</button>`;document.body.appendChild(el);
