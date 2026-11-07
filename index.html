@@ -2607,7 +2607,6 @@ div.chips.subnav.sichips.sichips{flex-wrap:wrap!important;overflow:visible!impor
 .vbtn:not(:disabled):active,.mvbtn:not(:disabled):active{transform:scale(.97)}
 .toast:not(.act){width:max-content!important;-webkit-line-clamp:unset!important;display:block!important;overflow:visible!important;white-space:normal!important;text-overflow:clip!important;max-width:min(92vw,420px)!important;box-sizing:border-box}
 .tpick .tp.on{position:relative;background:var(--good)!important;border-color:var(--good)!important;color:#fff!important;font-weight:800!important;transform:none!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--good) 30%,transparent),0 4px 12px color-mix(in srgb,var(--good) 35%,transparent)!important}
-.tpick .tp.on::after{content:"✓";position:absolute;top:3px;right:3px;width:16px;height:16px;border-radius:50%;background:#fff;color:var(--good);font-size:10px;font-weight:900;line-height:16px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.25)}
 .tpsel{display:flex;align-items:center;gap:8px;margin:2px 0 10px;padding:8px 12px;border-radius:12px;background:color-mix(in srgb,var(--good) 12%,transparent);color:var(--good);font-size:14px}.tpsel .li{width:18px;height:18px;flex:none}.tpsel b{font-weight:800}.tpsel small{color:var(--muted)}
 </style>
 
@@ -5386,7 +5385,7 @@ function applySession(){const se=S.session;const bz=boundStaff();
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261106231449";
+const BUILD="20261106231821";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span>✨ Կա նոր տարբերակ</span><button type="button">Թարմացնել</button>`;document.body.appendChild(el);
