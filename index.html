@@ -2613,6 +2613,13 @@ html body .tpick .tp.on{position:relative;background:color-mix(in srgb,var(--goo
 html body #cart .btn.gadd.gtab{background:var(--primary)!important;color:var(--on-primary,#fff)!important;border:0!important;min-height:54px;font-size:15.5px;font-weight:700;border-radius:14px;margin:4px 0 12px;box-shadow:0 4px 14px color-mix(in srgb,var(--primary) 30%,transparent)}html body #cart .btn.gadd.gtab:hover:not(:disabled){filter:brightness(1.08)}html body #cart .btn.gadd.gtab:disabled{opacity:.45;box-shadow:none}
 #cart .tot+#cmore{margin-top:8px}
 @media(max-width:900px){html body #cart .tsel{display:inline-flex;width:auto;max-width:100%;gap:8px;padding:5px 6px 5px 12px;border-radius:999px;background:transparent;border:1px solid var(--line);margin:2px 0 10px;font-size:14px}html body #cart .tsel .ico{width:16px;height:16px}html body #cart .tsel b{font-weight:600}html body #cart .tsel small{font-size:12px}html body #cart .tsel #tchg{min-height:30px!important;padding:0 12px!important;font-size:13px;border-radius:999px}}
+#cart .tpick{grid-template-columns:repeat(auto-fill,minmax(38px,1fr))!important;gap:6px!important}#cart .tpick .tp{min-height:36px!important;height:36px;padding:0!important;font-size:14px;border-radius:9px!important}#cart .tpick .tpbar{grid-column:span 3!important}
+#cart .sec2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}#cart .sec2.one{grid-template-columns:1fr}#cart .sec2>*{margin:0!important;width:100%!important;min-width:0;box-sizing:border-box}#cart .sec2 #cguest{flex-direction:row!important;flex-wrap:nowrap!important;white-space:nowrap;overflow:hidden}#cart .sec2 #cguest svg{flex:none;width:18px;height:18px}@media(max-width:380px){#cart .sec2 #cmore>summary,#cart .sec2 #cguest{font-size:12.5px!important;padding:6px 6px!important}}
+#cart .sec2 #cmore>summary,#cart .sec2 #cguest{min-height:42px!important;height:auto;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px 6px;border:1px solid var(--line)!important;border-radius:12px!important;background:var(--surface)!important;color:var(--ink);font-size:13.5px!important;font-weight:600;padding:6px 8px!important;list-style:none;text-align:center;box-shadow:none!important}
+#cart .sec2 #cmore>summary::-webkit-details-marker{display:none}#cart .sec2 #cmore>summary::before,#cart .sec2 #cmore>summary::after{display:none!important}
+#cart .sec2 #cmore>summary .muted{font-size:12px;font-weight:500}#cart .sec2 #cguest{order:2}#cart .sec2 #cmore{order:1}#cart .sec2 #cmore[open]{grid-column:1/-1;order:3}#cart .sec2 #cmore[open]>summary{border-color:var(--primary)!important;color:var(--primary)}
+@media(hover:hover){#cart .sec2 #cmore>summary:hover,#cart .sec2 #cguest:hover{border-color:var(--primary)!important;color:var(--primary)}}
+#cart .sec2:has(#cmore[open]) #cguest{order:4;grid-column:1/-1}
 </style>
 
 <header class="appbar"><button class="iconbtn" id="menuBtn" aria-label="Menu"><svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><h1 id="pageTitle">Incheve</h1>
@@ -2819,11 +2826,11 @@ function drawCart(){if(!$("pbar"))setTimeout(()=>markCounts(S.cart),0);
   ${S.tableId&&S.tableId!=="bar"?`<button class="btn wide gadd gtab" id="toTab"${S.cart.length&&S.write?"":" disabled"}>+ ${(()=>{const x=tableList().find(z=>z.id===S.tableId);return x?L3(`Ավելացնել ${tLabel(x)}-ի հաշվին`,`Добавить на счёт · ${tLabel(x)}`,`Add to ${tLabel(x)} bill`):t("toTabS")})()}</button>`:""}
   ${tt.disc?`<div class="sumline"><span>${t("subtotal")}</span><span class="num">${money(tt.sub)}</span></div>`:""}${tipOf(tt.total,S.ctip)?`<div class="sumline"><span>${t("tip")}</span><span class="num">+${money(tipOf(tt.total,S.ctip))}</span></div>`:""}
   <div class="tot"><span>${t("total")}</span><span class="num">${money(tt.total+tipOf(tt.total,S.ctip))}</span></div>
-  <details class="more" id="cmore"${S.cmore?" open":""}><summary>${t("moreOpts")}<span class="muted">${moreSummary(S.disc,S.ctip,tt.total)}</span></summary><div class="morein">
+  <div class="sec2${S.cart.length?"":" one"}">${S.cart.length?`<button class="btn ghost wide gbtn" id="cguest">${eyeSVG()} ${t("guest")}</button>`:""}<details class="more" id="cmore"${S.cmore?" open":""}><summary><span class="mo-l">% ${t("moreOpts")}</span><span class="muted">${moreSummary(S.disc,S.ctip,tt.total)}</span></summary><div class="morein">
    <label class="f" style="width:120px">${t("discount")}<input id="cdisc" type="number" inputmode="numeric" min="0" max="100" value="${S.disc||""}"></label>
    ${tipHTML(S.ctip,"ct")}
-   ${loginOn()&&S.session&&S.session.role!=="owner"?"":`<label class="f">${t("cashier")}<select id="ccashier"><option value="">—</option>${staffOpts}</select></label>`}</div></details>
-  <div class="paynow">${["cash","card"].map(m=>`<button class="btn primary pnb" data-cpay="${m}"${S.cart.length&&S.tableId&&S.write&&!S.cart.some(l=>l.variable&&!l.price)?"":" disabled"}><span class="pi">${t(m)}</span><b class="num">${money(tt.total+tipOf(tt.total,S.ctip))}</b></button>`).join("")}</div><div class="hdm">🧾 ${t("hdmNote")}</div>${S.cart.length?`<button class="btn ghost wide gbtn" id="cguest">${eyeSVG()} ${t("guest")}</button>`:""}`;
+   ${loginOn()&&S.session&&S.session.role!=="owner"?"":`<label class="f">${t("cashier")}<select id="ccashier"><option value="">—</option>${staffOpts}</select></label>`}</div></details></div>
+  <div class="paynow">${["cash","card"].map(m=>`<button class="btn primary pnb" data-cpay="${m}"${S.cart.length&&S.tableId&&S.write&&!S.cart.some(l=>l.variable&&!l.price)?"":" disabled"}><span class="pi">${t(m)}</span><b class="num">${money(tt.total+tipOf(tt.total,S.ctip))}</b></button>`).join("")}</div><div class="hdm">🧾 ${t("hdmNote")}</div>`;
   const cg=$("cguest");if(cg)cg.onclick=()=>{const t2=cartTotals();showGuest(t2.total,tipOf(t2.total,S.ctip),S.cart,t2.disc,{get:()=>S.ctip,set:v=>{S.ctip=v;drawCart()},pay:m=>{const b=document.querySelector(`[data-cpay="${m}"]`);if(!b||b.disabled){toast(S.cart.length&&!S.tableId?t("needTable"):t("errSave"));if(isPhone())$("cart")?.classList.add("open");return}b.click()}})};
   const cm=$("cmore");if(cm)cm.ontoggle=()=>{S.cmore=cm.open};
   const tch=$("tchg");if(tch)tch.onclick=()=>{S.tpOpen=true;drawCart()};
@@ -5390,7 +5397,7 @@ function applySession(){const se=S.session;const bz=boundStaff();
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261106233611";
+const BUILD="20261106234710";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span>✨ Կա նոր տարբերակ</span><button type="button">Թարմացնել</button>`;document.body.appendChild(el);
