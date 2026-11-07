@@ -2634,6 +2634,10 @@ html body details.more .tipbar{display:none}@media(max-width:400px){html body de
 @media(max-width:760px){body:has(.cart.open)::before{top:-240px!important}#cart .tpick{grid-template-columns:repeat(auto-fill,minmax(40px,1fr))!important}#cart .tpick .tp{height:40px;min-height:40px!important}}
 @media(max-width:760px){html body:has(.cart.open) .toast{top:calc(68px + env(safe-area-inset-top,0px))!important;bottom:auto!important}}
 @media(max-width:760px){.cart.open{overscroll-behavior:contain;touch-action:pan-y}body:has(.cart.open)::before{touch-action:none}}
+#cart .trow{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;margin:10px 0 12px}#cart .trow.solo{grid-template-columns:auto}
+#cart .trow .tsw{display:inline-flex;align-items:center;gap:8px;height:54px;padding:0 14px;border-radius:14px;border:1.5px solid var(--good);background:color-mix(in srgb,var(--good) 12%,var(--surface));color:var(--good);font:inherit;font-weight:800;font-size:15.5px;white-space:nowrap;cursor:pointer}
+#cart .trow .tsw i{font-style:normal;font-size:12px;opacity:.8}
+html body #cart .trow #toTab{margin:0!important;min-height:54px;white-space:nowrap}
 </style>
 
 <header class="appbar"><button class="iconbtn" id="menuBtn" aria-label="Menu"><svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><h1 id="pageTitle">Incheve</h1>
@@ -2837,7 +2841,8 @@ function drawCart(){if(!$("pbar"))setTimeout(()=>markCounts(S.cart),0);
   <div class="lines">${S.cart.length?S.cart.map((l,i)=>`<div class="line"><div class="n">${lShort(l)}<small>${l.variant?esc(t(l.variant))+" · ":""}${l.extra&&l.extra.length?"+ "+esc(l.extra.join(", "))+" · ":""}${l.variable?`<input type="number" inputmode="numeric" min="0" class="num" data-lp="${i}" value="${l.price||""}" placeholder="${t("setPrice")}" style="width:110px;padding:5px 8px" aria-label="${t("price")}">`:money(l.price)}</small></div>
     <div class="qty"><button data-dec="${i}" aria-label="−">−</button><span class="num">${l.qty}</span><button data-inc="${i}" aria-label="+">+</button></div><b class="num">${money(l.qty*(l.price||0))}</b></div>`).join(""):`<div class="empty">${t("emptyCart")}</div>`}</div>
   ${tableBlock()}
-  ${S.tableId&&S.tableId!=="bar"?`<button class="btn wide gadd gtab" id="toTab"${S.cart.length&&S.write?"":" disabled"}>+ ${(()=>{const x=tableList().find(z=>z.id===S.tableId);return x?L3(`Ավելացնել ${tLabel(x)}-ի հաշվին`,`Добавить на счёт · ${tLabel(x)}`,`Add to ${tLabel(x)} bill`):t("toTabS")})()}</button>`:""}
+  ${cartPhone()&&S.tableId?(()=>{const x=tableList().find(z=>z.id===S.tableId);const nm=S.tableId==="bar"?t("noTable"):x?tLabel(x):"—";const add=S.tableId!=="bar";return`<div class="trow${add?"":" solo"}"><button class="tsw" id="tsw" type="button"><span>${esc(nm)}</span><i aria-hidden="true">▾</i></button>${add?`<button class="btn wide gadd gtab" id="toTab"${S.cart.length&&S.write?"":" disabled"}>+ ${L3("Ավելացնել հաշվին","На счёт стола","Add to bill")}</button>`:""}</div>`})()
+   :S.tableId&&S.tableId!=="bar"?`<button class="btn wide gadd gtab" id="toTab"${S.cart.length&&S.write?"":" disabled"}>+ ${(()=>{const x=tableList().find(z=>z.id===S.tableId);return x?L3(`Ավելացնել ${tLabel(x)}-ի հաշվին`,`Добавить на счёт · ${tLabel(x)}`,`Add to ${tLabel(x)} bill`):t("toTabS")})()}</button>`:""}
   ${tt.disc?`<div class="sumline"><span>${t("subtotal")}</span><span class="num">${money(tt.sub)}</span></div>`:""}${tipOf(tt.total,S.ctip)?`<div class="sumline"><span>${t("tip")}</span><span class="num">+${money(tipOf(tt.total,S.ctip))}</span></div>`:""}
   <div class="tot"><span>${t("total")}</span><span class="num">${money(tt.total+tipOf(tt.total,S.ctip))}</span></div>
   <div class="sec2${S.cart.length?"":" one"}">${S.cart.length?`<button class="btn ghost wide gbtn" id="cguest">${eyeSVG()} ${t("guest")}</button>`:""}<details class="more" id="cmore"${S.cmore?" open":""}><summary><span class="mo-l">% ${t("moreOpts")}</span><span class="muted">${moreSummary(S.disc,S.ctip,tt.total)}</span></summary><div class="morein">
@@ -2848,6 +2853,7 @@ function drawCart(){if(!$("pbar"))setTimeout(()=>markCounts(S.cart),0);
   const cg=$("cguest");if(cg)cg.onclick=()=>{const t2=cartTotals();showGuest(t2.total,tipOf(t2.total,S.ctip),S.cart,t2.disc,{get:()=>S.ctip,set:v=>{S.ctip=v;drawCart()},pay:m=>{const b=document.querySelector(`[data-cpay="${m}"]`);if(!b||b.disabled){toast(S.cart.length&&!S.tableId?t("needTable"):t("errSave"));if(isPhone())$("cart")?.classList.add("open");return}b.click()}})};
   const cm=$("cmore");if(cm)cm.ontoggle=()=>{S.cmore=cm.open};
   const tch=$("tchg");if(tch)tch.onclick=()=>{S.tpOpen=true;drawCart()};
+  const tsw=$("tsw");if(tsw)tsw.onclick=()=>openTableSheet();
   wireTip(c,"ct",()=>S.ctip,v=>S.ctip=v,drawCart);
   const n=S.cart.reduce((a,l)=>a+l.qty,0);
   $("cartbar").innerHTML=`<button class="btn primary" id="openCart"><span>${t("cart")} · ${n}</span><span class="num">${money(tt.total)}</span></button>`;
@@ -4304,7 +4310,8 @@ function tilesHTML(){if(sellView()==="list")return listHTML();const G=groupedTil
     (k,n)=>`<h4 class="cath" style="--cc:${catColor(k)}"><i></i>${t(k)}<small>${n}</small></h4>`)}
 
 /* ---------- tables ---------- */
-function tableBlock(){const x=tableList().find(z=>z.id===S.tableId);const busy=x&&S.tabs[x.id]&&S.tabs[x.id].items&&S.tabs[x.id].items.length;
+function cartPhone(){return matchMedia("(max-width:900px)").matches}
+function tableBlock(){if(cartPhone()&&S.tableId)return"";const x=tableList().find(z=>z.id===S.tableId);const busy=x&&S.tabs[x.id]&&S.tabs[x.id].items&&S.tabs[x.id].items.length;
   const wide=true;
   if(S.tableId&&!S.tpOpen&&!wide)return`<div class="tsel"><span>${ico("tables")}<b>${S.tableId==="bar"?t("noTable"):esc(tLabel(x||{name:""}))}</b>${busy?`<small class="muted">${t("openBill")} ${money(tabTotal(S.tabs[x.id]))}</small>`:""}</span><button class="btn sm ghost" id="tchg">${t("change")}</button></div>`;
   return`<div class="tpick">${tableList().map(z=>{const b=S.tabs[z.id]&&S.tabs[z.id].items&&S.tabs[z.id].items.length;return`<button class="tp${S.tableId===z.id?" on":""}${b?" busy":""}" data-tp="${esc(z.id)}" title="${esc(tLabel(z))}${S.tabs[z.id]?.label?" · "+esc(S.tabs[z.id].label):""}">${z.area==="out"?"☀ ":""}${esc(z.name)}</button>`}).join("")}<button class="tp tpbar${S.tableId==="bar"?" on":""}" data-tp="bar">${t("noTable")}</button></div>${!S.tableId?`<div class="needt" role="status">⚠ ${t("needTable")}</div>`:""}`}
@@ -5411,7 +5418,7 @@ function applySession(){const se=S.session;const bz=boundStaff();
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261107002241";
+const BUILD="20261107002413";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span>✨ Կա նոր տարբերակ</span><button type="button">Թարմացնել</button>`;document.body.appendChild(el);
