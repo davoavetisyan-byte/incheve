@@ -2596,6 +2596,8 @@ body::after{display:none!important;content:none!important}
 #pgrid .mcath{grid-column:1/-1}
 .wkgp{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px;margin:-6px 20px 16px;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--good) 12%,transparent)}.wkgp span{font-size:13px;opacity:.85;flex-basis:100%}.wkgp b{font-size:20px;font-weight:700;color:var(--good)}.wkgp small{font-size:12px;opacity:.8}.wkgp .wkd{opacity:1}
 .wkmon{display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid var(--line);border-radius:12px;margin-bottom:12px;cursor:pointer;font-size:14px;line-height:1.4}.wkmon input{width:20px;height:20px;flex:none;margin:0;accent-color:var(--primary)}#wkm_to{width:100%;box-sizing:border-box;font:inherit;font-size:15px}
+div.chips.subnav.sichips.sichips{flex-wrap:wrap!important;overflow:visible!important;max-width:100%}div.sichips.sichips .chip{flex:0 0 auto;max-width:100%}
+.lkacc{display:block;margin-bottom:8px;font-size:12px}
 </style>
 
 <header class="appbar"><button class="iconbtn" id="menuBtn" aria-label="Menu"><svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><h1 id="pageTitle">Incheve</h1>
@@ -4787,7 +4789,7 @@ function renderSet(){const st=S.settings;const nIn=allTables().filter(x=>x.area=
    ${grp(t("sg_bar"),[row("biz","house",t("st_biz"),esc([st.name,st.address].filter(Boolean).join(" · ")||"—")),row("tab","tables",t("st_tables"),`${nIn} ${t("hall").toLowerCase()} · ${nOut} ${t("outside").toLowerCase()}${outdoorOn()?" ☀":""}`),row("hrs","clock",t("st_hours"),esc(scheduleText())),row("gpb","glass",t("st_glass"),`${GPB()} ${t("gls")} / ${t("btl")}`)])}
    ${grp(t("sg_orders"),[row("sup","truck",t("ctg_sup"),`${supList().length} · ${esc(supList().slice(0,3).map(x=>dn(x.person||x.name)).join(", "))}${supList().length>3?"…":""}`),row("msg","chat",t("su_msg"),esc([st.ordLegal||ORD_DEF.legal,recvText(st.ordRecv||ORD_DEF.recv)].join(" · ")))])}
    ${grp(t("sg_sec"),[row("pin","lock",t("s_login"),st.pinLogin?t("sg_on"):t("sg_off")),row("tax","receipt",t("tx_title"),t({none:"tx_none",vat:"tx_vat",turnover:"tx_turn",micro:"tx_micro"}[tx.mode]||"tx_none")),row("qr","qr",t("qr_title"),t("sg_qr"))])}
-   ${grp(t("sg_data"),[row("bk","clip",t("bk_title"),t("bk_sub")),row("imp","clip",t("t_imp"),t("sg_imph")),row("off","clock",t("of_title"),navigator.onLine?t("of_on"):t("of_off")),...(S.admin?[row("wkm","chart",L3("Շաբաթական ամփոփում email-ով","Итоги недели на e-mail","Weekly summary by e-mail"),(()=>{const w=S.settings.wkMail||{};const n=(w.to||[]).length;return w.on&&n?L3(`միացված · ${n} հասցե · կիրակի 23:30`,`включено · ${n} адр. · вс 23:30`,`on · ${n} address${n>1?"es":""} · Sun 23:30`):L3("անջատված","выключено","off")})())]:[]),...(S.admin||S.mgr?[row("std","glass",t("sw_title"),t("sw_sub")),row("stdi","pen",t("si_title2"),t("si_sub2"))]:[])])}
+   ${grp(t("sg_data"),[row("bk","clip",t("bk_title"),t("bk_sub")),row("imp","clip",t("t_imp"),t("sg_imph")),row("off","clock",t("of_title"),navigator.onLine?t("of_on"):t("of_off")),...(S.admin||S.mgr||S.acctAdmin&&S.ownerAcct!==false&&!S.session?[row("wkm","chart",L3("Շաբաթական ամփոփում email-ով","Итоги недели на e-mail","Weekly summary by e-mail"),(()=>{const w=S.settings.wkMail||{};const n=(w.to||[]).length;return w.on&&n?L3(`միացված · ${n} հասցե · կիրակի 23:30`,`включено · ${n} адр. · вс 23:30`,`on · ${n} address${n>1?"es":""} · Sun 23:30`):L3("անջատված","выключено","off")})())]:[]),...(S.admin||S.mgr?[row("std","glass",t("sw_title"),t("sw_sub")),row("stdi","pen",t("si_title2"),t("si_sub2"))]:[])])}
    </div><div class="notice" style="margin-top:16px;max-width:720px">${t("accessHelp")}</div>`;
   const sq=$("set_q");const flt=()=>{const q=(sq.value||"").trim().toLowerCase();S._setQ=sq.value;document.querySelectorAll(".setgrp").forEach(g=>{let n=0;g.querySelectorAll(".setrow").forEach(r=>{const on=!q||r.textContent.toLowerCase().includes(q)||g.querySelector("h3").textContent.toLowerCase().includes(q);r.hidden=!on;if(on)n++});g.hidden=!n})};sq.oninput=flt;flt();
   const titles={biz:"st_biz",tab:"st_tables",hrs:"st_hours",gpb:"st_glass",msg:"su_msg",pin:"s_login"};
@@ -5360,8 +5362,9 @@ const newSalt=()=>Math.random().toString(36).slice(2,10)+Date.now().toString(36)
 function loginOn(){return !!S.settings.pinLogin}
 function loadSess(){try{return JSON.parse(localStorage.getItem("incheve-bo-session")||"null")}catch(e){return null}}
 function saveSess(v){try{v?localStorage.setItem("incheve-bo-session",JSON.stringify(v)):localStorage.removeItem("incheve-bo-session")}catch(e){}}
-function applySession(){const se=S.session;
-  if(!loginOn()){S.admin=S.acctAdmin;return}
+function applySession(){const se=S.session;const bz=boundStaff();
+  if(bz&&se&&se.id!==bz.id){S.session=null;try{localStorage.removeItem("incheve-bo-session")}catch(e){}S.admin=false;return}
+  if(!loginOn()&&!bz){S.admin=S.acctAdmin;return}
   if(!se){S.admin=false;return}
   {const lvMgr=se.role==="owner"||((S.staff.find(x=>x.id===se.id)||{}).level==="manager");S.admin=lvMgr&&S.acctAdmin;S.mgr=lvMgr&&!S.admin}ensureCosts();setTimeout(()=>{if(typeof migIng==="function")migIng();if(typeof migSouv==="function")migSouv().then(()=>{if(typeof migSouv2==="function")setTimeout(migSouv2,1500)});if(typeof migInv1==="function")setTimeout(migInv1,4500);if(typeof migJam1==="function")setTimeout(migJam1,6500);if(typeof migSnap1==="function")setTimeout(migSnap1,8500)},2500);if(se.role!=="owner"){S.cashier=se.id}}
 /* costs are loaded as soon as an owner/manager is active (also after a PIN login, not only at start) */
@@ -5369,7 +5372,7 @@ function applySession(){const se=S.session;
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261106195142";
+const BUILD="20261106223251";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span>✨ Կա նոր տարբերակ</span><button type="button">Թարմացնել</button>`;document.body.appendChild(el);
@@ -5448,7 +5451,8 @@ async function migIng(){if(_migRun||!S.db||!(S.admin||S.mgr)||!S.products.length
     S.settings=st;await S.db.doc("settings/main").set(st)}catch(e){_migRun=false}}
 function ensureCosts(){if(S._costSub||!S.db||!(S.admin||S.mgr||S.acctAdmin))return;S._costSub=S.db.doc("costs/all").onSnapshot(s=>{S.costs=s.exists?(s.data().map||{}):{};if(S.tab==="stock"&&!$("sapanel"))renderStock();else if(S.tab==="rep")renderRep()},()=>{S._costSub=null})}
 function sessName(){const se=S.session;if(!se)return"";return se.role==="owner"?t("lg_owner"):(staffName(se.id)||se.name||"")}
-function lockScreen(){if(!loginOn()||S.session||!S.db){const l=$("lock");if(l)l.remove();return}
+function lockScreen(){const bz=boundStaff();if(!(loginOn()||bz)||S.session||!S.db){const l=$("lock");if(l)l.remove();return}
+  if(bz&&(!S._lk||S._lk.who!==bz.id))S._lk={who:bz.id,pin:""};
   let el=$("lock");if(!el){el=document.createElement("div");el.id="lock";document.body.append(el)}
   const people=S.staff.filter(s=>s.active!==false);const st=S._lk||{};
   const langSeg=`<div class="seg">${[["hy","ՀԱՅ"],["ru","РУС"],["en","ENG"]].map(([k,l])=>`<button data-lang-set="${k}" aria-pressed="${lang===k}">${l}</button>`).join("")}</div>`;
@@ -5470,10 +5474,10 @@ function lockScreen(){if(!loginOn()||S.session||!S.db){const l=$("lock");if(l)l.
     {const pf=$("lk_pinf");if(pf)pf.onclick=()=>{S._lk={};lockScreen()}}
     el.querySelectorAll("[data-lk]").forEach(b=>b.onclick=()=>{if(b.dataset.lk==="__owner"&&!(S.sec&&S.sec.ownerPinHash)){startSession({id:"__owner",role:"owner"});return}S._lk={who:b.dataset.lk,pin:""};lockScreen()});return}
   const who=st.who==="__owner"?{name:t("lg_owner")}:S.staff.find(s=>s.id===st.who)||{name:"?"};
-  el.innerHTML=`<div class="lkbox"><button class="btn ghost sm lkback" id="lk_b">← ${t("lg_back")}</button><span class="av big" style="background:${st.who==="__owner"?"var(--primary)":avColor(st.who)}">${st.who==="__owner"?"★":esc(initials(who.name))}</span><h2>${esc(who.name)}</h2>
+  el.innerHTML=`<div class="lkbox">${bz?`<small class="muted lkacc">${esc(S.userEmail||"")}</small>`:`<button class="btn ghost sm lkback" id="lk_b">← ${t("lg_back")}</button>`}<span class="av big" style="background:${st.who==="__owner"?"var(--primary)":avColor(st.who)}">${st.who==="__owner"?"★":esc(initials(who.name))}</span><h2>${esc(who.name)}</h2>
    <p class="muted" id="lk_msg">${t("lg_pin")}</p><div class="dots${st.err?" shake":""}">${[0,1,2,3].map(i=>`<i class="${i<st.pin.length?"on":""}"></i>`).join("")}</div>
    <div class="pad">${[1,2,3,4,5,6,7,8,9,"",0,"⌫"].map(k=>k===""?"<span></span>":`<button data-k="${k}" aria-label="${k}">${k}</button>`).join("")}</div></div>`;
-  $("lk_b").onclick=()=>{S._lk={list:true};lockScreen()};
+  if($("lk_b"))$("lk_b").onclick=()=>{S._lk={list:true};lockScreen()};
   el.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>pinKey(b.dataset.k))}
 function avColor(id){const c=["#a82b33","#1d7480","#55801f","#80558c","#b0541a","#3f5fa8","#6f4630"];let h=0;for(const ch of String(id))h=(h*31+ch.charCodeAt(0))>>>0;return c[h%c.length]}
 /* PIN from the physical keyboard too (web) */
@@ -5497,7 +5501,9 @@ async function pinKey(k){const st=S._lk=S._lk||{};if(st.list)return;st.pin=st.pi
 function normEmails(v){return String(v||"").toLowerCase().split(/[\s,;]+/).filter(x=>/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/.test(x)).join(", ")}
 function staffEmails(z){return normEmails(z&&z.email).split(", ").filter(Boolean)}
 /* Google / email sign-in: if the account's email belongs to a staff member, open their session without the PIN */
-async function autoIdent(){if(S._autoDone||!loginOn()||S.session||!S.userEmail||!S.staff.length)return;const e=S.userEmail.toLowerCase();
+/* a staff member signed in with their own e-mail may only work as themselves (owners' accounts are not bound) */
+function boundStaff(){if(S.ownerAcct!==false||!S.userEmail||!S.staff.length)return null;const e=S.userEmail.toLowerCase();return S.staff.find(x=>x.active!==false&&staffEmails(x).includes(e))||null}
+async function autoIdent(){if(S._autoDone||!(loginOn()||boundStaff())||S.session||!S.userEmail||!S.staff.length)return;const e=S.userEmail.toLowerCase();
   const z=S.staff.find(x=>x.active!==false&&staffEmails(x).includes(e));if(!z)return;S._autoDone=true;const lk=$("lock");if(lk)lk.remove();await startSession({id:z.id,role:"staff",name:z.name})}
 /* keep allow/{email} in step with staff emails (Firebase rules use it to let staff Google accounts in) */
 function syncAllow(){clearTimeout(S._alT);S._alT=setTimeout(syncAllowNow,600)}
@@ -6471,7 +6477,7 @@ renderShell();
 (async()=>{
   const [db,user]=await Promise.all([claude.use("db"),claude.use("user")]);
   if(!db){$("main").innerHTML=`<div class="notice bad" style="margin-top:16px">${t("noDb")}</div>`;return}
-  S.db=db;S.user=user;S.admin=user?await user.canEdit():false;S.acctAdmin=S.admin;S.session=loadSess();try{if(localStorage.getItem("incheve-bo-pinlogin")==="1"){S.settings={pinLogin:true};applySession()}}catch(e){}const cw=user?await user.can("data.write"):null;S.write=cw!==false;S.uid=user?await user.id():null;try{S.userEmail=user&&user.email?await user.email():null}catch(e){S.userEmail=null}
+  S.db=db;S.user=user;S.admin=user?await user.canEdit():false;S.acctAdmin=S.admin;S.session=loadSess();try{if(localStorage.getItem("incheve-bo-pinlogin")==="1"){S.settings={pinLogin:true};applySession()}}catch(e){}const cw=user?await user.can("data.write"):null;S.write=cw!==false;S.uid=user?await user.id():null;try{S.userEmail=user&&user.email?await user.email():null}catch(e){S.userEmail=null}try{S.ownerAcct=user&&user.isOwner?!!(await user.isOwner()):true}catch(e){S.ownerAcct=true}
   render();
   /* faster start: what the first screen needs loads first, history a moment later */
     db.collection("registers").where("closedAt",">=",Date.now()-16*36e5).onSnapshot(s=>{S.closedToday=s.docs.map(d=>({id:d.id,...d.data()}));updateBadges()},()=>{});
