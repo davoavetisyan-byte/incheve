@@ -608,7 +608,7 @@ button.lowh{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:
 @media(hover:hover){.tp:hover{transform:scale(1.08);position:relative;z-index:2;box-shadow:0 6px 16px rgba(0,0,0,.16);border-color:var(--good)}}
 .tp:active{transform:scale(.94)}
 .tpick .tp.on,.tsheet .tp.on{background:var(--good)!important;color:#fff!important;border-color:var(--good)!important;box-shadow:0 3px 10px color-mix(in srgb,var(--good) 40%,transparent)}
-:root[data-theme="dark"] .tpick .tp.on,:root[data-theme="dark"] .tsheet .tp.on{color:#0d1f17!important}@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .tpick .tp.on,:root:not([data-theme="light"]) .tsheet .tp.on{color:#0d1f17!important}}
+:root[data-theme="dark"] .tsheet .tp.on{color:#0d1f17!important}@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .tsheet .tp.on{color:#0d1f17!important}}
 @media(prefers-reduced-motion:reduce){.tp{transition:none}.tp:hover,.tp:active{transform:none}}
 .tgrid .tbl{transition:transform .15s cubic-bezier(.3,1.4,.5,1),box-shadow .15s,border-color .15s}
 @media(hover:hover){.tgrid .tbl:hover{transform:scale(1.05);z-index:2;position:relative;box-shadow:0 10px 24px rgba(0,0,0,.16)!important}
@@ -2606,7 +2606,7 @@ div.chips.subnav.sichips.sichips{flex-wrap:wrap!important;overflow:visible!impor
 }
 .vbtn:not(:disabled):active,.mvbtn:not(:disabled):active{transform:scale(.97)}
 .toast:not(.act){width:max-content!important;-webkit-line-clamp:unset!important;display:block!important;overflow:visible!important;white-space:normal!important;text-overflow:clip!important;max-width:min(92vw,420px)!important;box-sizing:border-box}
-.tpick .tp.on{position:relative;background:var(--good)!important;border-color:var(--good)!important;color:#fff!important;font-weight:800!important;transform:none!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--good) 30%,transparent),0 4px 12px color-mix(in srgb,var(--good) 35%,transparent)!important}
+html body .tpick .tp.on{position:relative;background:color-mix(in srgb,var(--good) 16%,var(--surface))!important;border-color:var(--good)!important;border-width:2px!important;color:var(--good)!important;font-weight:800!important;transform:none!important;box-shadow:none!important}
 .tpsel{display:flex;align-items:center;gap:8px;margin:2px 0 10px;padding:8px 12px;border-radius:12px;background:color-mix(in srgb,var(--good) 12%,transparent);color:var(--good);font-size:14px}.tpsel .li{width:18px;height:18px;flex:none}.tpsel b{font-weight:800}.tpsel small{color:var(--muted)}
 </style>
 
@@ -4281,7 +4281,7 @@ function tilesHTML(){if(sellView()==="list")return listHTML();const G=groupedTil
 function tableBlock(){const x=tableList().find(z=>z.id===S.tableId);const busy=x&&S.tabs[x.id]&&S.tabs[x.id].items&&S.tabs[x.id].items.length;
   const wide=matchMedia("(min-width:1100px) and (hover:hover)").matches;
   if(S.tableId&&!S.tpOpen&&!wide)return`<div class="tsel"><span>${ico("tables")}<b>${S.tableId==="bar"?t("noTable"):esc(tLabel(x||{name:""}))}</b>${busy?`<small class="muted">${t("openBill")} ${money(tabTotal(S.tabs[x.id]))}</small>`:""}</span><button class="btn sm ghost" id="tchg">${t("change")}</button></div>`;
-  return`${wide&&S.tableId?`<div class="tpsel">${icoSvg("ok")}<span>${L3("Ընտրված է","Выбран","Selected")}${CLN()}<b>${S.tableId==="bar"?t("noTable"):esc(tLabel(x||{name:""}))}</b>${busy?` · <small>${t("openBill")} ${money(tabTotal(S.tabs[x.id]))}</small>`:""}</span></div>`:""}<div class="tpick">${tableList().map(z=>{const b=S.tabs[z.id]&&S.tabs[z.id].items&&S.tabs[z.id].items.length;return`<button class="tp${S.tableId===z.id?" on":""}${b?" busy":""}" data-tp="${esc(z.id)}" title="${esc(tLabel(z))}${S.tabs[z.id]?.label?" · "+esc(S.tabs[z.id].label):""}">${z.area==="out"?"☀ ":""}${esc(z.name)}</button>`}).join("")}<button class="tp tpbar${S.tableId==="bar"?" on":""}" data-tp="bar">${t("noTable")}</button></div>${!S.tableId?`<div class="needt" role="status">⚠ ${t("needTable")}</div>`:""}`}
+  return`<div class="tpick">${tableList().map(z=>{const b=S.tabs[z.id]&&S.tabs[z.id].items&&S.tabs[z.id].items.length;return`<button class="tp${S.tableId===z.id?" on":""}${b?" busy":""}" data-tp="${esc(z.id)}" title="${esc(tLabel(z))}${S.tabs[z.id]?.label?" · "+esc(S.tabs[z.id].label):""}">${z.area==="out"?"☀ ":""}${esc(z.name)}</button>`}).join("")}<button class="tp tpbar${S.tableId==="bar"?" on":""}" data-tp="bar">${t("noTable")}</button></div>${!S.tableId?`<div class="needt" role="status">⚠ ${t("needTable")}</div>`:""}`}
 function moreSummary(disc,tip,base){const a=[];if(+disc)a.push("−"+(+disc)+"%");const tp=tipOf(base,tip);if(tp)a.push(t("tip")+" "+money(tp));return a.length?" · "+a.join(" · "):""}
 function tShow(v){v=String(v||"");if(!v)return v;const m=v.match(/^(Դրսի սեղան|Летний стол|Outdoor table|Սեղան|Стол|Table)\s+(.+)$/);if(!m)return v;return(/Դրսի|Летний|Outdoor/.test(m[1])?t("outTable"):t("tableN"))+" "+m[2]}
 function tLabel(x){return (x.area==="out"?t("outTable"):t("tableN"))+" "+x.name}
@@ -5385,7 +5385,7 @@ function applySession(){const se=S.session;const bz=boundStaff();
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261106231821";
+const BUILD="20261106232155";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span>✨ Կա նոր տարբերակ</span><button type="button">Թարմացնել</button>`;document.body.appendChild(el);
