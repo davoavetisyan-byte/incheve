@@ -2696,6 +2696,9 @@ html body #cart .trow #toTab{margin:0!important;min-height:54px;white-space:nowr
 .roqty button:active{background:color-mix(in srgb,var(--ink) 14%,transparent)!important}
 .orow .qty.roqty button:first-child,.orow .qty.roqty button:last-child{color:var(--ink)!important}
 .rsr small .out{color:#c0392b;font-weight:600}
+.rpbox{grid-column:1/-1;display:flex;flex-direction:column;gap:6px;margin:12px 0 4px;padding:12px;border:1px solid var(--line);border-radius:14px;background:color-mix(in srgb,var(--primary) 4%,var(--surface))}.rpbox>small{margin-top:-4px}
+.rprow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}.rprow:has(>:only-child){grid-template-columns:1fr}
+.rpseg{display:grid!important;grid-template-columns:repeat(3,1fr)}.rpseg button{font-size:12.5px!important;padding:8px 4px!important;white-space:normal!important;line-height:1.2;min-height:44px;text-align:center!important;justify-content:center}
 </style>
 
 <header class="appbar"><button class="iconbtn" id="menuBtn" aria-label="Menu"><svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><h1 id="pageTitle">Incheve</h1>
@@ -4743,6 +4746,18 @@ function showCashDiff(x){if(!x)return;const L=(k,v,c)=>`<div class="cdl ${c||""}
 /* ---- owner / manager: edit, add, delete register shifts ---- */
 const canReg=()=>S.write&&(S.admin||S.mgr);
 const dtl=ms=>{if(!ms)return"";const d=new Date(ms);return`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`};
+/* salary / card-tips status of a closed shift: take from till · to transfer · transferred */
+function regPayState(r){const X=r.transfer||{};const sal=+(r.salaryTaken&&r.salaryTaken.amount)||0,xs=+X.salary||0,xt=+X.tips||0,tk=+r.tipTaken||0;
+  return{who:(r.salaryTaken&&r.salaryTaken.staffId)||X.staffId||r.cashier||"",sal:sal||xs,salSt:sal?"take":xs?(X.paidAt||X.salPaidAt?"paid":"xfer"):"take",tip:tk||xt||(+r.tipsCard||0),tipSt:tk?"take":xt?(X.paidAt||X.tipPaidAt?"paid":"xfer"):"take"}}
+function regUnpaid(r){const X=r&&r.transfer;if(!X||X.paidAt)return 0;return(!X.salPaidAt?+X.salary||0:0)+(!X.tipPaidAt?+X.tips||0:0)}
+function regPayHTML(r){const P=regPayState(r);const seg=(k,v)=>`<div class="seg rpseg" data-rpk="${k}" role="group">${[["take",L3("Վերցրել է դրամարկղից","Взял(а) из кассы","Took from till")],["xfer",L3("Պետք է փոխանցել","Нужно перевести","To transfer")],["paid",L3("Փոխանցված է","Переведено","Transferred")]].map(([a,l])=>`<button type="button" data-rps="${a}" aria-pressed="${v===a}">${l}</button>`).join("")}</div>`;
+  return`<div class="rpbox" id="rp_box"><b>${L3("Աշխատավարձ և թեյավճար","Зарплата и чаевые","Salary & tips")}</b><small class="muted">${L3("Ուղղեք, եթե բարմենը սխալ է նշել","Исправьте, если бармен ошибся","Fix it if the bartender got it wrong")}</small>
+   <div class="rprow"><label class="f">${t("person")}<select id="rp_w"><option value="">—</option>${S.staff.filter(x=>x.active!==false||x.id===P.who).map(x=>`<option value="${esc(x.id)}"${x.id===P.who?" selected":""}>${esc(dn(x.name))}</option>`).join("")}</select></label><label class="f">${L3("Աշխատավարձ","Зарплата","Salary")}<input id="rp_s" type="number" inputmode="numeric" min="0" step="500" value="${P.sal||""}" placeholder="0"></label></div>${seg("sal",P.salSt)}
+   <div class="rprow"><label class="f">${t("tp_cardtk")}<input id="rp_t" type="number" inputmode="numeric" min="0" step="100" value="${P.tip||""}" placeholder="0"></label></div>${seg("tip",P.tipSt)}</div>`}
+function regPayRead(el,r){const v=k=>(el.querySelector(`[data-rpk="${k}"] [aria-pressed="true"]`)||{}).dataset?.rps||"take";const who=el.querySelector("#rp_w").value;const sal=Math.max(0,+el.querySelector("#rp_s").value||0),tip=Math.max(0,+el.querySelector("#rp_t").value||0);
+  const sS=v("sal"),tS=v("tip");const X0=r.transfer||{};const now=Date.now();const xs=sS!=="take"?sal:0,xt=tS!=="take"?tip:0;
+  const transfer=xs+xt?{staffId:who,salary:xs,tips:xt,...(xs&&sS==="paid"?{salPaidAt:X0.salPaidAt||X0.paidAt||now}:{}),...(xt&&tS==="paid"?{tipPaidAt:X0.tipPaidAt||X0.paidAt||now}:{}),...((!xs||sS==="paid")&&(!xt||tS==="paid")?{paidAt:X0.paidAt||now,paidBy:X0.paidBy||S.uid||""}:{})}:null;
+  return{salTaken:sS==="take"?sal:0,tipTaken:tS==="take"?tip:0,z:{salaryTaken:sS==="take"&&sal?{staffId:who,amount:sal}:null,salMode:sS==="take"?"take":"transfer",tipMode:tS==="take"?"take":"transfer",tipTaken:tS==="take"?tip:0,tipsCard:tip,transfer}}}
 function openRegEdit(r){const isNew=!r,isOpen=r&&r.status==="open";const now=Date.now();
   const o0=r?r.openedAt:new Date(new Date().setHours(17,0,0,0)).getTime(),c0=r?r.closedAt:"";
   const staffOpts=sel=>`<option value="">—</option>`+S.staff.filter(x=>x.active!==false||x.id===sel).map(x=>`<option value="${esc(x.id)}"${x.id===sel?" selected":""}>${esc(dn(x.name))}</option>`).join("");
@@ -4753,10 +4768,11 @@ function openRegEdit(r){const isNew=!r,isOpen=r&&r.status==="open";const now=Dat
     <label class="f">${t("openCash")}<input id="re_oc" type="number" inputmode="numeric" min="0" value="${r?+r.openCash||0:0}"></label>
     ${isOpen?"":`<label class="f">${t("countedCash")}<input id="re_cc" type="number" inputmode="numeric" min="0" value="${r&&r.counted!=null?r.counted:""}" placeholder="${t("rge_ccph")}"></label>`}
     <label class="f" style="grid-column:1/-1">${t("note")}<textarea id="re_n" rows="2">${esc(r&&r.note||"")}</textarea></label></div>
+    ${r&&!isOpen&&!isNew?regPayHTML(r):""}
     <small class="muted" style="display:block;margin:6px 0 0">${t("rge_help")}</small>
     <div class="wact">${r&&!isOpen&&S.admin?`<button class="btn ghost red" id="re_del">${t("del")}</button>`:""}<button class="btn primary" id="re_ok">${t("save")}</button></div>`;
   openSetSheet(isNew?t("rge_add"):t("rge_edit"),html,el=>{
-    const q=id=>el.querySelector(id);
+    const q=id=>el.querySelector(id);el.querySelectorAll("[data-rps]").forEach(b=>b.onclick=()=>{b.parentElement.querySelectorAll("[data-rps]").forEach(x=>x.setAttribute("aria-pressed",x===b))});
     const del=q("#re_del");if(del)del.onclick=async()=>{if(del.dataset.c!=="1"){del.dataset.c="1";del.textContent=t("confirmDel");return}try{await S.db.doc("registers/"+r.id).delete();el.remove();toast(t("rge_deleted"));renderCash()}catch(e){toast(errMsg(e))}};
     q("#re_ok").onclick=async()=>{const b=q("#re_ok");const openedAt=new Date(q("#re_o").value).getTime();const cv=q("#re_c")?q("#re_c").value:"";const closedAt=cv?new Date(cv).getTime():null;
       if(!openedAt){toast(t("rge_needo"));return}if(closedAt&&closedAt<=openedAt){toast(t("rge_order"));return}if(openedAt>now+6e4||closedAt&&closedAt>now+6e4){toast(t("rge_future"));return}
@@ -4764,8 +4780,8 @@ function openRegEdit(r){const isNew=!r,isOpen=r&&r.status==="open";const now=Dat
       try{if(isOpen){await S.db.doc("registers/"+r.id).update({cashier,openedAt,openCash,note,editedBy:S.uid||"",editedAt:now})}
         else if(!closedAt){if(!isNew){toast(t("rge_needc"));b.disabled=false;return}if(S.register){toast(t("shiftAlready"));b.disabled=false;return}
           await openRegisterOnce({status:"open",openedAt,openCash,openedBy:S.uid||"",cashier,note,manual:true})}
-        else{const T=await shiftTotals({openedAt,closedAt});const sal=(r&&r.salaryTaken&&+r.salaryTaken.amount)||0;const expected=(openCash+T.by.cash)-sal;const ccv=q("#re_cc").value;const counted=ccv===""?(r&&r.counted!=null?+r.counted:expected):+ccv;
-          const z={status:"closed",openedAt,closedAt,openCash,cashier,counted,expected,diff:counted-expected,sales:T.by,total:T.total,tips:T.tips||0,receipts:T.n,note,editedBy:S.uid||"",editedAt:now};
+        else{const T=await shiftTotals({openedAt,closedAt});const PY=r&&q("#rp_box")?regPayRead(el,r):null;const sal=PY?PY.salTaken:((r&&r.salaryTaken&&+r.salaryTaken.amount)||0);const tkn=PY?PY.tipTaken:(+(r&&r.tipTaken)||0);const outs=((r&&r.cashOuts)||[]).reduce((a,o)=>a+(+o.a||0),0);const expected=(openCash+T.by.cash)-sal-tkn-outs;const ccv=q("#re_cc").value;const counted=ccv===""?(r&&r.counted!=null?+r.counted:expected):+ccv;
+          const z={status:"closed",openedAt,closedAt,openCash,cashier,counted,expected,diff:counted-expected,sales:T.by,total:T.total,tips:T.tips||0,receipts:T.n,note,editedBy:S.uid||"",editedAt:now,...(PY?PY.z:{})};
           if(isNew)await S.db.collection("registers").add({...z,openedBy:S.uid||"",closedBy:S.uid||"",manual:true});else await S.db.doc("registers/"+r.id).update(z)}
         el.remove();toast(t("saved"));if(S.tab==="cash")renderCash();else render()}catch(e){b.disabled=false;toast(errMsg(e))}}})}
 function zHTML(z){const st=S.settings;const L=(a,b)=>`<div class="l"><span>${a}</span><span>${b}</span></div>`;
@@ -5499,7 +5515,7 @@ function applySession(){const se=S.session;const bz=boundStaff();
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261108143152";
+const BUILD="20261108151604";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span>✨ Կա նոր տարբերակ</span><button type="button">Թարմացնել</button>`;document.body.appendChild(el);
@@ -6262,6 +6278,8 @@ function ncTasks(){if(!S.db||!S.write)return[];const L=[];const now=new Date();c
   if(!S.register&&work&&mn>=o-30&&mn<c&&!closed.length)L.push({k:"open",title:t("nt_open"),sub:t("nt_openh").replace("{t}",hoursOpen()),btn:t("openShift"),hot:mn>=o});
   if(S.register&&(mn>=c||mn<6*60||Date.now()-(S.register.openedAt||0)>14*36e5))L.push({k:"close",title:t("nt_close"),sub:t("nt_closeh").replace("{t}",hoursClose()),btn:t("cz_close"),hot:true});
   const ns=closed.filter(r=>!r.reportSent);if(!S.register&&ns.length)L.push({k:"sum",id:ns[0].id,day:dayKey(new Date(ns[0].openedAt)),title:t("nt_sum"),sub:t("nt_sumh"),btn:t("ds_send")});
+  if(S.admin||S.mgr)(S.unpaidRegs||[]).forEach(r=>{const a=regUnpaid(r);if(!a)return;const X=r.transfer;const nm=dn(staffName(X.staffId)||"").split(/\s+/)[0]||"—";const parts=[!X.salPaidAt&&+X.salary?`${t("cz_salS")} ${money(+X.salary)}`:"",!X.tipPaidAt&&+X.tips?`${t("tp_one")} ${money(+X.tips)}`:""].filter(Boolean);
+    L.push({k:"pay",id:r.id,title:`${L3("Վճարել","Оплатить","Pay")} ${lang==="hy"?hyDat(nm):lang==="ru"?ruDat(nm):nm} · ${money(a)}`,sub:`${dmy(dayKey(new Date(r.openedAt)))} · ${parts.join(" + ")} · ${L3("դրամարկղից չի վերցրել","не взял(а) из кассы","not taken from till")}`,btn:L3("Վճարված է","Оплачено","Paid"),hot:true})});
   const lw=lowCount();if(lw&&tabsFor().includes("stock"))L.push({k:"low",title:`${lw} ${t("ss_lowS")}`,sub:t("nt_lowh"),btn:t("nt_see")});
   const oo=oldOpenList();if(oo.length)L.push({k:"opn",title:`🍷 ${oo.length} ${L3("շիշ բաց է","бут. открыто","bottle(s) open")} ${openWarn()}+ ${L3("օր","дн.","days")}`,sub:oo.slice(0,3).map(p=>dName(p)).join(", ")+(oo.length>3?"…":""),btn:t("nt_see"),hot:oo.some(p=>openDays(p)>=openWarn()+2)});
   return L}
@@ -6270,7 +6288,7 @@ function bellHTML(){if(!S.db||!tabsFor().includes("stock"))return"";const n=ncLi
 function agoTxt(ts){const m=Math.round((Date.now()-ts)/6e4);return m<1?t("nc_now"):m<60?t("nc_min").replace("{n}",m):t("nc_hr").replace("{n}",Math.floor(m/60))}
 function openBell(){closeBell();const L=ncList();const all=lowCount();const d=document.createElement("div");d.className="ncbg";d.id="ncbg";
   d.innerHTML=`<div class="nc" role="dialog" aria-label="${esc(t("nc_title"))}"><i class="ncgrab" aria-hidden="true"></i><div class="nchd"><b>${t("nc_title")}</b>${L.length?`<button class="linkb" id="nc_clr">${t("nc_clear")}</button>`:""}<button class="iconbtn" id="nc_x" aria-label="${esc(t("close"))}"><svg class="li" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
-   ${(()=>{const K=ncTasks();return K.length?`<div class="ncl nct">${K.map(x=>`<div class="nci${x.hot?" hot":""}"><span class="ncic k-${x.k}">${x.k==="open"||x.k==="close"?icoSvg("clock"):x.k==="sum"?'<svg class="li" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16"/><path d="M7 16v-5M12 16V6M17 16v-8"/></svg>':icoSvg("alert")}</span><div class="ncm"><b>${esc(x.title)}</b><small>${esc(x.sub)}</small></div><button class="btn sm ncord${x.k==="low"?" ghost":""}" data-nct="${x.k}"${x.day?` data-day="${x.day}" data-rid="${esc(x.id)}"`:""}>${esc(x.btn)}</button></div>`).join("")}</div>`:""})()}
+   ${(()=>{const K=ncTasks();return K.length?`<div class="ncl nct">${K.map(x=>`<div class="nci${x.hot?" hot":""}"><span class="ncic k-${x.k}">${x.k==="open"||x.k==="close"?icoSvg("clock"):x.k==="pay"?'<svg class="li" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>':x.k==="sum"?'<svg class="li" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16"/><path d="M7 16v-5M12 16V6M17 16v-8"/></svg>':icoSvg("alert")}</span><div class="ncm"><b>${esc(x.title)}</b><small>${esc(x.sub)}</small></div><button class="btn sm ncord${x.k==="low"?" ghost":""}" data-nct="${x.k}"${x.day||x.k==="pay"?` data-day="${x.day||""}" data-rid="${esc(x.id)}"`:""}>${esc(x.btn)}</button></div>`).join("")}</div>`:""})()}
    ${L.length?`<div class="ncl">${L.map(x=>`<div class="nci"><span class="ncic">${icoSvg("alert")}</span><div class="ncm"><b>${esc(x.p.name)}</b><small>${t("la_left")} ${isWineBtl(x.p)?fmtBottles(Math.max(0,x.p.stock)):Math.max(0,x.p.stock)} · ${agoTxt(x.ts)}</small></div><button class="btn sm ncord" data-ncord="${esc(x.id)}">${t("la_order")}</button></div>`).join("")}</div>
      ${L.length>1?`<button class="btn primary ncall" id="nc_all">${t("nc_all")} · ${L.length}</button>`:""}`:ncTasks().length?"":`<p class="ncempty">${t("nc_empty")}</p>`}</div>`;
   document.body.append(d);requestAnimationFrame(()=>d.classList.add("on"));
@@ -6281,6 +6299,7 @@ function openBell(){closeBell();const L=ncList();const all=lowCount();const d=do
     if(k==="close"){S.tab="cash";$("main").innerHTML="";render();scrollTo({top:0});return}
     if(k==="sum"){try{await S.db.doc("registers/"+b.dataset.rid).update({reportSent:"later"})}catch(e){}openSummary(b.dataset.day);return}
     if(k==="opn"){closeBell();openOldBottles();return}
+    if(k==="pay"){const r=(S.unpaidRegs||[]).find(x=>x.id===b.dataset.rid);if(!r)return;const X={...r.transfer,paidAt:Date.now(),paidBy:S.uid||""};try{await S.db.doc("registers/"+r.id).update({transfer:X});r.transfer=X;toast(L3("Նշվեց՝ վճարված է","Отмечено как оплачено","Marked as paid"));updateBadges()}catch(e){toast(errMsg(e))}return}
     if(k==="low"){S.tab="stock";S.stockView="list";S.stockF="low";$("main").innerHTML="";render()}});
   d.querySelectorAll("[data-ncord]").forEach(b=>b.onclick=()=>{const id=b.dataset.ncord;const m=ncGet();delete m[id];ncSet(m);updateBadges();closeBell();quickOrder(id)});
   const a=d.querySelector("#nc_all");if(a)a.onclick=()=>{ncSet({});updateBadges();closeBell();S.tab="stock";S.stockView="order";S.openTable=null;$("main").innerHTML="";render();scrollTo({top:0})};
@@ -6798,6 +6817,7 @@ renderShell();
   setInterval(()=>{if(S.tab==="tables"&&!S.openTable&&!$("layer").innerHTML)renderTables()},60000);
   const shRe=()=>{shBadge();if(S.tab==="shop"&&!(document.activeElement&&/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)))renderShop()};
   bootLater(()=>{try{ordSub()}catch(e){}});
+  bootLater(()=>{if(S.admin||S.mgr)db.collection("registers").where("closedAt",">=",Math.max(Date.now()-21*864e5,1793995200000)).onSnapshot(s=>{S.unpaidRegs=s.docs.map(d=>({id:d.id,...d.data()})).filter(r=>regUnpaid(r)>0).sort((a,b)=>a.closedAt-b.closedAt);updateBadges()},()=>{})});
   db.collection("shop").where("status","==","open").onSnapshot(s=>{S.shop=s.docs.map(d=>({id:d.id,...d.data()}));shRe()},()=>{});
   bootLater(()=>{db.collection("shop").where("boughtAt",">=",Date.now()-7*864e5).onSnapshot(s=>{S.shopB=s.docs.map(d=>({id:d.id,...d.data()}));shRe()},()=>{});});
   db.collection("staff").onSnapshot(s=>{const before=S.staff.length;S.staff=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>{const k=x=>{const w=String(x.name||"").trim().split(/\s+/);return (w.length>1?w[w.length-1]:"\uffff")+" "+w[0]};return k(a).localeCompare(k(b),"hy")});if(S.tab==="sell")drawCart();else if(S.tab==="staff"&&before!==S.staff.length)renderStaff();if($("lock"))lockScreen();autoIdent();syncAllow()},()=>{});
