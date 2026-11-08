@@ -2638,6 +2638,8 @@ html body details.more .tipbar{display:none}@media(max-width:400px){html body de
 #cart .trow .tsw{display:inline-flex;align-items:center;gap:8px;height:54px;padding:0 14px;border-radius:14px;border:1.5px solid var(--good);background:color-mix(in srgb,var(--good) 12%,var(--surface));color:var(--good);font:inherit;font-weight:800;font-size:15.5px;white-space:nowrap;cursor:pointer}
 #cart .trow .tsw i{font-style:normal;font-size:12px;opacity:.8}
 html body #cart .trow #toTab{margin:0!important;min-height:54px;white-space:nowrap}
+.vrsn{flex:1 1 100%;grid-column:1/-1;width:100%;box-sizing:border-box;display:flex;flex-direction:column;gap:8px;padding:12px;border:1px solid var(--line);border-radius:12px;background:color-mix(in srgb,var(--bad,#c4362a) 6%,var(--surface))}.vrsn b{font-size:14px}.vrc{display:flex;flex-wrap:wrap;gap:6px}.vrc .chip{min-height:38px;font-size:13.5px;flex:0 0 auto;white-space:nowrap}.vrsn small{font-size:12px;line-height:1.4}
+.vstamp{margin:6px 0;padding:6px 8px;border:1.5px dashed var(--bad,#c4362a);border-radius:8px;color:var(--bad,#c4362a);text-align:center;font-weight:700;font-size:13px}.vstamp small{font-weight:500}
 </style>
 
 <header class="appbar"><button class="iconbtn" id="menuBtn" aria-label="Menu"><svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><h1 id="pageTitle">Incheve</h1>
@@ -2885,21 +2887,26 @@ async function charge(){
 function staffName(id){const s=S.staff.find(x=>x.id===id);return s?dn(s.name):""}
 function receiptHTML(s){const st=S.settings;const lines=s.items.map(l=>`<div class="l"><span>${lShort(l)}${l.variant?" ("+esc(t(l.variant))+")":""}<br>${l.qty} × ${money(l.price)}</span><span>${money(l.qty*l.price)}</span></div>`).join("");
   return `<div class="c"><b>${esc(st.name||"Incheve Wine Bar")}</b>${st.address?`<br>${esc(st.address)}`:""}${st.taxId?`<br>${t("taxId")}: ${esc(st.taxId)}`:""}</div><hr>
-  <div class="l"><span>${t("receipt")} №</span><span>${esc(s.no)}</span></div><div class="l"><span>${t("date")}</span><span>${fmtDT(s.ts)}</span></div>
+  ${s.status==="void"?`<div class="vstamp">${t("voided")}${s.voidReason?` · ${esc(s.voidReason)}`:""}${s.voidedByName?`<br><small>${esc(dn(s.voidedByName))}${s.voidedAt?" · "+fmtDT(s.voidedAt):""}</small>`:""}</div>`:""}  <div class="l"><span>${t("receipt")} №</span><span>${esc(s.no)}</span></div><div class="l"><span>${t("date")}</span><span>${fmtDT(s.ts)}</span></div>
   ${s.table?`<div class="l"><span>${t("table")}</span><span>${esc(tShow(s.table))}</span></div>`:""}${staffName(s.staffId)?`<div class="l"><span>${t("cashier")}</span><span>${esc(staffName(s.staffId))}</span></div>`:""}<hr>${lines}<hr>
   ${s.discount?`<div class="l"><span>${t("subtotal")}</span><span>${money(s.subtotal)}</span></div><div class="l"><span>${t("discount")}</span><span>${s.discount}%</span></div>`:""}
   <div class="l" style="font-weight:700;font-size:15px"><span>${t("total")}</span><span>${money(s.total)}</span></div>${(()=>{const c=taxCfg();return c.mode==="vat"&&c.onRcpt?`<div class="l"><span>${t("tx_inVat")} ${c.rate}%</span><span>${money(vatPart(s.total,c.rate))}</span></div>`:""})()}${s.tip?`<div class="l"><span>${t("tip")}</span><span>${money(s.tip)}</span></div><div class="l" style="font-weight:700"><span>${t("paidTot")}</span><span>${money(s.total+s.tip)}</span></div>`:""}
   ${payParts(s).length>1?`<hr><div>${t("paidBy")}</div>${payParts(s).map((p,i)=>`<div class="l"><span>${t("part")} ${i+1} · ${t(p.pay)}</span><span>${money(p.amount)}</span></div>`).join("")}`:`<div class="l"><span>${t("pay")}</span><span>${t(s.pay)}</span></div>`}
-  ${s.status==="void"?`<hr><div class="c" style="font-weight:700">${t("voided").toUpperCase()}</div>`:""}${s.deletedAt?`<hr><div class="c" style="font-weight:700">${t("hs_del").toUpperCase()} · ${fmtDT(s.deletedAt)}</div>`:""}<hr><div class="c">${esc(st.footer||"Շնորհակալություն · Спасибо · Thank you")}<br><small>${t("notFiscal")}</small></div>`}
+  ${s.deletedAt?`<hr><div class="c" style="font-weight:700">${t("hs_del")} · ${fmtDT(s.deletedAt)}</div>`:""}<hr><div class="c">${esc(st.footer||"Շնորհակալություն · Спасибо · Thank you")}<br><small>${t("notFiscal")}</small></div>`}
+/* bartenders may cancel (void) receipts of their own open shift; deleting stays owners-only */
+function canVoid(s){if(!s||s.status==="void"||s.status==="deleted"||!S.write)return false;if(S.admin||S.mgr||!loginOn())return true;const r=S.register;return!!(r&&r.status!=="closed"&&r.openedAt&&+s.ts>=+r.openedAt)}
+function VOID_WHY(){return[L3("Սխալ ապրանք","Не тот товар","Wrong item"),L3("Կրկնակի","Дубль","Duplicate"),L3("Սխալ վճարման ձև","Не тот способ оплаты","Wrong payment"),L3("Հյուրը հրաժարվեց","Гость отказался","Guest declined"),L3("Այլ","Другое","Other")]}
 function showReceipt(s){
   $("layer").innerHTML=`<div class="overlay" id="ov"><div class="sheet" role="dialog" aria-label="${t("receipt")}"><div class="rcpt">${receiptHTML(s)}</div>
   <div class="ract"><button class="btn primary" id="rsave">${icoSvg("receipt")} ${t("saveRcpt")}</button>
-  ${s.status!=="void"&&s.status!=="deleted"&&S.write&&(S.admin||S.mgr||!loginOn())?`<button class="btn dout" id="rvoid">${t("voidR")}</button>`:""}${S.admin&&s.status!=="deleted"?`<button class="btn dout" id="rdel">${t("del")}</button>`:""}<button class="btn ghost rclose" id="rclose">${t("close")}</button></div></div></div>`;
+  ${canVoid(s)?`<button class="btn dout" id="rvoid">${t("voidR")}</button>`:""}${S.admin&&s.status!=="deleted"?`<button class="btn dout" id="rdel">${t("del")}</button>`:""}<button class="btn ghost rclose" id="rclose">${t("close")}</button></div></div></div>`;
   $("rclose").onclick=()=>$("layer").innerHTML="";$("ov").onclick=e=>{if(e.target.id==="ov")$("layer").innerHTML=""};
   $("rsave").onclick=()=>saveReceipt(s);
-  const v=$("rvoid");if(v)v.onclick=async()=>{if(v.dataset.c!=="1"){v.dataset.c="1";v.textContent=t("confirmVoid");v.classList.add("coral");return}
-    try{await S.db.doc("sales/"+s.no).update({status:"void",voidedBy:S.uid||"",voidedAt:Date.now()});await deductStock(s.items,-1);
-      $("layer").innerHTML="";toast(t("voided"))}catch(e){toast(errMsg(e))}};
+  const v=$("rvoid");if(v)v.onclick=()=>{const box=document.createElement("div");box.className="vrsn";
+    box.innerHTML=`<b>${L3("Ինչու՞ եք չեղարկում","Почему отменяете?","Why cancel?")}</b><div class="vrc">${VOID_WHY().map(r=>`<button type="button" class="chip" data-vr="${esc(r)}">${esc(r)}</button>`).join("")}</div><small class="muted">${L3("Կտրոնը չի ջնջվի. կմնա պատմության մեջ «Չեղարկված» նշումով, ապրանքը կվերադառնա պահեստ։","Чек не удалится: он останется в истории с пометкой «Отменён», товар вернётся на склад.","The receipt is not deleted: it stays in history marked as cancelled and the stock is returned.")}</small>`;
+    v.replaceWith(box);box.onclick=async e=>{const b=e.target.closest("[data-vr]");if(!b)return;box.querySelectorAll("button").forEach(x=>x.disabled=true);
+      try{await S.db.doc("sales/"+s.no).update({status:"void",voidedBy:S.uid||"",voidedByName:sessName()||S.userEmail||"",voidedById:(S.session&&S.session.id)||"",voidReason:b.dataset.vr,voidedAt:Date.now()});await deductStock(s.items,-1);
+        $("layer").innerHTML="";toast(t("voided"))}catch(err){toast(errMsg(err));box.querySelectorAll("button").forEach(x=>x.disabled=false)}}};
   const d=$("rdel");if(d)d.onclick=async()=>{if(d.dataset.c!=="1"){d.dataset.c="1";d.textContent=t("confirmDel");d.classList.add("coral");return}
     try{await trashSale(s,false);$("layer").innerHTML="";toast(t("rs_done").replace("{n}",1)+" · "+t("hs_title"))}catch(e){toast(errMsg(e))}};
 }
@@ -3250,12 +3257,12 @@ async function stDelete(id){const p=prodOf(id);if(!p)return;const docs=[p,...S.p
   closeStockPanel();if(S.tab==="stock")renderStock();
   toastAct(`${t("removed")}: ${p.name}${used?" · "+t("sa_delUsed"):""}`,t("restore"),async()=>{try{for(const d of docs){const {...x}=d;await S.db.doc("products/"+d.id).set(x)}if(cost!=null){const nc={...S.costs,[id]:cost};await S.db.doc("costs/all").set({map:nc});S.costs=nc}toast(t("saved"))}catch(e){toast(errMsg(e))}},8000)}
 /* ---- new product ---- */
-const NP_TYPES=[["wine","g_wine"],["drinks","g_drinks"],["food","g_food"],["ingredient","g_ingredient"],["other","g_other"]];
-const NP_UNITS={wine:["Bottle"],drinks:["Glass","Bottle","Piece"],food:["Portion","Piece","kg"],ingredient:["kg","g","l","ml","Piece"],other:["Piece","kg"]};
+const NP_TYPES=[["wine","g_wine"],["drinks","g_drinks"],["food","g_food"],["souv","c_souv"],["ingredient","g_ingredient"],["other","g_other"]];
+const NP_UNITS={wine:["Bottle"],drinks:["Glass","Bottle","Piece"],food:["Portion","Piece","kg"],ingredient:["kg","g","l","ml","Piece"],other:["Piece","kg"],souv:["Piece"]};
 const NP_COLORS=[["c_red","RED WINE"],["c_white","WHITE WINE"],["c_rose","ROSE WINE"],["c_orange","ORANGE WINE"],["c_spark","SPARKLING WINES"]];
 function openNewProduct(o={}){closeStockPanel();const el=saPanelEl();const f={type:"wine",color:"c_red",unit:"",glass:true,...(S._np||{}),name:o.name||"",...(o.type?{type:o.type}:{})};
-  const cats=g=>[...new Set(S.products.filter(p=>p.group===g&&p.category).map(p=>p.category))].sort();
-  const draw=()=>{const ty=f.type;const U=NP_UNITS[ty];if(!U.includes(f.unit))f.unit=U[0];const isW=ty==="wine",ing=ty==="ingredient";const trackDef=isW||ing||(ty==="drinks"&&f.unit==="Bottle");if(f.track==null)f.track=trackDef;
+  const cats=g=>[...new Set(S.products.filter(p=>(g==="souv"?/SOUVENIR|HANDMADE/i.test(p.category||""):p.group===g)&&p.category).map(p=>p.category))].sort();
+  const draw=()=>{const ty=f.type;const U=NP_UNITS[ty];if(!U.includes(f.unit))f.unit=U[0];const isW=ty==="wine",ing=ty==="ingredient";const trackDef=isW||ing||ty==="souv"||(ty==="drinks"&&f.unit==="Bottle");if(f.track==null)f.track=trackDef;
    el.innerHTML=`<div class="sap" role="dialog" aria-label="${t("addProduct")}"><div class="saph"><div class="iht"><b>${t("addProduct")}</b><small class="muted">${t("np_sub")}</small></div><div class="sanav"><button class="iac" id="sa_x" aria-label="${t("close")}">${icoSvg("close")}</button></div></div>
     <div class="nptype">${NP_TYPES.map(([k,l])=>`<button type="button" class="npt" data-npt="${k}" aria-pressed="${ty===k}">${t(l)}</button>`).join("")}</div>
     <label class="f">${t("name")}<input id="np_n" value="${esc(f.name)}" autocomplete="off" placeholder="${isW?"Kataro Red Dry 2023":ing?"Պանիր Չանախ":""}"></label><div id="np_dup" class="npdup"></div>
@@ -3279,8 +3286,8 @@ function openNewProduct(o={}){closeStockPanel();const el=saPanelEl();const f={ty
    el.querySelectorAll("[data-sst]").forEach(b=>b.onclick=()=>{const i=$("sa_"+b.dataset.sst);i.value=Math.max(0,Math.round(((+i.value||0)+(+b.dataset.d))*1e4)/1e4)});
    $("sa_x").onclick=$("np_cancel").onclick=()=>{keep();closeStockPanel()};
    const save=async(again)=>{keep();const name=(f.name||"").trim();if(!name){$("np_n").focus();return}const ty=f.type,isW=ty==="wine";
-     const id="p"+Date.now().toString(36);const cat=isW?(NP_COLORS.find(c=>c[0]===f.color)||NP_COLORS[0])[1]:(f.cat||"").trim()||(ty==="ingredient"?"INGREDIENT":"");
-     const price=ty==="ingredient"?0:+f.price||0;const doc={id,name,variant:isW?"Bottle":f.unit,group:ty,category:cat,price,variable:ty!=="ingredient"&&!f.price,stock:f.track?(+f.stock||0):null,low:f.track&&f.low!==""&&f.low!=null?+f.low:null,active:true,...(f.sup?{supplier:f.sup}:{})};
+     const id="p"+Date.now().toString(36);const cat=isW?(NP_COLORS.find(c=>c[0]===f.color)||NP_COLORS[0])[1]:(f.cat||"").trim()||(ty==="ingredient"?"INGREDIENT":ty==="souv"?"SOUVENIR":"");
+     const price=ty==="ingredient"?0:+f.price||0;const doc={id,name,variant:isW?"Bottle":f.unit,group:ty==="souv"?"other":ty,category:ty==="souv"&&!/SOUVENIR|HANDMADE/i.test(cat)?"SOUVENIR "+cat:cat,price,variable:ty!=="ingredient"&&!f.price,stock:f.track?(+f.stock||0):null,low:f.track&&f.low!==""&&f.low!=null?+f.low:null,active:true,...(f.sup?{supplier:f.sup}:{})};
      try{await S.db.doc("products/"+id).set(doc);
        if(isW&&f.glass&&price){await S.db.doc("products/"+id+"g").set({id:id+"g",bottleId:id,name,variant:"Glass",group:"wine",category:cat,price:+f.gp||glassGuess(price),variable:false,stock:null,low:null,active:true})}
        if(f.cost!==""&&f.cost!=null){const nc={...S.costs,[id]:+f.cost};await S.db.doc("costs/all").set({map:nc});S.costs=nc}
@@ -5418,7 +5425,7 @@ function applySession(){const se=S.session;const bz=boundStaff();
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261107002413";
+const BUILD="20261108124341";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span>✨ Կա նոր տարբերակ</span><button type="button">Թարմացնել</button>`;document.body.appendChild(el);
