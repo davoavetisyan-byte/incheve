@@ -2709,6 +2709,14 @@ html body #cart .trow #toTab{margin:0!important;min-height:54px;white-space:nowr
 @media(min-width:700px){.zpk{display:grid;grid-template-columns:1fr 1fr}}
 .czwhy[hidden]{display:none!important}.czdiff:empty{display:none!important}
 .rprest{display:flex;flex-direction:column;gap:6px;margin-top:6px}.rprest[hidden]{display:none}.rpseg2{display:grid!important;grid-template-columns:1fr 1fr}.rpseg2 button{min-height:42px;font-size:13px!important}
+.brkb{all:unset;cursor:pointer;box-sizing:border-box;grid-column:1/-1;display:flex;align-items:center;gap:8px;min-height:42px;padding:0 12px;border:1px dashed var(--line);border-radius:12px;font-weight:600;font-size:13.5px;color:var(--ink)}.brkb:hover{border-color:var(--primary);color:var(--primary)}.brkb svg{width:18px;height:18px}
+.brkbox{padding:14px 16px calc(14px + env(safe-area-inset-bottom,0px))!important;max-width:520px!important}.brkh{display:flex;gap:10px;align-items:center;margin-bottom:6px}.brkh b{font-size:17px;display:block}.brkh small{font-size:12.5px}
+.brkl{font-weight:700;font-size:13px;color:var(--muted);margin:12px 0 6px}
+.brkg,.brkw{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.brkt{all:unset;cursor:pointer;box-sizing:border-box;display:flex;flex-direction:column;gap:3px;padding:12px;border:1.5px solid var(--line);border-radius:14px;min-height:62px}.brkt b{font-size:14.5px}.brkt small{font-size:12px}
+.brkt[aria-pressed=true]{border:2px solid var(--primary);background:color-mix(in srgb,var(--primary) 8%,var(--surface))}
+.brkq{display:flex;align-items:center;justify-content:space-between;margin:14px 0 4px;font-weight:700}.brkq .qty button{color:var(--ink)!important}
+.brkgo{width:100%;min-height:52px;margin-top:10px;font-size:15.5px}.brkn{display:block;margin-top:8px;font-size:12px;text-align:center}
 </style>
 
 <header class="appbar"><button class="iconbtn" id="menuBtn" aria-label="Menu"><svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><h1 id="pageTitle">Incheve</h1>
@@ -2919,6 +2927,7 @@ function drawCart(){if(!$("pbar"))setTimeout(()=>markCounts(S.cart),0);
   <div class="sec2${S.cart.length?"":" one"}">${S.cart.length?`<button class="btn ghost wide gbtn" id="cguest">${eyeSVG()} ${t("guest")}</button>`:""}<details class="more" id="cmore"${S.cmore?" open":""}><summary><span class="mo-l">% ${t("moreOpts")}</span><span class="muted">${moreSummary(S.disc,S.ctip,tt.total)}</span></summary><div class="morein">
    <label class="f" style="width:120px">${t("discount")}<input id="cdisc" type="number" inputmode="numeric" min="0" max="100" value="${S.disc||""}"></label>
    ${tipHTML(S.ctip,"ct")}
+   <button type="button" class="brkb" data-brk>${BRK_IC} ${L3("Կոտրված բաժակ","Разбитый бокал","Broken glass")}</button>
    ${loginOn()&&S.session&&S.session.role!=="owner"?"":`<label class="f">${t("cashier")}<select id="ccashier"><option value="">—</option>${staffOpts}</select></label>`}</div></details></div>
   <div class="paynow">${["cash","card"].map(m=>`<button class="btn primary pnb" data-cpay="${m}"${S.cart.length&&S.tableId&&S.write&&!S.cart.some(l=>l.variable&&!l.price)?"":" disabled"}><span class="pi">${t(m)}</span><b class="num">${money(tt.total+tipOf(tt.total,S.ctip))}</b></button>`).join("")}</div><div class="hdm">🧾 ${t("hdmNote")}</div>`;
   const cg=$("cguest");if(cg)cg.onclick=()=>{const t2=cartTotals();showGuest(t2.total,tipOf(t2.total,S.ctip),S.cart,t2.disc,{get:()=>S.ctip,set:v=>{S.ctip=v;drawCart()},pay:m=>{const b=document.querySelector(`[data-cpay="${m}"]`);if(!b||b.disabled){toast(S.cart.length&&!S.tableId?t("needTable"):t("errSave"));if(isPhone())$("cart")?.classList.add("open");return}b.click()}})};
@@ -4453,6 +4462,7 @@ function renderTable(){saveView();
     <details class="more" id="tmore"${S.tmore?" open":""}><summary>${t("moreOpts")}<span class="muted">${moreSummary(S.tdisc,S.ttip,tot)}</span></summary><div class="morein">
      <label class="f" style="width:120px">${t("discount")}<input id="tdisc" type="number" inputmode="numeric" min="0" max="100" value="${S.tdisc||""}"></label>
      ${tipHTML(S.ttip,"tb")}
+     <button type="button" class="brkb" data-brk>${BRK_IC} ${L3("Կոտրված բաժակ","Разбитый бокал","Broken glass")}</button>
      ${loginOn()&&S.session&&S.session.role!=="owner"?"":`<label class="f">${t("cashier")}<select id="tcash"><option value="">—</option>${staffOpts}</select></label>`}</div></details>
     ${disc?`<div class="sumline"><span>${t("subtotal")}</span><span class="num">${money(sub)}</span></div>`:""}${tipOf(tot,S.ttip)?`<div class="sumline"><span>${t("tip")}</span><span class="num">+${money(tipOf(tot,S.ttip))}</span></div>`:""}
     ${(tb.paid||[]).length?`<div class="sumline dep"><span>${t("sp_already")} (${tb.paid.length})</span><span class="num">−${money(tb.paid.reduce((a,p)=>a+p.amount,0))}</span></div>`:""}<div class="tsec2 tsec3"><button class="btn ghost gbtn" id="tguest">${eyeSVG()} ${t("guest")}</button><button class="btn ghost" id="tsplit"${S.write?"":" disabled"}>✂ ${t("splitBill")}</button><label class="mvl">⇄ <span>${t("moveS")}</span><select id="tmove" aria-label="${t("moveTo")}"><option value="">—</option>${tableList().filter(z=>z.id!==x.id).map(z=>`<option value="${esc(z.id)}">${esc(tLabel(z))}${S.tabs[z.id]?.items?.length?" ●":""}</option>`).join("")}</select></label></div>
@@ -5527,13 +5537,13 @@ function applySession(){const se=S.session;const bz=boundStaff();
   if(bz&&se&&se.id!==bz.id){S.session=null;try{localStorage.removeItem("incheve-bo-session")}catch(e){}S.admin=false;return}
   if(!loginOn()&&!bz){S.admin=S.acctAdmin;return}
   if(!se){S.admin=false;return}
-  {const lvMgr=se.role==="owner"||((S.staff.find(x=>x.id===se.id)||{}).level==="manager");S.admin=lvMgr&&S.acctAdmin;S.mgr=lvMgr&&!S.admin}ensureCosts();setTimeout(()=>{if(typeof migIng==="function")migIng();if(typeof migSouv==="function")migSouv().then(()=>{if(typeof migSouv2==="function")setTimeout(migSouv2,1500)});if(typeof migInv1==="function")setTimeout(migInv1,4500);if(typeof migJam1==="function")setTimeout(migJam1,6500);if(typeof migSnap1==="function")setTimeout(migSnap1,8500);if(typeof migSmm1==="function")setTimeout(migSmm1,10500)},2500);if(se.role!=="owner"){S.cashier=se.id}}
+  {const lvMgr=se.role==="owner"||((S.staff.find(x=>x.id===se.id)||{}).level==="manager");S.admin=lvMgr&&S.acctAdmin;S.mgr=lvMgr&&!S.admin}ensureCosts();setTimeout(()=>{if(typeof migIng==="function")migIng();if(typeof migSouv==="function")migSouv().then(()=>{if(typeof migSouv2==="function")setTimeout(migSouv2,1500)});if(typeof migInv1==="function")setTimeout(migInv1,4500);if(typeof migJam1==="function")setTimeout(migJam1,6500);if(typeof migSnap1==="function")setTimeout(migSnap1,8500);if(typeof migSmm1==="function")setTimeout(migSmm1,10500);if(typeof migGlass1==="function")setTimeout(migGlass1,12500)},2500);if(se.role!=="owner"){S.cashier=se.id}}
 /* costs are loaded as soon as an owner/manager is active (also after a PIN login, not only at start) */
 /* one-time data update (owner/manager): kitchen ingredients tracked in stock, new basics, household list */
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261108154250";
+const BUILD="20261108155321";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span>✨ Կա նոր տարբերակ</span><button type="button">Թարմացնել</button>`;document.body.appendChild(el);
@@ -6344,6 +6354,36 @@ async function loadPOs(){try{return(await S.db.collection("moves").where("type",
 function poQty(pos){const m={};pos.forEach(po=>(po.items||[]).forEach(l=>m[l.id]=(m[l.id]||0)+(+l.qty||0)));return m}
 function updateOrdPill(){const n=((ordLoad()||{}).add||[]).filter(id=>prodOf(id)).length;let b=$("ordpill");if(S.tab!=="stock"||S.stockView==="order"||!n){if(b)b.remove();return}
   if(!b){b=document.createElement("button");b.id="ordpill";b.className="ordpill";b.onclick=()=>{S.stockView="order";renderStock();scrollTo({top:0})};document.body.append(b)}b.innerHTML=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h2l2 10h10l2-7H7"/><circle cx="10" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/></svg><span>${L3("Պատվերի ցուցակ","Список заказа","Order list")}</span><b>${n}</b><i>→</i>`}
+/* ---- broken glassware: guest pays (added to the bill) or written off ---- */
+const BRK_IC='<svg class="li" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10l-1 7a4 4 0 0 1-8 0z"/><path d="M12 14v6M8.5 20h7"/><path d="M10.5 4.5l1.5 2.5-1.5 2"/></svg>';
+const BRK=[{k:"wb",inv:"inv_wglass_big",chg:"10297",hy:"Գինու գավաթ · մեծ",ru:"Винный бокал · большой",en:"Wine glass · large",price:3000},{k:"ws",inv:"inv_wglass_small",chg:"brk_wglass_small",hy:"Գինու գավաթ · փոքր",ru:"Винный бокал · малый",en:"Wine glass · small",price:3000},{k:"cf",inv:"inv_cup_coffee",chg:"brk_cup_coffee",hy:"Սուրճի բաժակ",ru:"Кофейная чашка",en:"Coffee cup",price:1000},{k:"te",inv:"inv_cup_tea",chg:"brk_cup_tea",hy:"Թեյի բաժակ",ru:"Чайная чашка",en:"Tea cup",price:1000}];
+let _migGl=false;async function migGlass1(){if(_migGl||!S.db||!(S.admin||S.mgr)||!S.products.length||(S.settings&&S.settings.mig_glass1))return;_migGl=true;if(await migDone("mig_glass1"))return;
+  try{const st0={inv_wglass_big:13,inv_wglass_small:7,inv_cup_coffee:null,inv_cup_tea:null};
+    for(const b of BRK){if(!prodOf(b.inv)){const p={id:b.inv,name:b.hy,variant:"Piece",group:"ingredient",category:"GLASSWARE",price:0,stock:st0[b.inv],low:null,active:true};await S.db.doc("products/"+b.inv).set(p);S.products.push(p)}
+      const recipe=[{id:b.inv,qty:1,u:"pcs"}];const cn="Կոտրված "+b.hy.replace("Գինու գավաթ","գինու գավաթ").replace("Սուրճի","սուրճի").replace("Թեյի","թեյի");const ex=prodOf(b.chg);
+      if(ex)await S.db.doc("products/"+b.chg).update({name:cn,price:b.price,recipe,stock:null,category:ex.category||"OTHER"});
+      else{const p={id:b.chg,name:cn,variant:"",group:"other",category:"OTHER",price:b.price,stock:null,recipe,active:true};await S.db.doc("products/"+b.chg).set(p);S.products.push(p)}}
+    const st={...S.settings,mig_glass1:Date.now()};S.settings=st;await S.db.doc("settings/main").set(st)}catch(e){_migGl=false;console.warn("migGlass1",e)}}
+function brkName(b){return L3(b.hy,b.ru,b.en)}
+function openBroken(){const el=document.createElement("div");el.className="vsheet brksheet";document.body.append(el);const st={k:"wb",who:"guest",q:1};
+  const ctx=S.tab==="tables"&&S.openTable?(tLabel(allTables().find(x=>x.id===S.openTable)||{})||L3("սեղանի","стола","table")):L3("ընթացիկ","текущий","current");
+  const draw=()=>{const b=BRK.find(x=>x.k===st.k);const inv=prodOf(b.inv);const chg=prodOf(b.chg);const price=(chg&&+chg.price)||b.price;
+    el.innerHTML=`<div class="vbox brkbox"><div class="brkh"><span class="rsi">${BRK_IC}</span><div><b>${L3("Կոտրված բաժակ","Разбитый бокал","Broken glass")}</b><small class="muted">${L3("Ընտրեք, թե ինչ է կոտրվել և ով է կոտրել","Что разбилось и кто разбил","What broke and who broke it")}</small></div></div>
+     <div class="brkl">${L3("Ի՞նչ է կոտրվել","Что разбилось?","What broke?")}</div>
+     <div class="brkg">${BRK.map(x=>{const ip=prodOf(x.inv);return`<button type="button" class="brkt" data-bk="${x.k}" aria-pressed="${st.k===x.k}"><b>${esc(brkName(x))}</b><small class="muted">${money((prodOf(x.chg)||{}).price||x.price)}${ip&&ip.stock!=null?` · ${L3("կա","есть","have")} ${Math.max(0,ip.stock)}`:""}</small></button>`}).join("")}</div>
+     <div class="brkl">${L3("Ո՞վ է կոտրել","Кто разбил?","Who broke it?")}</div>
+     <div class="brkw"><button type="button" class="brkt" data-bw="guest" aria-pressed="${st.who==="guest"}"><b>${L3("Հյուրը","Гость","Guest")}</b><small class="muted">${L3("ավելացնել հաշվին","добавить в счёт","add to the bill")} · ${money(price)}</small></button><button type="button" class="brkt" data-bw="staff" aria-pressed="${st.who==="staff"}"><b>${L3("Բարմենը","Бармен","Bartender")}</b><small class="muted">${L3("դուրս գրել · առանց վճարի","списать · без оплаты","write off · no charge")}</small></button></div>
+     <div class="brkq"><span>${L3("Քանակ","Кол-во","Qty")}</span><span class="qty roqty"><button data-bq="-1" aria-label="−">−</button><span class="num">${st.q}</span><button data-bq="1" aria-label="+">+</button></span></div>
+     <button class="btn ${st.who==="guest"?"primary":"gsucc"} brkgo" id="brk_go">${st.who==="guest"?`${L3("Ավելացնել հաշվին","Добавить в счёт","Add to the bill")} · +${money(price*st.q)}`:L3("Դուրս գրել","Списать","Write off")}</button>
+     ${!inv||inv.stock==null?`<small class="muted brkn">${L3("Այս բաժակների քանակը դեռ գրանցված չէ · նշեք Պահեստում","Количество этих чашек ещё не указано · укажите на Складе","This item has no count yet · set it in Stock")}</small>`:""}
+     <button class="vcancel">${t("close")}</button></div>`;
+    el.querySelectorAll("[data-bk]").forEach(x=>x.onclick=()=>{st.k=x.dataset.bk;draw()});el.querySelectorAll("[data-bw]").forEach(x=>x.onclick=()=>{st.who=x.dataset.bw;draw()});
+    el.querySelectorAll("[data-bq]").forEach(x=>x.onclick=()=>{st.q=Math.max(1,st.q+(+x.dataset.bq));draw()});
+    el.querySelector("#brk_go").onclick=async e=>{const btn=e.currentTarget;btn.disabled=true;
+      if(st.who==="guest"){if(!chg){toast(L3("Ապրանքը դեռ ստեղծված չէ · փորձեք մի քիչ հետո","Товар ещё не создан","Item not ready yet"));btn.disabled=false;return}for(let i=0;i<st.q;i++)addLine(chg.id);el.remove();toast(`+ ${chg.name}${st.q>1?" × "+st.q:""}`);return}
+      try{if(inv)await deductStock([{id:inv.id,qty:st.q}],1);await S.db.collection("moves").add({type:"off",date:dayKey(new Date()),ts:Date.now(),reason:"wr_broken",note:sessName()||"",items:[{id:b.inv,name:inv?inv.name:b.hy,variant:"Piece",qty:st.q}],by:S.uid||""});fx("ok");el.remove();toast(L3("Դուրս գրվեց","Списано","Written off")+` · ${brkName(b)} × ${st.q}`)}catch(x){btn.disabled=false;toast(errMsg(x))}}};
+  draw();el.onclick=e=>{if(e.target===el||e.target.closest(".vcancel"))el.remove()}}
+document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("[data-brk]");if(b){e.preventDefault();openBroken()}});
 /* ---- order list: shared in moves/_ordlist (no ts/date → never shows in history or reports) ---- */
 function ordItems(){return (S.ordL&&S.ordL.items)||{}}
 function ordHas(id){return !!ordItems()[id]}
@@ -6828,7 +6868,7 @@ renderShell();
   /* faster start: what the first screen needs loads first, history a moment later */
     db.collection("registers").where("closedAt",">=",Date.now()-16*36e5).onSnapshot(s=>{S.closedToday=s.docs.map(d=>({id:d.id,...d.data()}));updateBadges()},()=>{});
   const bootLater=f=>(S.tab==="rec"||S.tab==="rep"||S.tab==="shop")?f():setTimeout(f,1500);
-  db.collection("products").onSnapshot(s=>{const _pv=S._pLoaded?new Map(S.products.map(p=>[p.id,p.stock])):null;S.products=s.docs.map(d=>({id:d.id,...d.data()}));S._pLoaded=1;if(_pv)try{S.products.forEach(p=>{const a=_pv.get(p.id),b=p.stock;if(a==null||b==null||p.active===false||p.bottleId)return;if((a>1&&b<=1)||(a>0&&b<=0)){const c=critOf(p);if(c)toast(`${c.out?"⛔":"⚠️"} ${dName(p)} · ${c.txt}`)}})}catch(e){}setTimeout(()=>{if(typeof migIng==="function")migIng();if(typeof migSouv==="function")migSouv().then(()=>{if(typeof migSouv2==="function")setTimeout(migSouv2,1500)});if(typeof migInv1==="function")setTimeout(migInv1,4500);if(typeof migJam1==="function")setTimeout(migJam1,6500);if(typeof migSnap1==="function")setTimeout(migSnap1,8500);if(typeof migSmm1==="function")setTimeout(migSmm1,10500)},2500);updateBadges();if(S.tab==="sell")drawGrid();else if(S.tab==="stock")renderStock()},()=>{});
+  db.collection("products").onSnapshot(s=>{const _pv=S._pLoaded?new Map(S.products.map(p=>[p.id,p.stock])):null;S.products=s.docs.map(d=>({id:d.id,...d.data()}));S._pLoaded=1;if(_pv)try{S.products.forEach(p=>{const a=_pv.get(p.id),b=p.stock;if(a==null||b==null||p.active===false||p.bottleId)return;if((a>1&&b<=1)||(a>0&&b<=0)){const c=critOf(p);if(c)toast(`${c.out?"⛔":"⚠️"} ${dName(p)} · ${c.txt}`)}})}catch(e){}setTimeout(()=>{if(typeof migIng==="function")migIng();if(typeof migSouv==="function")migSouv().then(()=>{if(typeof migSouv2==="function")setTimeout(migSouv2,1500)});if(typeof migInv1==="function")setTimeout(migInv1,4500);if(typeof migJam1==="function")setTimeout(migJam1,6500);if(typeof migSnap1==="function")setTimeout(migSnap1,8500);if(typeof migSmm1==="function")setTimeout(migSmm1,10500);if(typeof migGlass1==="function")setTimeout(migGlass1,12500)},2500);updateBadges();if(S.tab==="sell")drawGrid();else if(S.tab==="stock")renderStock()},()=>{});
   db.collection("registers").where("status","==","open").onSnapshot(s=>{const d=s.docs[0];S.register=d?{id:d.id,...d.data()}:null;if(S.tab==="cash"&&!$("layer").innerHTML)renderCash();if(S.tab==="tables"&&!S.openTable&&!$("layer").innerHTML)renderTables()},()=>{});
   db.collection("reservations").where("date",">=",dayKey(new Date())).onSnapshot(s=>{S.resv=s.docs.map(d=>({id:d.id,...d.data()}));if(S.tab==="tables"&&!document.querySelector(".picker")&&!(document.activeElement&&/INPUT|SELECT/.test(document.activeElement.tagName)))S.openTable?renderTable():renderTables()},()=>{});
   db.collection("tabs").onSnapshot(s=>{const m={};s.docs.forEach(d=>m[d.id]=d.data());S.tabs=m;if(S.tab==="sell"){mHeadUpdate();drawCart()}if(S.tab==="tables"&&!document.querySelector(".picker")&&!(document.activeElement&&/INPUT|SELECT/.test(document.activeElement.tagName)))S.openTable?renderTable():renderTables()},()=>{});
