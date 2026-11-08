@@ -25,19 +25,20 @@ const money = n => Math.round(n || 0).toLocaleString("en-US") + " ֏";
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 const TX = {
-  hy: { title: "Շաբաթական ամփոփում", net: "Մաքուր վաճառք", gp: "Համախառն շահույթ", ofs: "վաճառքից", rc: "Կտրոններ", avg: "Միջին կտրոն", tips: "Թեյավճարներ", cash: "Կանխիկ", card: "Քարտ", transfer: "Փոխանցում", best: "Լավագույն օրը", worst: "Թույլ օրը", top: "Թոփ 5", xf: "Փոխանցման ենթակա", low: "Քիչ է մնացել", vs: "նախորդ շաբաթի համեմատ", days: ["Կիրակի", "Երկուշաբթի", "Երեքշաբթի", "Չորեքշաբթի", "Հինգշաբթի", "Ուրբաթ", "Շաբաթ"], foot: "Ավտոմատ նամակ Incheve Back Office-ից", test: "Փորձնական նամակ" },
-  ru: { title: "Итоги недели", net: "Чистые продажи", gp: "Валовая прибыль", ofs: "от продаж", rc: "Чеки", avg: "Средний чек", tips: "Чаевые", cash: "Наличные", card: "Карта", transfer: "Перевод", best: "Лучший день", worst: "Слабый день", top: "Топ 5", xf: "К переводу", low: "Мало осталось", vs: "к прошлой неделе", days: ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"], foot: "Автоматическое письмо из Incheve Back Office", test: "Тестовое письмо" },
-  en: { title: "Weekly summary", net: "Net sales", gp: "Gross profit", ofs: "of sales", rc: "Receipts", avg: "Average check", tips: "Tips", cash: "Cash", card: "Card", transfer: "Transfer", best: "Best day", worst: "Slowest day", top: "Top 5", xf: "To transfer", low: "Running low", vs: "vs last week", days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], foot: "Automatic e-mail from Incheve Back Office", test: "Test e-mail" },
+  hy: { title: "Շաբաթական ամփոփում", net: "Մաքուր վաճառք", gp: "Համախառն շահույթ", ofs: "վաճառքից", rc: "Կտրոններ", avg: "Միջին կտրոն", tips: "Թեյավճարներ", cash: "Կանխիկ", card: "Քարտ", transfer: "Փոխանցում", best: "Լավագույն օրը", worst: "Թույլ օրը", top: "Թոփ 5", xf: "Փոխանցման ենթակա", wk: "Շաբաթական վճարում", low: "Քիչ է մնացել", vs: "նախորդ շաբաթի համեմատ", days: ["Կիրակի", "Երկուշաբթի", "Երեքշաբթի", "Չորեքշաբթի", "Հինգշաբթի", "Ուրբաթ", "Շաբաթ"], foot: "Ավտոմատ նամակ Incheve Back Office-ից", test: "Փորձնական նամակ" },
+  ru: { title: "Итоги недели", net: "Чистые продажи", gp: "Валовая прибыль", ofs: "от продаж", rc: "Чеки", avg: "Средний чек", tips: "Чаевые", cash: "Наличные", card: "Карта", transfer: "Перевод", best: "Лучший день", worst: "Слабый день", top: "Топ 5", xf: "К переводу", wk: "Еженедельная выплата", low: "Мало осталось", vs: "к прошлой неделе", days: ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"], foot: "Автоматическое письмо из Incheve Back Office", test: "Тестовое письмо" },
+  en: { title: "Weekly summary", net: "Net sales", gp: "Gross profit", ofs: "of sales", rc: "Receipts", avg: "Average check", tips: "Tips", cash: "Cash", card: "Card", transfer: "Transfer", best: "Best day", worst: "Slowest day", top: "Top 5", xf: "To transfer", wk: "Weekly payment", low: "Running low", vs: "vs last week", days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], foot: "Automatic e-mail from Incheve Back Office", test: "Test e-mail" },
 };
 
 export async function buildWeek(now = Date.now(), F = db()) {
   const today0 = Date.parse(ymd(now) + "T00:00:00Z") - TZ_OFF; // Yerevan midnight today
   const end = today0 + 864e5, start = end - 7 * 864e5, pstart = start - 7 * 864e5;
-  const [setS, costS, prodS, staffS, curS, prevS, regS] = await Promise.all([
+  const [setS, costS, prodS, staffS, curS, prevS, regS, payS] = await Promise.all([
     F.doc("settings/main").get(), F.doc("costs/all").get(), F.collection("products").get(), F.collection("staff").get(),
     F.collection("sales").where("ts", ">=", start).where("ts", "<", end).get(),
     F.collection("sales").where("ts", ">=", pstart).where("ts", "<", start).get(),
     F.collection("registers").where("openedAt", ">=", start).where("openedAt", "<", end).get(),
+    F.collection("pay").get().catch(() => ({ docs: [] })),
   ]);
   const st = setS.exists ? setS.data() : {};
   const costs = (costS.exists && costS.data().map) || {};
@@ -62,7 +63,8 @@ export async function buildWeek(now = Date.now(), F = db()) {
   const xf = {}; regS.docs.map(d => d.data()).filter(r => r.status === "closed" && r.transfer).forEach(r => { const k = r.transfer.staffId || ""; xf[k] = (xf[k] || 0) + (+r.transfer.salary || 0) + (+r.transfer.tips || 0); });
   const sold = {}; L.forEach(s => (s.items || []).forEach(l => { const p = P[l.id]; const b = p && p.bottleId ? P[p.bottleId] : p; if (b) sold[b.id] = 1; }));
   const low = Object.values(P).filter(p => p.active !== false && !p.bottleId && p.stock != null && sold[p.id] && (p.stock <= 0 || (p.low != null && p.stock <= +p.low))).slice(0, 10);
-  return { st, a: ymd(start), b: ymd(end - 1), n: L.length, net, pnet, gp, pgp, tips, pay, best: dS[0], worst: dS.length > 1 ? dS[dS.length - 1] : null, top, xf: Object.entries(xf).filter(([, v]) => v > 0).map(([id, v]) => [staff[id] || "—", v]), low, gpb };
+  const wkPay = payS.docs.map(d => ({ id: d.id, w: d.data().weekly })).filter(x => x.w && +x.w.amount > 0).map(x => [staff[x.id] || "—", +x.w.amount, x.w.label || "", +x.w.day || 0]);
+  return { wkPay, st, a: ymd(start), b: ymd(end - 1), n: L.length, net, pnet, gp, pgp, tips, pay, best: dS[0], worst: dS.length > 1 ? dS[dS.length - 1] : null, top, xf: Object.entries(xf).filter(([, v]) => v > 0).map(([id, v]) => [staff[id] || "—", v]), low, gpb };
 }
 
 export function render(W, lang = "hy", test = false) {
@@ -82,6 +84,7 @@ export function render(W, lang = "hy", test = false) {
   if (W.best) lines.push("", `${T.best}: ${day(W.best[0])} · ${money(W.best[1])}`);
   if (W.worst) lines.push(`${T.worst}: ${day(W.worst[0])} · ${money(W.worst[1])}`);
   if (W.top.length) lines.push("", T.top + ":", ...W.top.map(([n, v], i) => `${i + 1}. ${n} — ${money(v)}`));
+  if (W.wkPay.length) lines.push("", T.wk + ":", ...W.wkPay.map(([n, v, l, d]) => `${n}${l ? " · " + l : ""} — ${money(v)} (${T.days[d]})`));
   if (W.xf.length) lines.push("", T.xf + ":", ...W.xf.map(([n, v]) => `${n} — ${money(v)}`));
   if (W.low.length) lines.push("", T.low + ":", ...W.low.map(p => `${p.name} — ${stock(p)}`));
   const text = lines.join("\n") + `\n\n— ${T.foot}`;
@@ -95,7 +98,7 @@ export function render(W, lang = "hy", test = false) {
 <div style="font-size:13px;color:#5b6470">${esc(T.net)}</div><div style="font-size:28px;font-weight:700;margin:2px 0">${money(W.net)}${chip(pc)}</div>
 <div style="background:#e8f3ec;border-radius:12px;padding:10px 12px;margin:12px 0"><div style="font-size:13px;color:#3d5a48">${esc(T.gp)}</div><div style="font-size:20px;font-weight:700;color:#2e7d4f">${money(W.gp)} <span style="font-size:12px;font-weight:400;color:#3d5a48">${mg != null ? mg + "% " + esc(T.ofs) : ""}</span>${chip(gpc)}</div></div>
 <table style="width:100%;border-collapse:collapse;font-size:14px">${row(T.rc, W.n)}${row(T.avg, money(W.n ? W.net / W.n : 0))}${row(T.cash, money(W.pay.cash))}${row(T.card, money(W.pay.card))}${W.pay.transfer ? row(T.transfer, money(W.pay.transfer)) : ""}${row(T.tips, money(W.tips))}${W.best ? row(T.best, esc(day(W.best[0])) + " · " + money(W.best[1])) : ""}${W.worst ? row(T.worst, esc(day(W.worst[0])) + " · " + money(W.worst[1])) : ""}</table>
-${list(T.top, W.top.map(([n, v], i) => [`${i + 1}. ${n}`, money(v)]))}${list(T.xf, W.xf.map(([n, v]) => [n, money(v)]))}${list(T.low, W.low.map(p => [p.name, stock(p)]))}
+${list(T.top, W.top.map(([n, v], i) => [`${i + 1}. ${n}`, money(v)]))}${list(T.wk, W.wkPay.map(([n, v, l, d]) => [n + (l ? " · " + l : "") + " (" + T.days[d] + ")", money(v)]))}${list(T.xf, W.xf.map(([n, v]) => [n, money(v)]))}${list(T.low, W.low.map(p => [p.name, stock(p)]))}
 </div></div><div style="text-align:center;font-size:11px;color:#8a93a0;margin-top:10px">${esc(T.foot)}</div></div></body></html>`;
   return { subject, text, html };
 }
