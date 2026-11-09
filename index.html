@@ -2773,6 +2773,9 @@ html body #cart .trow #toTab{margin:0!important;min-height:54px;white-space:nowr
 .zgs{display:grid!important;grid-template-columns:1fr 1.45fr .75fr}.zgs button{white-space:nowrap!important;overflow:hidden;text-overflow:ellipsis;justify-content:center;text-align:center;padding:8px 4px!important}
 .zgl{grid-template-columns:minmax(0,1fr) 110px minmax(0,340px)}.zgs{grid-template-columns:1fr 1fr 1fr!important}
 @media(max-width:700px){.zgl{grid-template-columns:minmax(0,1fr) auto!important}.zgs{grid-column:1/-1}.zgp{justify-content:flex-start}}
+.zgs button.ztake{color:#2e7d4f!important}.zgs button.zxfer{color:#a5640c!important}.zgs button.zpart{color:var(--primary)!important}
+.zgs button.ztake[aria-pressed=true]{background:#2e7d4f!important;color:#fff!important}.zgs button.zxfer[aria-pressed=true]{background:#d08a1c!important;color:#fff!important}.zgs button.zpart[aria-pressed=true]{background:var(--primary)!important;color:#fff!important}
+.zgs button[aria-pressed=true]{font-weight:700!important;box-shadow:0 1px 3px rgba(0,0,0,.18)!important}.zgs button:not([aria-pressed=true]){font-weight:600!important;opacity:.85}.zgs button:disabled{opacity:.35!important}
 </style>
 
 <header class="appbar"><button class="iconbtn" id="menuBtn" aria-label="Menu"><svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><h1 id="pageTitle">Incheve</h1>
@@ -4718,7 +4721,8 @@ function drawTipSplit(tot){const el=$("tipSplit");if(!el)return;const act=S.staf
    ${L.length?`<div class="tspl">${L.map(x=>`<div><span>${esc(x.name)}</span><b class="num">${money(x.amount)}</b></div>`).join("")}</div><button class="btn sm ghost" id="tsp_cp">${t("ds_copy")}</button>`:`<div class="muted" style="font-size:13px">${tot?t("tsp_pick"):t("tsp_none")}</div>`}</div>`;
   el.querySelectorAll("[data-tsp]").forEach(b=>b.onclick=()=>{const id=b.dataset.tsp;S.tipSel.ids.has(id)?S.tipSel.ids.delete(id):S.tipSel.ids.add(id);drawTipSplit(tot)});
   const cp=$("tsp_cp");if(cp)cp.onclick=async()=>{try{await navigator.clipboard.writeText(t("tsp_title")+" · "+money(tot)+"\n"+L.map(x=>x.name+": "+money(x.amount)).join("\n"));toast(t("ds_copied"))}catch(e){}}}
-async function renderCash(){
+function cashTyping(){const a=document.activeElement,m=$("main");if(!(a&&m&&m.contains(a)&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)))return false;if(!a._rcw){a._rcw=1;a.addEventListener("blur",()=>{a._rcw=0;setTimeout(()=>{if(S.tab==="cash"&&!cashTyping())renderCash()},250)},{once:true})}return true}
+async function renderCash(){if(S.register&&$("cz_c")&&cashTyping())return;
   const m=$("main");const r=S.register;
   if(!r){const oid=openerId();const me=oid?staffName(oid):"";
     m.innerHTML=`<div class="zz"><div class="zzh"><div><h2>${t("t_cash")}</h2><small class="muted">${longDay(dayKey(new Date()))}</small></div><span class="zwhr"><span class="pill zzoff">● ${t("ro_closed")}</span></span></div>
@@ -4794,7 +4798,7 @@ async function renderCash(){
     const wireMode=(focus)=>{const box=$("zpk");if(!box)return;box.innerHTML=pickH();
       box.querySelectorAll("[data-gm]").forEach(b=>b.onclick=()=>{const k=b.dataset.gm,g=cz.g[k];g.m=b.dataset.m;fx&&fx("tap");wireMode(g.m==="part"?k:null);sync()});
       box.querySelectorAll("[data-gp]").forEach(i=>i.oninput=()=>{cz.g[i.dataset.gp].part=i.value;gUpd();sync()});
-      const si=$("cz_s");if(si){si.oninput=e=>{cz.sal=e.target.value;gUpd();sync()};si.onchange=()=>wireMode()}
+      const si=$("cz_s");if(si){si.oninput=e=>{cz.sal=e.target.value;gUpd();sync();box.querySelectorAll('[data-gm="sal"]').forEach(b=>b.disabled=!salAmt())}}
       const sw=$("cz_sw");if(sw)sw.onchange=e=>{cz.salWho=e.target.value;const z=$("zt");if(z)z.innerHTML=tipH();wireMode();sync()};
       if(focus){const i=box.querySelector(`[data-gp="${focus}"]`);if(i){i.focus();i.select()}}};wireMode();
     const wireTip=()=>{document.querySelectorAll("[data-ztx]").forEach(b=>b.onclick=()=>{S.tipSel.ids.delete(b.dataset.ztx);$("zt").innerHTML=tipH();wireTip();sync()});
@@ -5621,7 +5625,7 @@ function applySession(){const se=S.session;const bz=boundStaff();
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261108202530";
+const BUILD="20261108221637";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span>✨ Կա նոր տարբերակ</span><button type="button">Թարմացնել</button>`;document.body.appendChild(el);
