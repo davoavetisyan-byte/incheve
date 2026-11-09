@@ -4114,6 +4114,8 @@ async function loadRange(a,b,da,db){
   try{out.moves=(await S.db.collection("moves").where("date",">=",da).where("date","<=",db).get()).docs.map(d=>d.data())}catch(e){out.moves=[]}
   out.exp=await expRange(da,db);
   try{out.pays=(await S.db.collection("payments").where("date",">=",da).where("date","<=",db).get()).docs.map(d=>d.data())}catch(e){}
+  /* salary taken from the till at close is a payment too (same as the staff page counts it) */
+  try{(await S.db.collection("registers").where("openedAt",">=",+new Date(da+"T00:00")).where("openedAt","<=",+new Date(db+"T23:59:59")).get()).docs.forEach(d=>{const x=d.data();if(x.salaryTaken&&+x.salaryTaken.amount>0)out.pays.push({fromReg:true,staffId:x.salaryTaken.staffId,date:dayKey(new Date(x.openedAt)),amount:+x.salaryTaken.amount})})}catch(e){}
   return out}
 Object.assign(T,{
  sq_earn:{hy:"Որքա՞ն վաստակեցինք",ru:"Сколько заработали?",en:"How much did we earn?"},sq_spent:{hy:"Ինչի՞ վրա գնաց գումարը",ru:"Куда ушли деньги?",en:"Where did the money go?"},sq_sell:{hy:"Ի՞նչն է լավ վաճառվում",ru:"Что хорошо продаётся?",en:"What sells best?"},sq_busy:{hy:"Ե՞րբ է բարը լիքը",ru:"Когда бар полон?",en:"When is the bar busy?"},sq_peak:{hy:"Ամենաշատը՝",ru:"Пик:",en:"Busiest:"},sq_sold:{hy:"վաճառված",ru:"продано",en:"sold"},sq_prev:{hy:"նախորդի համեմատ",ru:"к прошлому",en:"vs previous"},sq_none:{hy:"Այս ժամանակահատվածում դեռ վաճառք չկա։",ru:"За этот период продаж пока нет.",en:"No sales in this period yet."},sq_other:{hy:"Այլ",ru:"Другое",en:"Other"},pl_menu:{hy:"Արագ գործողություններ",ru:"Быстрые действия",en:"Quick actions"},bn_sell:{hy:"Նոր",ru:"Новое",en:"New"},pl_sell:{hy:"Արագ վաճառք",ru:"Быстрая продажа",en:"Quick sale"},pl_sellh:{hy:"առանց սեղանի, տանելու",ru:"без стола, с собой",en:"no table, to go"},pl_shop:{hy:"Ավելացնել գնումներին",ru:"В список покупок",en:"Add to shopping"},pl_shoph:{hy:"ինչ է պետք գնել",ru:"что нужно купить",en:"what to buy"},pl_exp:{hy:"Նոր ծախս",ru:"Новый расход",en:"New expense"},pl_exph:{hy:"վճարեցինք ինչ-որ բան",ru:"оплатили что-то",en:"something paid"},pl_resv:{hy:"Նոր ամրագրում",ru:"Новая бронь",en:"New reservation"},pl_resvh:{hy:"սեղան՝ ժամով",ru:"стол на время",en:"table at a time"},
@@ -4202,6 +4204,8 @@ async function renderRep(){
     $("rp_em").querySelectorAll("[data-emp]").forEach(b=>b.onclick=()=>{S.rep.emp=b.dataset.emp;renderRep()})};
   if(!S._repDoc){S._repDoc=true;document.addEventListener("click",()=>{if($("rp_pm"))$("rp_pm").innerHTML="";if($("rp_em"))$("rp_em").innerHTML=""})}
   const [D,Dp]=await Promise.all([loadRange(P.a,P.b,P.da,P.db),loadRange(pa,pb,dayKey(pa),dayKey(new Date(pb-1)))]);if(S.tab!=="rep")return;
+  /* stock purchases are inventory: they reach profit through cost of goods sold, so leave invoice expenses out of P&L (else counted twice) */
+  [D,Dp].forEach(X=>{const ins=(X.moves||[]).filter(mv=>mv.type==="in");X.exp=(X.exp||[]).filter(e=>!(e.fromInv||ins.some(mv=>mv.date===e.date&&Math.round(+mv.total||0)===Math.round(+e.amount||0))))});
   const R=summarize(D),Rp=summarize(Dp);const lines=R.lines;
   const exp=D.exp.reduce((a,e)=>a+e.amount,0);const sal=D.pays.reduce((a,p)=>a+p.amount,0);
   const lossR={};let loss=0;(D.moves||[]).forEach(mv=>{if(mv.type==="off"){mv.items.forEach(l=>{const v=lineCost(l.id)*l.qty;loss+=v;lossR[t(mv.reason||"wr_other")]=(lossR[t(mv.reason||"wr_other")]||0)+v})}
@@ -4665,7 +4669,7 @@ function renderInvoice(){
       const total=out.reduce((a,l)=>a+l.qty*l.cost,0);
       const fileId=await keepInvoiceFile(op);
       await S.db.collection("moves").add({type:"in",date:op.date,ts:Date.now(),supplier:op.supplier.trim(),invoiceNo:op.noinv?"":op.invoiceNo.trim(),...(op.noinv?{noInvoice:true}:{}),items:out.map(({src,ai,oldCost,...l})=>l),total,by:S.uid||"",...(fileId?{file:fileId,fileName:op.fileName||""}:{})});
-      if($("iv_e").checked&&total)await S.db.collection("expenses").add({date:op.date,cat:op.cat,amount:total,supplier:op.supplier.trim(),note:(t("invNo")+" "+op.invoiceNo).trim(),by:S.uid||"",ts:Date.now()});
+      if($("iv_e").checked&&total)await S.db.collection("expenses").add({fromInv:true,date:op.date,cat:op.cat,amount:total,supplier:op.supplier.trim(),note:(t("invNo")+" "+op.invoiceNo).trim(),by:S.uid||"",ts:Date.now()});
       if(op.poId){try{await S.db.doc("moves/"+op.poId).update({status:"received",receivedAt:Date.now()})}catch(e){}}
       S.op=null;toast(t("posted"));renderInvoice()}catch(e){sv.disabled=false;toast(errMsg(e))}};
 }
@@ -4868,6 +4872,7 @@ const dtl=ms=>{if(!ms)return"";const d=new Date(ms);return`${d.getFullYear()}-${
 function regPayState(r){const X=r.transfer||{};const st=+(r.salaryTaken&&r.salaryTaken.amount)||0,xs=+X.salary||0,tk=+r.tipTaken||0;const ci=+r.cashTipIn||0;const xc=Math.max(0,(+X.tips||0)-ci);
   const card=Math.max(+r.tipsCard||0,tk+xc);const tipsAll=+r.tips||((r.tipSplit||[]).reduce((a,x)=>a+(+x.amount||0),0));const cash=Math.max(0,tipsAll-card,ci);
   return{who:(r.salaryTaken&&r.salaryTaken.staffId)||X.staffId||r.cashier||"",sal:st+xs,xs,card,xc,cash,xk:ci,paid:!!X.paidAt}}
+async function xferPaySync(r,X){const ref=S.db.doc("payments/xf_"+r.id);try{if(X&&X.paidAt&&+X.salary>0)await ref.set({staffId:X.staffId||r.cashier||"",date:dayKey(new Date(r.openedAt)),amount:+X.salary,note:L3("Փոխանցում · հերթափոխի աշխատավարձ","Перевод · зарплата за смену","Transfer · shift salary"),xferReg:r.id,ts:Date.now()});else await ref.delete()}catch(e){}}
 function regUnpaid(r){const X=r&&r.transfer;if(!X||X.paidAt)return 0;return(!X.salPaidAt?+X.salary||0:0)+(!X.tipPaidAt?+X.tips||0:0)}
 function regPayHTML(r){const P=regPayState(r);
   const row=(k,l,amt,x)=>{const m=!(x>0)?"take":x>=amt?"xfer":"part";return`<div class="zgl" data-rk="${k}" data-m="${m}"><span class="zgn">${l}</span><input class="zga num" data-ra="${k}" type="number" inputmode="numeric" min="0" step="100" value="${amt||""}" placeholder="0">
@@ -4911,7 +4916,7 @@ function openRegEdit(r){const isNew=!r,isOpen=r&&r.status==="open";const now=Dat
           await openRegisterOnce({status:"open",openedAt,openCash,openedBy:S.uid||"",cashier,note,manual:true})}
         else{const T=await shiftTotals({openedAt,closedAt});const PY=r&&q("#rp_box")?regPayRead(el,r):null;const sal=PY?PY.salTaken:((r&&r.salaryTaken&&+r.salaryTaken.amount)||0);const tkn=PY?PY.tipTaken:(+(r&&r.tipTaken)||0);const outs=((r&&r.cashOuts)||[]).reduce((a,o)=>a+(+o.a||0),0);const expected=(openCash+T.by.cash)-sal-tkn-outs+(PY?PY.cashIn:(+(r&&r.cashTipIn)||0));const ccv=q("#re_cc").value;const counted=ccv===""?(r&&r.counted!=null?+r.counted:expected):+ccv;
           const z={status:"closed",openedAt,closedAt,openCash,cashier,counted,expected,diff:counted-expected,sales:T.by,total:T.total,tips:T.tips||0,receipts:T.n,note,editedBy:S.uid||"",editedAt:now,...(PY?PY.z:{})};
-          if(isNew)await S.db.collection("registers").add({...z,openedBy:S.uid||"",closedBy:S.uid||"",manual:true});else await S.db.doc("registers/"+r.id).update(z)}
+          if(isNew)await S.db.collection("registers").add({...z,openedBy:S.uid||"",closedBy:S.uid||"",manual:true});else await S.db.doc("registers/"+r.id).update(z);if(z.transfer!==undefined)xferPaySync({...r,...z},z.transfer)}
         el.remove();toast(t("saved"));if(S.tab==="cash")renderCash();else render()}catch(e){b.disabled=false;toast(errMsg(e))}}})}
 function zHTML(z){const st=S.settings;const L=(a,b)=>`<div class="l"><span>${a}</span><span>${b}</span></div>`;
   return`<div class="c"><b>${esc(st.name||"Incheve Wine Bar")}</b>${st.taxId?`<br>${t("taxId")}: ${esc(st.taxId)}`:""}<br><b>Z · ${t("shiftReport")}</b></div><hr>${L(t("rge_o"),fmtDT(z.openedAt))}${L(t("rge_c"),fmtDT(z.closedAt))}<hr>
@@ -5644,7 +5649,7 @@ function applySession(){const se=S.session;const bz=boundStaff();
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261108223551";
+const BUILD="20261108224932";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span>✨ Կա նոր տարբերակ</span><button type="button">Թարմացնել</button>`;document.body.appendChild(el);
@@ -6476,7 +6481,7 @@ function openBell(){closeBell();const L=ncList();const all=lowCount();const d=do
     if(k==="close"){S.tab="cash";$("main").innerHTML="";render();scrollTo({top:0});return}
     if(k==="sum"){try{await S.db.doc("registers/"+b.dataset.rid).update({reportSent:"later"})}catch(e){}openSummary(b.dataset.day);return}
     if(k==="opn"){closeBell();openOldBottles();return}
-    if(k==="pay"){const r=(S.unpaidRegs||[]).find(x=>x.id===b.dataset.rid);if(!r)return;const X={...r.transfer,paidAt:Date.now(),paidBy:S.uid||""};try{await S.db.doc("registers/"+r.id).update({transfer:X});r.transfer=X;toast(L3("Նշվեց՝ վճարված է","Отмечено как оплачено","Marked as paid"));updateBadges()}catch(e){toast(errMsg(e))}return}
+    if(k==="pay"){const r=(S.unpaidRegs||[]).find(x=>x.id===b.dataset.rid);if(!r)return;const X={...r.transfer,paidAt:Date.now(),paidBy:S.uid||""};try{await S.db.doc("registers/"+r.id).update({transfer:X});r.transfer=X;xferPaySync(r,X);toast(L3("Նշվեց՝ վճարված է","Отмечено как оплачено","Marked as paid"));updateBadges()}catch(e){toast(errMsg(e))}return}
     if(k==="low"){S.tab="stock";S.stockView="list";S.stockF="low";$("main").innerHTML="";render()}});
   d.querySelectorAll("[data-ncord]").forEach(b=>b.onclick=()=>{const id=b.dataset.ncord;const m=ncGet();delete m[id];ncSet(m);updateBadges();closeBell();quickOrder(id)});
   const a=d.querySelector("#nc_all");if(a)a.onclick=()=>{ncSet({});updateBadges();closeBell();S.tab="stock";S.stockView="order";S.openTable=null;$("main").innerHTML="";render();scrollTo({top:0})};
