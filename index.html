@@ -5644,7 +5644,7 @@ function applySession(){const se=S.session;const bz=boundStaff();
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261108223358";
+const BUILD="20261108223551";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span>✨ Կա նոր տարբերակ</span><button type="button">Թարմացնել</button>`;document.body.appendChild(el);
@@ -5901,7 +5901,7 @@ const AVI={glass:'<path d="M7 3h10l-.6 5.5a4.4 4.4 0 0 1-8.8 0z"/><path d="M12 1
  heart:'<path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.3 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10z"/>',
  music:'<path d="M9 18V5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/>'};
 const AVC={glass:'#8e1f3a',bottle:'#2f6b3a',grapes:'#6a3d8f',cheers:'#b5522b',cork:'#7a5230',forkknife:'#3f5fa8',cheese:'#c98a12',coffee:'#5b3a29',cocktail:'#c2366f',chef:'#2b7a8a',leaf:'#4f8a24',star:'#d4a017',heart:'#c62f3d',moon:'#3b3f8f',music:'#8a3fae',sun:'#e07b16'};
-const AVPAL=['#8e1f3a','#e07b16','#2f6b3a','#3f5fa8','#6a3d8f'];
+const AVPAL=['#8e1f3a','#c2366f','#e07b16','#2f6b3a','#2b7a8a','#3f5fa8','#6a3d8f'];
 function avParse(v){if(!v||!v.startsWith("i:"))return null;const [,k,c]=v.split(":");return AVI[k]?{k,c:c||AVC[k]}:null}
 function aviSvg(k){return`<svg class="avi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${AVI[k]||""}</svg>`}
 function avIn(id,txt){const v=id&&S.avs&&S.avs[id];const pv=avParse(v);if(pv)return aviSvg(pv.k);if(v&&v.startsWith("data:image/"))return`<img class="avimg" src="${esc(v)}" alt="">`;return esc(txt||"?")}
