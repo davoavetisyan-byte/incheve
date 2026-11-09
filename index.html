@@ -2789,6 +2789,12 @@ html body #cart .trow #toTab{margin:0!important;min-height:54px;white-space:nowr
 .selpop{position:fixed;z-index:9999;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.18);padding:6px;overflow:auto;display:flex;flex-direction:column;gap:2px;max-width:min(360px,calc(100vw - 16px))}
 .selpop button{all:unset;cursor:pointer;display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;font-size:14px;font-weight:600;color:var(--ink);white-space:nowrap}.selpop button:hover{background:color-mix(in srgb,var(--primary) 8%,transparent)}
 .selpop button[aria-selected=true]{background:color-mix(in srgb,var(--primary) 12%,transparent)}.selpop .sk{font-style:normal;margin-left:auto;color:var(--primary)}.selpop .av{flex:none}
+.avl{font-weight:700;font-size:12.5px;color:var(--muted);margin:10px 0 6px}
+.avcols{display:flex;flex-wrap:wrap;gap:8px}.avc{all:unset;cursor:pointer;width:30px;height:30px;border-radius:50%;box-sizing:border-box}.avc.auto{display:grid;place-items:center;font-weight:800;font-size:12px;background:conic-gradient(#8e1f3a,#e07b16,#c98a12,#4f8a24,#2b7a8a,#3f5fa8,#6a3d8f,#c2366f,#8e1f3a);color:#fff}
+.avc[aria-pressed=true]{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--ink)}
+.avopt{position:relative}.avopt.taken{opacity:.28;cursor:not-allowed;filter:grayscale(.3)}.avopt.taken:hover{transform:none}
+.avown{position:absolute;right:-2px;bottom:-2px;font-style:normal;font-size:9.5px;font-weight:800;background:var(--surface);color:var(--ink);border-radius:9px;padding:1px 4px;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.avnote{display:block;margin-top:8px;font-size:12px}.avacts:empty{display:none}
 </style>
 
 <header class="appbar"><button class="iconbtn" id="menuBtn" aria-label="Menu"><svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><h1 id="pageTitle">Incheve</h1>
@@ -5638,7 +5644,7 @@ function applySession(){const se=S.session;const bz=boundStaff();
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261108222713";
+const BUILD="20261108223058";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span>✨ Կա նոր տարբերակ</span><button type="button">Թարմացնել</button>`;document.body.appendChild(el);
@@ -5826,7 +5832,7 @@ function lockScreen(){const bz=boundStaff();if(!(loginOn()||bz)||S.session||!S.d
    <div class="pad">${[1,2,3,4,5,6,7,8,9,"",0,"⌫"].map(k=>k===""?"<span></span>":`<button data-k="${k}" aria-label="${k}">${k}</button>`).join("")}</div></div>`;
   if($("lk_b"))$("lk_b").onclick=()=>{S._lk={list:true};lockScreen()};
   el.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>pinKey(b.dataset.k))}
-function avColor(id){const v=id&&S.avs&&S.avs[id];if(v&&v.startsWith("i:")&&AVC[v.slice(2)])return AVC[v.slice(2)];const c=["#a82b33","#1d7480","#55801f","#80558c","#b0541a","#3f5fa8","#6f4630","#c2366f","#2b7a5a","#d08a1c","#4a4f9e","#8a3fae","#3d7f9e","#9c6b12","#5b6b2f","#b03a72"];const ix=(S.staff||[]).findIndex(x=>x.id===id);if(ix>=0)return c[ix%c.length];let h=0;for(const ch of String(id))h=(h*31+ch.charCodeAt(0))>>>0;return c[h%c.length]}
+function avColor(id){const pv=id&&S.avs&&avParse(S.avs[id]);if(pv)return pv.c;const c=["#a82b33","#1d7480","#55801f","#80558c","#b0541a","#3f5fa8","#6f4630","#c2366f","#2b7a5a","#d08a1c","#4a4f9e","#8a3fae","#3d7f9e","#9c6b12","#5b6b2f","#b03a72"];const ix=(S.staff||[]).findIndex(x=>x.id===id);if(ix>=0)return c[ix%c.length];let h=0;for(const ch of String(id))h=(h*31+ch.charCodeAt(0))>>>0;return c[h%c.length]}
 /* PIN from the physical keyboard too (web) */
 document.addEventListener("keydown",e=>{const lk=$("lock");if(!lk||e.ctrlKey||e.metaKey||e.altKey)return;if(e.target&&/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName))return;
   const pad=lk.querySelector(".pad");if(!pad||!pad.offsetParent)return;let k=null;
@@ -5897,18 +5903,23 @@ const AVI={glass:'<path d="M7 3h10l-.6 5.5a4.4 4.4 0 0 1-8.8 0z"/><path d="M12 1
  music:'<path d="M9 18V5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/>',
  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/>'};
 const AVC={glass:'#8e1f3a',bottle:'#2f6b3a',grapes:'#6a3d8f',cheers:'#b5522b',cork:'#7a5230',forkknife:'#3f5fa8',cheese:'#c98a12',coffee:'#5b3a29',cocktail:'#c2366f',chef:'#2b7a8a',leaf:'#4f8a24',star:'#d4a017',heart:'#c62f3d',moon:'#3b3f8f',music:'#8a3fae',sun:'#e07b16'};
+const AVPAL=['#8e1f3a','#c62f3d','#e07b16','#c98a12','#4f8a24','#2f6b3a','#2b7a8a','#3f5fa8','#3b3f8f','#6a3d8f','#c2366f','#5b3a29'];
+function avParse(v){if(!v||!v.startsWith("i:"))return null;const [,k,c]=v.split(":");return AVI[k]?{k,c:c||AVC[k]}:null}
 function aviSvg(k){return`<svg class="avi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${AVI[k]||""}</svg>`}
-function avIn(id,txt){const v=id&&S.avs&&S.avs[id];if(v&&v.startsWith("i:")&&AVI[v.slice(2)])return aviSvg(v.slice(2));if(v&&v.startsWith("data:image/"))return`<img class="avimg" src="${esc(v)}" alt="">`;return esc(txt||"?")}
+function avIn(id,txt){const v=id&&S.avs&&S.avs[id];const pv=avParse(v);if(pv)return aviSvg(pv.k);if(v&&v.startsWith("data:image/"))return`<img class="avimg" src="${esc(v)}" alt="">`;return esc(txt||"?")}
 function avSub(){if(S._avUn||!S.db)return;S._avUn=S.db.doc("blobs/avatars").onSnapshot(d=>{const nv=d.exists?(d.data().map||{}):{};const ch=JSON.stringify(nv)!==JSON.stringify(S.avs||{});S.avs=nv;if(ch){try{renderShell()}catch(e){}const a=document.activeElement;if(!(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName))&&!$("layer").innerHTML&&!document.querySelector(".vsheet,.sap"))render()}},()=>{S._avUn=null})}
 async function avSave(id,v){const m={...(S.avs||{})};if(v)m[id]=v;else delete m[id];S.avs=m;await S.db.doc("blobs/avatars").set({map:m,upd:Date.now()})}
 function avResize(file){return new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{const z=160,c=document.createElement("canvas");c.width=c.height=z;const x=c.getContext("2d");const m=Math.min(im.width,im.height);x.drawImage(im,(im.width-m)/2,(im.height-m)/2,m,m,0,0,z,z);res(c.toDataURL("image/jpeg",.82))};im.onerror=rej;im.src=fr.result};fr.onerror=rej;fr.readAsDataURL(file)})}
-function openAvPick(id,name,onDone){const el=document.createElement("div");el.className="vsheet avsheet";document.body.append(el);const cur=(S.avs||{})[id]||"";
-  const draw=()=>{const v=(S.avs||{})[id]||"";el.innerHTML=`<div class="vbox avbox"><div class="avtop"><span class="av big" style="background:${avColor(id)}">${avIn(id,initials(dn(name||"")))}</span><div><b>${esc(dn(name||""))}</b><small class="muted">${L3("Ընտրեք պատկերակ կամ վերբեռնեք նկար","Выберите значок или загрузите фото","Pick an icon or upload a photo")}</small></div></div>
-   <div class="avgrid">${Object.keys(AVI).map(k=>`<button type="button" class="avopt" data-avk="${k}" aria-pressed="${v==="i:"+k}" style="background:${AVC[k]}" aria-label="${k}">${aviSvg(k)}</button>`).join("")}</div>
-   <div class="avacts"><label class="btn ghost avup">${L3("Վերբեռնել նկար","Загрузить фото","Upload photo")}<input type="file" accept="image/*" id="av_file" hidden></label>${v?`<button class="btn ghost" id="av_rm">${L3("Հեռացնել","Убрать","Remove")}</button>`:""}</div>
+function openAvPick(id,name,onDone){const el=document.createElement("div");el.className="vsheet avsheet";document.body.append(el);const cur=(S.avs||{})[id]||"";let col=(avParse(cur)||{}).c||null;
+  const draw=()=>{const v=(S.avs||{})[id]||"";const me=avParse(v);const used={};Object.entries(S.avs||{}).forEach(([sid,x])=>{if(sid===id)return;const p=avParse(x);if(p)used[p.k+"|"+p.c]=sid});
+   el.innerHTML=`<div class="vbox avbox"><div class="avtop"><span class="av big" style="background:${avColor(id)}">${avIn(id,initials(dn(name||"")))}</span><div><b>${esc(dn(name||""))}</b><small class="muted">${L3("Ընտրեք գույնը և պատկերակը","Выберите цвет и значок","Pick a color and an icon")}</small></div></div>
+   <div class="avl">${L3("Գույն","Цвет","Color")}</div><div class="avcols"><button type="button" class="avc auto" data-avc="" aria-pressed="${!col}" title="${L3("Պատկերակի գույնը","Цвет значка","Icon color")}">A</button>${AVPAL.map(c=>`<button type="button" class="avc" data-avc="${c}" aria-pressed="${col===c}" style="background:${c}" aria-label="${c}"></button>`).join("")}</div>
+   <div class="avl">${L3("Պատկերակ","Значок","Icon")}</div><div class="avgrid">${Object.keys(AVI).map(k=>{const c=col||AVC[k];const own=used[k+"|"+c];const st=own&&S.staff.find(x=>x.id===own);return`<button type="button" class="avopt${own?" taken":""}" data-avk="${k}" aria-pressed="${!!me&&me.k===k&&me.c===c}" style="background:${c}" aria-label="${k}"${own?` disabled title="${esc(st?dn(st.name):"")}"`:""}>${aviSvg(k)}${own?`<i class="avown">${esc(st?initials(dn(st.name)):"·")}</i>`:""}</button>`}).join("")}</div>
+   <small class="muted avnote">${L3("Զբաղված պատկերակը կարող եք ընտրել այլ գույնով","Занятый значок можно выбрать другим цветом","A taken icon is available in another color")}</small>
+   <div class="avacts">${v?`<button class="btn ghost" id="av_rm">${L3("Հեռացնել պատկերակը","Убрать значок","Remove icon")}</button>`:""}</div>
    <button class="vcancel">${t("close")}</button></div>`;
-   el.querySelectorAll("[data-avk]").forEach(b=>b.onclick=async()=>{try{await avSave(id,"i:"+b.dataset.avk);fx&&fx("tap");draw()}catch(e){toast(errMsg(e))}});
-   el.querySelector("#av_file").onchange=async e=>{const f=e.target.files&&e.target.files[0];if(!f)return;try{const d=await avResize(f);await avSave(id,d);draw()}catch(x){toast(errMsg(x))}};
+   el.querySelectorAll("[data-avc]").forEach(b=>b.onclick=()=>{col=b.dataset.avc||null;draw()});
+   el.querySelectorAll("[data-avk]").forEach(b=>b.onclick=async()=>{if(b.disabled)return;const k=b.dataset.avk;const c=col||AVC[k];try{await avSave(id,"i:"+k+(c!==AVC[k]?":"+c:""));fx&&fx("tap");draw()}catch(e){toast(errMsg(e))}});
    const rm=el.querySelector("#av_rm");if(rm)rm.onclick=async()=>{try{await avSave(id,"");draw()}catch(e){toast(errMsg(e))}}};
   draw();el.onclick=e=>{if(e.target===el||e.target.closest(".vcancel")){el.remove();if(((S.avs||{})[id]||"")!==cur){try{renderShell()}catch(x){}onDone&&onDone()}}}}
 /* person pickers: on mouse/pen show our own list right under the control (native popups cover the row on macOS); touch keeps the native picker */
