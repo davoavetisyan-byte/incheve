@@ -2786,6 +2786,9 @@ html body #cart .trow #toTab{margin:0!important;min-height:54px;white-space:nowr
 .avopt{all:unset;cursor:pointer;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;color:#fff;opacity:.85;transition:transform .12s}.avopt .avi{width:56%;height:56%}.avopt:hover{opacity:1;transform:scale(1.05)}
 .avopt[aria-pressed=true]{opacity:1;box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--ink)}
 .avacts{display:flex;gap:8px;margin-top:14px}.avacts .btn{flex:1;justify-content:center}.avup{cursor:pointer}
+.selpop{position:fixed;z-index:9999;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.18);padding:6px;overflow:auto;display:flex;flex-direction:column;gap:2px;max-width:min(360px,calc(100vw - 16px))}
+.selpop button{all:unset;cursor:pointer;display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;font-size:14px;font-weight:600;color:var(--ink);white-space:nowrap}.selpop button:hover{background:color-mix(in srgb,var(--primary) 8%,transparent)}
+.selpop button[aria-selected=true]{background:color-mix(in srgb,var(--primary) 12%,transparent)}.selpop .sk{font-style:normal;margin-left:auto;color:var(--primary)}.selpop .av{flex:none}
 </style>
 
 <header class="appbar"><button class="iconbtn" id="menuBtn" aria-label="Menu"><svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><h1 id="pageTitle">Incheve</h1>
@@ -4740,7 +4743,7 @@ async function renderCash(){if(S.register&&$("cz_c")&&cashTyping())return;
       <label class="zzol"><span class="zlbl">${t("openCash")}</span><input id="rg_o" class="czbig" type="number" inputmode="numeric" min="0" value="0" aria-label="${t("openCash")}"></label>
       <div class="zzhint" id="rg_hint"></div>
       <div class="zzof"><label class="zzsel2"><span class="zzsl">${t("ro_bar")}</span><span class="zzsb"><span class="av sm" id="rg_av" style="background:${avColor(oid)}">${avIn(oid,initials(me||"?"))}</span><select id="rg_who" aria-label="${t("ro_bar")}"><option value="">—</option>${S.staff.filter(x=>x.active!==false).map(x=>`<option value="${esc(x.id)}"${x.id===oid?" selected":""}>${esc(dn(x.name))}</option>`).join("")}</select></span></label><button class="btn gsucc zzgo" id="rg_open"${S.write?"":" disabled"}><svg class="li" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>${t("openShift")}</button></div></div></div><div id="rg_hist"></div>`;
-    {const w=$("rg_who");if(w)w.onchange=()=>{const a=$("rg_av");a.style.background=avColor(w.value);a.textContent=initials(staffName(w.value)||"?");w.classList.remove("nfx")}}
+    {const w=$("rg_who");if(w)w.onchange=()=>{const a=$("rg_av");a.style.background=avColor(w.value);a.innerHTML=avIn(w.value,initials(staffName(w.value)||"?"));w.classList.remove("nfx")}}
     $("rg_open").onclick=async()=>{const who=$("rg_who")?$("rg_who").value:openerId();if(!who){needF($("rg_who"),t("ro_pick"));return}$("rg_open").disabled=true;try{await openRegisterOnce({status:"open",openedAt:Date.now(),openCash:+$("rg_o").value||0,openedBy:S.uid||"",cashier:who});toast(t("shiftOpened"))}catch(e){$("rg_open").disabled=false;toast(errMsg(e))}}}
   else{const T=await shiftTotals(r);if(S.tab!=="cash")return;
     const bar=S.staff.filter(x=>x.active!==false&&isBarman(x)).map(x=>x.id);
@@ -5635,7 +5638,7 @@ function applySession(){const se=S.session;const bz=boundStaff();
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261108222605";
+const BUILD="20261108222713";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span>✨ Կա նոր տարբերակ</span><button type="button">Թարմացնել</button>`;document.body.appendChild(el);
@@ -5908,6 +5911,19 @@ function openAvPick(id,name,onDone){const el=document.createElement("div");el.cl
    el.querySelector("#av_file").onchange=async e=>{const f=e.target.files&&e.target.files[0];if(!f)return;try{const d=await avResize(f);await avSave(id,d);draw()}catch(x){toast(errMsg(x))}};
    const rm=el.querySelector("#av_rm");if(rm)rm.onclick=async()=>{try{await avSave(id,"");draw()}catch(e){toast(errMsg(e))}}};
   draw();el.onclick=e=>{if(e.target===el||e.target.closest(".vcancel")){el.remove();if(((S.avs||{})[id]||"")!==cur){try{renderShell()}catch(x){}onDone&&onDone()}}}}
+/* person pickers: on mouse/pen show our own list right under the control (native popups cover the row on macOS); touch keeps the native picker */
+function selPop(sel){document.querySelectorAll(".selpop").forEach(x=>x.remove());const r=sel.getBoundingClientRect();const pop=document.createElement("div");pop.className="selpop";pop.setAttribute("role","listbox");
+  const isStaff=[...sel.options].some(o=>S.staff.some(x=>x.id===o.value));
+  pop.innerHTML=[...sel.options].filter(o=>o.value||!isStaff).map(o=>`<button type="button" role="option" data-v="${esc(o.value)}" aria-selected="${o.selected}">${isStaff&&o.value?`<span class="av sm" style="background:${avColor(o.value)}">${avIn(o.value,initials(o.textContent))}</span>`:""}<span>${esc(o.textContent)}</span>${o.selected?'<i class="sk">✓</i>':""}</button>`).join("");
+  document.body.append(pop);const w=Math.max(r.width,220);const h=pop.offsetHeight;const below=innerHeight-r.bottom-8;
+  pop.style.minWidth=w+"px";pop.style.left=Math.max(8,Math.min(r.left,innerWidth-pop.offsetWidth-8))+"px";
+  if(below<Math.min(h,240)&&r.top>below){pop.style.bottom=(innerHeight-r.top+6)+"px";pop.style.maxHeight=(r.top-14)+"px"}else{pop.style.top=(r.bottom+6)+"px";pop.style.maxHeight=Math.max(160,below-6)+"px"}
+  const close=()=>{pop.remove();document.removeEventListener("pointerdown",out,true);removeEventListener("scroll",close,true);removeEventListener("resize",close)};
+  const out=e=>{if(!pop.contains(e.target)&&e.target!==sel)close()};
+  setTimeout(()=>{document.addEventListener("pointerdown",out,true);addEventListener("scroll",e=>{if(!pop.contains(e.target))close()},{capture:true,once:true});addEventListener("resize",close,{once:true})},0);
+  pop.onclick=e=>{const b=e.target.closest("[data-v]");if(!b)return;sel.value=b.dataset.v;sel.dispatchEvent(new Event("change",{bubbles:true}));sel.dispatchEvent(new Event("input",{bubbles:true}));close()};
+  const cur=pop.querySelector('[aria-selected="true"]');if(cur)cur.scrollIntoView({block:"nearest"})}
+document.addEventListener("pointerdown",e=>{const sel=e.target.closest&&e.target.closest(".gwho select,.zzsb select,select[data-pop]");if(!sel||e.pointerType==="touch"||sel.disabled)return;e.preventDefault();if(document.querySelector(".selpop")){document.querySelectorAll(".selpop").forEach(x=>x.remove());return}sel.focus({preventScroll:true});selPop(sel)},true);
 function whoChip(){if(!loginOn()||!S.session)return"";const n=sessName();return`<button class="whochip" id="whoBtn" title="${esc(n)}"><span class="av sm" style="background:${S.session.role==="owner"?"var(--primary)":avColor(S.session.id)}">${S.session.role==="owner"?"★":avIn(S.session.id,initials(n))}</span><span class="wn">${esc(String(dn(n)).split(/\s+/)[0])}</span></button>`}
 function whoMenu(){const el=document.createElement("div");el.className="vsheet";el.innerHTML=`<div class="vbox"><div class="vh wmhd">${S.session&&S.session.role!=="owner"?`<button type="button" class="av big avbtn" id="wm_av" style="background:${avColor(S.session.id)}">${avIn(S.session.id,initials(sessName()))}<i class="avpen">✎</i></button>`:""}<span><b>${esc(sessName())}</b><small class="muted">${S.session?fmtDT(S.session.at):""}</small>${S.session&&S.session.role!=="owner"?`<button type="button" class="wmlink" id="wm_av2">${L3("Փոխել նկարը","Сменить аватар","Change avatar")}</button>`:""}</span></div>
   <div class="wmacts"><button class="btn ghost wmlock" id="wm_lock">${LOCK_SVG}${t("lg_lock")}</button><button class="btn outb" id="wm_out">${DOOR_SVG}${t("lg_out")}</button></div>${window.incheveSignOut?`<div class="wmacc"><span class="muted">${t("wm_acc")}</span><b>${esc(S.userEmail||"")}</b>${window.incheveSetPassword?`<div class="wmpw"><small class="muted">${t(window.incheveHasPassword&&window.incheveHasPassword()?"wm_pwhas":"wm_pwh")}</small><div class="row"><input id="wm_pw" type="password" autocomplete="new-password" placeholder="${t("wm_pwph")}" minlength="6"><button class="btn primary" id="wm_pws">${t("save")}</button></div><small id="wm_pwst"></small></div>`:""}<button class="btn ghost wmgout" id="wm_gout">${DOOR_SVG}${t("wm_gout")}</button></div>`:""}<button class="vcancel">${t("close")}</button></div>`;
