@@ -2973,7 +2973,7 @@ function saveView(){if(VIEW0||!(!loginOn()||S.session))return;try{const v=JSON.s
 
 /* ---------- sell ---------- */
 function pname(p){return p.name+(p.variant?` · ${t(p.variant)}`:"")}
-function filtered(){const q=S.q.toLowerCase();const mc=S.mcat;return S.products.filter(p=>p.active!==false&&p.group!=="ingredient"&&(!mc||(mc.startsWith("g_")?superOf(catOf(p))===mc:catOf(p)===mc))&&(!q||(p.name+" "+(p.variant||"")+" "+(p.category||"")).toLowerCase().includes(q))).sort((a,b)=>a.name.localeCompare(b.name)||(VRK[a.variant]||9)-(VRK[b.variant]||9)||(a.variant||"").localeCompare(b.variant||""))}
+function filtered(){const q=S.q.toLowerCase();const mc=S.mcat;return S.products.filter(p=>p.active!==false&&p.group!=="ingredient"&&(!mc||(mc==="g_top"?topNames().has(p.name):mc.startsWith("g_")?superOf(catOf(p))===mc:catOf(p)===mc))&&(!q||(p.name+" "+(p.variant||"")+" "+(p.category||"")).toLowerCase().includes(q))).sort((a,b)=>a.name.localeCompare(b.name)||(VRK[a.variant]||9)-(VRK[b.variant]||9)||(a.variant||"").localeCompare(b.variant||""))}
 const VRK={Single:1,Double:2,Glass:3,Bottle:4};
 function cartTotals(){const sub=S.cart.reduce((a,l)=>a+l.qty*(l.price||0),0);const disc=Math.min(100,Math.max(0,+S.disc||0));return{sub,disc,total:Math.round(sub*(1-disc/100))}}
 function renderSell(){
@@ -2989,7 +2989,7 @@ function renderSell(){
     $("q").addEventListener("input",e=>{S.q=e.target.value;drawGrid()});
   }
   $("q").placeholder=t("search");$("q").value=S.q;
-  $("groups").innerHTML=`${superChips().map(([k,l])=>`<button class="chip" data-mcat="${k}" aria-pressed="${(S.mcat||"")===k}">${k?`<i class="cdot" style="background:${superColor(k)}"></i>`:""}${l}</button>`).join("")}`;
+  $("groups").innerHTML=`${superChips().map(([k,l])=>`<button class="chip" data-mcat="${k}" aria-pressed="${(S.mcat||"")===k}">${k&&k!=="g_top"?`<i class="cdot" style="background:${superColor(k)}"></i>`:""}${l}</button>`).join("")}`;
   drawGrid();drawCart();
 }
 function drawGrid(){const g=$("pgrid");if(g){gridCls(g);g.innerHTML=favRowHTML()+tilesHTML();markCounts()}}
@@ -4473,7 +4473,7 @@ function stockPill(p){const b=bottleOf(p);
 /* ---------- product picker: one tile per wine, glass and bottle buttons ---------- */
 function groupedTiles(){const L=filtered();const by=new Map();L.forEach(p=>{const k=p.name;if(!by.has(k))by.set(k,[]);by.get(k).push(p)});
   const ord0=Object.fromEntries(CATS.map(([k],i)=>[k,i]));const sord=Object.fromEntries(SUPER.map(([k],i)=>[k,i]));const ord=new Proxy({},{get:(_,k)=>(sord[superOf(k)]??9)*100+(ord0[k]??99)});
-  const mode=sellSort();const cnt=mode==="top"?salesCount():null;const out=vs=>isOutGroup(vs)?1:0;const minP=vs=>Math.min(...vs.map(p=>p.variable?1e9:+p.price||0));
+  const mode=S.mcat==="g_top"&&!(S.q||"").trim()?"top":sellSort();const cnt=mode==="top"?salesCount():null;const out=vs=>isOutGroup(vs)?1:0;const minP=vs=>Math.min(...vs.map(p=>p.variable?1e9:+p.price||0));
   const q=(S.q||"").trim().toLowerCase();const rk=vs=>{if(!q)return 0;const n=vs[0].name.toLowerCase();return n.startsWith(q)?0:n.split(/[\s\-–(]+/).some(w=>w.startsWith(q))?1:2};
   const cmp=(a,b)=>mode==="top"?((cnt[b[0].name]||0)-(cnt[a[0].name]||0)):mode==="pa"?minP(a)-minP(b):mode==="pd"?minP(b)-minP(a):0;
   return[...by.values()].map(vs=>vs.sort((a,b)=>(a.variant==="Glass"?0:1)-(b.variant==="Glass"?0:1))).sort((a,b)=>(rk(a)-rk(b))||(mode==="cat"?(ord[catOf(a[0])]-ord[catOf(b[0])]):0)||(out(a)-out(b))||cmp(a,b)||(ord[catOf(a[0])]-ord[catOf(b[0])])||a[0].name.localeCompare(b[0].name))}
@@ -4486,7 +4486,7 @@ function openSortMenu(b){const ex=$("sortMenu");if(ex){ex.remove();return}const 
   m.style.cssText=`position:fixed;top:${r.bottom+6}px;right:${Math.max(8,innerWidth-r.right)}px;left:auto;min-width:200px;z-index:95`;
   m.innerHTML=`<div class="smh">${t("so_by")}</div>`+SORTS.map(([k,l])=>`<button data-sort="${k}" aria-pressed="${sellSort()===k}">${t(l)}</button>`).join("")+`<div class="smn">${t("so_note")}</div>`+(isPhone()&&b.closest(".mbar")?`<div class="smh">${t("sv_view")}</div><div class="smrow">${["list","grid"].map(v=>`<button data-sv="${v}" aria-pressed="${sellView()===v}">${t(v==="list"?"sv_list":"sv_grid")}</button>`).join("")}</div><button data-rush aria-pressed="${RUSH}" class="smrush">${icoSvg("bolt")} ${t("rush")}</button>`:"");document.body.append(m);m.addEventListener("click",e=>{if(e.target.closest("[data-sv],[data-rush]"))setTimeout(()=>m.remove(),120)});
   setTimeout(()=>document.addEventListener("click",function h(e){if(!e.target.closest("#sortMenu,#sortBtn")){m.remove();document.removeEventListener("click",h)}}),0)}
-function withHeads(G,render,head){const DR=S.mcat==="c_hot"||S.mcat==="g_drinks";if(!DR&&sellSort()==="cat"&&!(S.q||"").trim()){const sk=vs=>superOf(catOf(vs[0]));const ks=[...new Set(G.map(sk))];if(ks.length>1){const by={};G.forEach(vs=>(by[sk(vs)]=by[sk(vs)]||[]).push(vs));return ks.map(k=>`<div class="mcath" style="--cc:${superColor(k)}"><i></i><span>${t(k)}</span><small>${by[k].length}</small></div>`+by[k].map(render).join("")).join("")}}
+function withHeads(G,render,head){const DR=S.mcat==="c_hot"||S.mcat==="g_drinks";if(!DR&&S.mcat!=="g_top"&&sellSort()==="cat"&&!(S.q||"").trim()){const sk=vs=>superOf(catOf(vs[0]));const ks=[...new Set(G.map(sk))];if(ks.length>1){const by={};G.forEach(vs=>(by[sk(vs)]=by[sk(vs)]||[]).push(vs));return ks.map(k=>`<div class="mcath" style="--cc:${superColor(k)}"><i></i><span>${t(k)}</span><small>${by[k].length}</small></div>`+by[k].map(render).join("")).join("")}}
   if(!DR)return G.map(render).join("");
   const sub=vs=>drinkSub(vs[0])||(/HOT/i.test(vs[0].category||"")?"ds_hot":"ds_cold");const by={};G.forEach(vs=>(by[sub(vs)]=by[sub(vs)]||[]).push(vs));
   return DSUB.filter(k=>by[k]).map(k=>`<div class="dsub"><span>${t(k)}</span><small>${by[k].length}</small></div>`+by[k].map(render).join("")).join("")}
@@ -4581,7 +4581,7 @@ function addToTab(id,pid){const p=prodOf(pid);if(!p)return;const items=JSON.pars
 function openPicker(){
   $("layer").innerHTML=`<div class="overlay" id="pov" style="align-items:stretch"><div class="sheet picker" role="dialog" aria-label="${t("addItems")}">
    <div class="row phead"><input id="pq" type="search" placeholder="${t("search")}" style="flex:1" aria-label="${t("search")}" value="${esc(S.q)}">${sortBtn()}${svBtn()}<button class="iac pclose" id="pclose" aria-label="${t("close")}" title="${t("close")}">${icoSvg("close")}</button>
-    <div class="chips" id="pgroups" style="flex:1 1 100%">${superChips().map(([k,l])=>`<button class="chip" data-mcat="${k}" aria-pressed="${(S.mcat||"")===k}">${k?`<i class="cdot" style="background:${superColor(k)}"></i>`:""}${l}</button>`).join("")}</div></div>
+    <div class="chips" id="pgroups" style="flex:1 1 100%">${superChips().map(([k,l])=>`<button class="chip" data-mcat="${k}" aria-pressed="${(S.mcat||"")===k}">${k&&k!=="g_top"?`<i class="cdot" style="background:${superColor(k)}"></i>`:""}${l}</button>`).join("")}</div></div>
    <div class="pgrid" id="pgrid"></div><div class="pbar" id="pbar"></div></div></div>`;S.pickN=0;if(isPhone())pickFix();drawGrid();drawPbar();$("pclose").onclick=()=>{$("layer").innerHTML="";S.pickN=0;renderTable()};if(!isPhone())setTimeout(()=>$("pq")?.focus(),50);
   $("pq").oninput=e=>{S.q=e.target.value;drawGrid();pickKbd();const g=$("pgrid");if(g&&isPhone())g.scrollTop=0};
   const pq=$("pq");pq.onfocus=()=>{pickKbd(true);const g=$("pgrid");if(g&&isPhone())g.scrollTop=0};pq.onblur=()=>setTimeout(()=>pickKbd(),350);pickKbd();
@@ -5339,7 +5339,9 @@ function catOf(p){const c=String(p.category||"").toUpperCase();if(/SOUVENIR|HAND
 const SUPER=[["g_wine","#a83248",["c_red","c_white","c_orange","c_rose","c_spark"]],["g_drinks","#3a9a87",["c_nolc","c_hot"]],["g_food","#8a6a3b",["c_food","c_cheese","c_meat"]],["g_souv","#c0789a",["c_souv"]],["g_other","#80558c",["c_other"]]];
 function superOf(k){const g=SUPER.find(x=>x[2].includes(k));return g?g[0]:"g_other"}
 function superColor(k){const g=SUPER.find(x=>x[0]===k);return g?g[1]:"#80558c"}
-function superChips(){return[["",t("all")],...SUPER.filter(([k,,cs])=>S.products.some(p=>p.active!==false&&p.group!=="ingredient"&&cs.includes(catOf(p)))).map(([k])=>[k,t(k)])]}
+function topNames(){const c=salesCount();return new Set(Object.entries(c).filter(([n,q])=>q>0&&S.products.some(p=>p.name===n&&p.active!==false&&p.group!=="ingredient")).sort((a,b)=>b[1]-a[1]).slice(0,20).map(x=>x[0]))}
+function superColor0(k){return k==="g_top"?"#d08a1c":superColor(k)}
+function superChips(){const tp=topNames().size?[["g_top","★ "+t("so_top")]]:[];return[["",t("all")],...tp,...SUPER.filter(([k,,cs])=>S.products.some(p=>p.active!==false&&p.group!=="ingredient"&&cs.includes(catOf(p)))).map(([k])=>[k,t(k)])]}
 const DSUB=["ds_coffee","ds_tea","ds_hot","ds_water","ds_lemon","ds_juice","ds_cold"];
 function drinkSub(p){const n=(String(p.name||"")+" "+String(p.variant||"")).toLowerCase();const c=String(p.category||"").toUpperCase();
   if(/gift|set\b|նվեր/.test(n))return"";
@@ -5675,7 +5677,7 @@ function applySession(){const se=S.session;const bz=boundStaff();
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261111104115";
+const BUILD="20261111105149";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span>✨ Կա նոր տարբերակ</span><button type="button">Թարմացնել</button>`;document.body.appendChild(el);
@@ -6500,8 +6502,9 @@ function lowAlert(p,nv){const m=ncGet();m[p.id]={ts:Date.now(),left:Math.max(0,n
 setInterval(()=>{if(S.db&&typeof updateBadges==="function")updateBadges()},60000);
 /* bell tasks: open / close the shift on time, send the day summary, low stock */
 const hmOf=x=>{const[h,m]=String(x||"0:0").split(":").map(Number);return h*60+(m||0)};
+function mgrSubs(){if(S._mgrSub||!S.db||!(S.admin||S.mgr))return;S._mgrSub=1;const db=S.db;db.collection("moves").where("ts",">=",Date.now()-3*864e5).onSnapshot(s=>{S.stkMoves=s.docs.map(d=>({id:d.id,...d.data()})).filter(m=>["in","off","count","edit"].includes(m.type)&&m.byRole&&m.byRole!=="owner"&&Array.isArray(m.items));updateBadges()},()=>{});db.collection("registers").where("closedAt",">=",Math.max(Date.now()-21*864e5,1793995200000)).onSnapshot(s=>{S.unpaidRegs=s.docs.map(d=>({id:d.id,...d.data()})).filter(r=>regUnpaid(r)>0).sort((a,b)=>a.closedAt-b.closedAt);updateBadges()},()=>{})}
 function stkSeen(){try{return +localStorage.getItem("inc-stkseen")||0}catch(e){return 0}}
-function ncTasks(){if(!S.db||!S.write)return[];const L=[];const now=new Date();const mn=now.getHours()*60+now.getMinutes();const o=hmOf(hoursOpen()),c=hmOf(hoursClose());const work=workDays().includes(now.getDay());
+function ncTasks(){if(!S.db||!S.write)return[];if(!S._mgrSub&&(S.admin||S.mgr))setTimeout(mgrSubs,0);const L=[];const now=new Date();const mn=now.getHours()*60+now.getMinutes();const o=hmOf(hoursOpen()),c=hmOf(hoursClose());const work=workDays().includes(now.getDay());
   const closed=(S.closedToday||[]);
   if(!S.register&&work&&mn>=o-30&&mn<c&&!closed.length)L.push({k:"open",title:t("nt_open"),sub:t("nt_openh").replace("{t}",hoursOpen()),btn:t("openShift"),hot:mn>=o});
   if(S.register&&(mn>=c||mn<6*60||Date.now()-(S.register.openedAt||0)>14*36e5))L.push({k:"close",title:t("nt_close"),sub:t("nt_closeh").replace("{t}",hoursClose()),btn:t("cz_close"),hot:true});
@@ -7081,8 +7084,8 @@ renderShell();
   const shRe=()=>{shBadge();if(S.tab==="shop"&&!(document.activeElement&&/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)))renderShop()};
   bootLater(()=>{try{ordSub()}catch(e){}});
   bootLater(()=>{try{avSub()}catch(e){}});
-  bootLater(()=>{if(S.admin||S.mgr)db.collection("moves").where("ts",">=",Date.now()-3*864e5).onSnapshot(s=>{S.stkMoves=s.docs.map(d=>({id:d.id,...d.data()})).filter(m=>["in","off","count","edit"].includes(m.type)&&m.byRole&&m.byRole!=="owner"&&Array.isArray(m.items));updateBadges()},()=>{})});
-  bootLater(()=>{if(S.admin||S.mgr)db.collection("registers").where("closedAt",">=",Math.max(Date.now()-21*864e5,1793995200000)).onSnapshot(s=>{S.unpaidRegs=s.docs.map(d=>({id:d.id,...d.data()})).filter(r=>regUnpaid(r)>0).sort((a,b)=>a.closedAt-b.closedAt);updateBadges()},()=>{})});
+  bootLater(()=>mgrSubs());
+
   db.collection("shop").where("status","==","open").onSnapshot(s=>{S.shop=s.docs.map(d=>({id:d.id,...d.data()}));shRe()},()=>{});
   bootLater(()=>{db.collection("shop").where("boughtAt",">=",Date.now()-7*864e5).onSnapshot(s=>{S.shopB=s.docs.map(d=>({id:d.id,...d.data()}));shRe()},()=>{});});
   db.collection("staff").onSnapshot(s=>{const before=S.staff.length;S.staff=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>{const k=x=>{const w=String(x.name||"").trim().split(/\s+/);return (w.length>1?w[w.length-1]:"\uffff")+" "+w[0]};return k(a).localeCompare(k(b),"hy")});if(S.tab==="sell")drawCart();else if(S.tab==="staff"&&before!==S.staff.length)renderStaff();if($("lock"))lockScreen();autoIdent();syncAllow()},()=>{});
