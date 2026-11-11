@@ -3339,8 +3339,8 @@ function renderStockList(){
      <select id="sgrp" aria-label="${t("sa_group")}">${ST_GMODES.map(([k,l])=>`<option value="${k}"${(S.stockGroup||"type")===k?" selected":""}>${t(l)}</option>`).join("")}</select>
      <select id="ssort" aria-label="${t("sa_sort")}">${[["name","sa_s_name"],["name_d","sa_s_named"],["stock","sa_s_stock"],["stock_d","sa_s_stockd"],["price","sa_s_price"],["price_d","sa_s_priced"],...(A?[["margin","sa_s_mg"],["margin_d","sa_s_mgd"]]:[])].map(([k,l])=>`<option value="${k}"${(S.stockSort||"name")===k?" selected":""}>${t(l)}</option>`).join("")}</select>
      ${A||S.mgr?`<button class="btn ghost selchip" id="sel_tog" aria-pressed="${!!S.selMode}">${icoSvg(S.selMode?"boxOn":"boxOff")}<span>${t("sa_select")}</span></button>`:""}
-     ${A?`<button class="btn primary" id="addP">+ <span>${t("addProduct")}</span></button>`:""}</div></div>
-  ${L.length?view(inL):`<div class="empty card">${q?t("sa_nofind").replace("{q}",esc(S.stockQ)):t("noData")}${A&&q?`<br><button class="btn primary" id="sa_newq" style="margin-top:12px">+ ${t("sa_create")} «${esc(S.stockQ)}»</button>`:""}</div>`}
+     <button class="btn primary" id="addP">+ <span>${t("addProduct")}</span></button></div></div>
+  ${L.length?view(inL):`<div class="empty card">${q?t("sa_nofind").replace("{q}",esc(S.stockQ)):t("noData")}${q?`<br><button class="btn primary" id="sa_newq" style="margin-top:12px">+ ${t("sa_create")} «${esc(S.stockQ)}»</button>`:""}</div>`}
   ${outL.length?`<details class="outgrp"${S.stockOutOpen?" open":""}><summary><span class="og-dot"></span>${t("sf_outG")} <b>${outL.length}</b><svg class="ico" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></svg></summary>${view(outL)}</details>`:""}`;
   $("sq").oninput=e=>{S.stockQ=e.target.value;const pos=e.target.selectionStart;renderStock();$("sq").focus();$("sq").setSelectionRange(pos,pos)};
   $("ssort").onchange=e=>{S.stockSort=e.target.value;try{localStorage.setItem("incheve-bo-ssort",S.stockSort)}catch(x){}renderStock()};$("sgrp").onchange=e=>{S.stockGroup=e.target.value;try{localStorage.setItem("incheve-bo-sgrp2",S.stockGroup)}catch(x){}renderStock()};
@@ -3352,7 +3352,7 @@ function renderStockList(){
   $("stockBody").onkeydown=e=>{const r=e.target.closest(".sar[data-sasel]");if(r&&(e.key==="Enter"||e.key===" ")){e.preventDefault();openStockPanel(r.dataset.sasel)}};
   if(!S._posAt||Date.now()-S._posAt>30000){S._posAt=Date.now();loadPOs().then(p=>{const ch=JSON.stringify((p||[]).map(x=>x.id))!==JSON.stringify((S.pos||[]).map(x=>x.id));S.pos=p;if(ch&&S.tab==="stock"&&S.stockView==="list"&&!(document.activeElement&&document.activeElement.id==="sq"))renderStock()})}
   const og=document.querySelector(".outgrp");if(og)og.ontoggle=()=>{S.stockOutOpen=og.open;S.saOrder=[...inL,...(og.open?outL:[])].map(p=>p.id)};
-  if(A){$("addP").onclick=()=>openNewProduct();const nq=$("sa_newq");if(nq)nq.onclick=()=>openNewProduct({name:S.stockQ.trim()})}
+  {$("addP").onclick=()=>openNewProduct();const nq=$("sa_newq");if(nq)nq.onclick=()=>openNewProduct({name:S.stockQ.trim()})}
 }
 /* ---- edit panel ---- */
 function saPanelEl(){let el=$("sapanel");if(!el){el=document.createElement("aside");el.id="sapanel";document.body.append(el)}document.body.classList.add("sa-open");
@@ -3456,6 +3456,7 @@ function openNewProduct(o={}){closeStockPanel();const el=saPanelEl();const f={ty
      try{await S.db.doc("products/"+id).set(doc);
        if(isW&&f.glass&&price){await S.db.doc("products/"+id+"g").set({id:id+"g",bottleId:id,name,variant:"Glass",group:"wine",category:cat,price:+f.gp||glassGuess(price),variable:false,stock:null,low:null,active:true})}
        if(f.cost!==""&&f.cost!=null){const nc={...S.costs,[id]:+f.cost};try{await S.db.doc("costs/all").set({map:nc});S.costs=nc}catch(e){console.warn("costs",e)}}
+       S.db.collection("moves").add({type:"edit",date:dayKey(new Date()),ts:Date.now(),items:[{id,name,variant:doc.variant||"",f:"new",from:null,to:price||null,stock:doc.stock}],by:S.uid||"",...whoStamp()}).catch(()=>{});
        toast(`${t("np_added")}: ${name}`);const keepT={type:ty,color:f.color,unit:f.unit,cat:f.cat,glass:f.glass,sup:f.sup};
        if(o.after)o.after(id);else if(isW)aiBackground(id,{id,name,category:cat});
        if(again&&!o.after){S._np={...keepT,name:""};openNewProduct();setTimeout(()=>{const n=$("np_n");if(n)n.focus()},40)}else{S._np={...keepT};closeStockPanel();if(S.tab==="stock"&&S.stockView!=="in"){S.stockQ="";S.stockF="all";renderStock();setTimeout(()=>openStockPanel(id),80)}}}catch(e){toast(errMsg(e))}};
@@ -4730,7 +4731,7 @@ function renderCount(){
 /* history of all stock movements */
 function editFv(l,v){if(v==null||v==="")return"—";if(l.f==="active")return v?L3("միացված","вкл.","on"):L3("թաքցված","скрыт","hidden");if(l.f==="stock")return String(Math.round(v*100)/100);return money(v)}
 function editLab(f){return f==="price"?L3("Գին","Цена","Price"):f==="cost"?L3("Ինքնարժեք","Себест.","Cost"):f==="stock"?L3("Մնացորդ","Остаток","Stock"):f==="active"?L3("Վաճառք","Продажа","On sale"):f}
-function editLine(l){return`${esc(l.name)}${l.variant?" · "+esc(t(l.variant)):""} <span class="muted">${editLab(l.f)}</span> <b class="num">${esc(editFv(l,l.from))} → ${esc(editFv(l,l.to))}</b>`}
+function editLine(l){if(l.f==="new")return`${esc(l.name)} <span class="muted">${L3("նոր ապրանք","новый товар","new product")}</span>`;return`${esc(l.name)}${l.variant?" · "+esc(t(l.variant)):""} <span class="muted">${editLab(l.f)}</span> <b class="num">${esc(editFv(l,l.from))} → ${esc(editFv(l,l.to))}</b>`}
 async function renderHistory(){
   $("stockBody").innerHTML=`<h2>${t("sv_hist")}</h2><div id="hist">${loaderHTML()}</div>`;
   let L=[];try{L=(await S.db.collection("moves").orderBy("ts","desc").limit(100).get()).docs.map(d=>({id:d.id,...d.data()}))}catch(e){}
@@ -4738,7 +4739,7 @@ async function renderHistory(){
   const lab={in:"sv_in",off:"sv_off",count:"sv_count",edit:"sv_edit"};const cls={in:"ok",off:"void",count:"low",edit:"blue"};
   const r2=x=>Math.round((+x||0)*100)/100;
   const dt=ts=>{const d=new Date(ts);const p=n=>String(n).padStart(2,"0");return`${p(d.getDate())}.${p(d.getMonth()+1)} ${p(d.getHours())}:${p(d.getMinutes())}`};
-  const chg=(m,l)=>m.type==="edit"?`<span class="muted">${editLab(l.f).toLowerCase()}</span> ${esc(editFv(l,l.from))} → <b>${esc(editFv(l,l.to))}</b>`:`<b class="${m.type==="off"||(m.type==="count"&&l.diff<0)?"hneg":"hpos"}">${m.type==="count"?(l.diff>0?"+":"")+r2(l.diff):(m.type==="off"?"−":"+")+r2(l.qty)}</b>`;
+  const chg=(m,l)=>m.type==="edit"&&l.f==="new"?`<b class="hpos">${L3("Նոր","Новый","New")}</b>${l.to?` · ${money(l.to)}`:""}${l.stock?` · ${r2(l.stock)}`:""}`:m.type==="edit"?`<span class="muted">${editLab(l.f).toLowerCase()}</span> ${esc(editFv(l,l.from))} → <b>${esc(editFv(l,l.to))}</b>`:`<b class="${m.type==="off"||(m.type==="count"&&l.diff<0)?"hneg":"hpos"}">${m.type==="count"?(l.diff>0?"+":"")+r2(l.diff):(m.type==="off"?"−":"+")+r2(l.qty)}</b>`;
   $("hist").innerHTML=L.length?`<div class="card" style="padding:4px 8px"><div class="twrap"><table class="htab"><thead><tr><th>${L3("Երբ · ով","Когда · кто","When · who")}</th><th>${t("items")}</th><th class="r">${L3("Փոփոխություն","Изменение","Change")}</th></tr></thead><tbody>
    ${L.map(m=>{const val=m.type==="edit"?0:m.type==="in"?m.total:m.type==="count"?m.diffValue:-m.items.reduce((a,l)=>{const p=prodOf(l.id);const b=bottleOf(p);const c=b?(S.costs[b.id]||0)/GPB():(S.costs[l.id]||0);return a+c*l.qty},0);
      let its=m.type==="count"?m.items.filter(l=>r2(l.diff)!==0):m.items;const more=its.length>6?its.length-6:0;its=its.slice(0,6);const w=m.byName?dn(m.byName).split(/\s+/)[0]:"";
@@ -5670,7 +5671,7 @@ function applySession(){const se=S.session;const bz=boundStaff();
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261111101444";
+const BUILD="20261111102150";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span>✨ Կա նոր տարբերակ</span><button type="button">Թարմացնել</button>`;document.body.appendChild(el);
@@ -6493,7 +6494,7 @@ function ncTasks(){if(!S.db||!S.write)return[];const L=[];const now=new Date();c
   if(S.admin||S.mgr)(S.unpaidRegs||[]).forEach(r=>{const a=regUnpaid(r);if(!a)return;const X=r.transfer;const nm=dn(staffName(X.staffId)||"").split(/\s+/)[0]||"—";const parts=[!X.salPaidAt&&+X.salary?`${t("cz_salS")} ${money(+X.salary)}`:"",!X.tipPaidAt&&+X.tips?`${t("tp_one")} ${money(+X.tips)}`:""].filter(Boolean);
     L.push({k:"pay",id:r.id,title:`${L3("Վճարել","Оплатить","Pay")} ${lang==="hy"?hyDat(nm):lang==="ru"?ruDat(nm):nm} · ${money(a)}`,sub:`${dmy(dayKey(new Date(r.openedAt)))} · ${parts.join(" + ")} · ${L3("դրամարկղից չի վերցրել","не взял(а) из кассы","not taken from till")}`,btn:L3("Վճարված է","Оплачено","Paid"),hot:true})});
   if(S.admin||S.mgr){const sn=stkSeen(),me=(S.session||{}).id||"";const M=(S.stkMoves||[]).filter(m=>m.ts>sn&&m.bySid!==me).sort((a,b)=>b.ts-a.ts);
-    if(M.length){const lines=[];M.forEach(m=>{const w=dn(m.byName||"").split(/\s+/)[0]||"—";m.items.forEach(l=>{const n=dn(l.name||"");lines.push(m.type==="edit"?`${w}: ${n} · ${editLab(l.f).toLowerCase()} ${editFv(l,l.from)} → ${editFv(l,l.to)}`:m.type==="count"?`${w}: ${n} ${l.diff>0?"+":""}${l.diff} (${t("sv_count").toLowerCase()})`:`${w}: ${m.type==="in"?"+":"−"}${l.qty} ${n}`)})});
+    if(M.length){const lines=[];M.forEach(m=>{const w=dn(m.byName||"").split(/\s+/)[0]||"—";m.items.forEach(l=>{const n=dn(l.name||"");lines.push(m.type==="edit"&&l.f==="new"?`${w}: ${L3("նոր ապրանք","новый товар","new product")} · ${n}${l.to?" · "+money(l.to):""}${l.stock?" · "+l.stock:""}`:m.type==="edit"?`${w}: ${n} · ${editLab(l.f).toLowerCase()} ${editFv(l,l.from)} → ${editFv(l,l.to)}`:m.type==="count"?`${w}: ${n} ${l.diff>0?"+":""}${l.diff} (${t("sv_count").toLowerCase()})`:`${w}: ${m.type==="in"?"+":"−"}${l.qty} ${n}`)})});
       L.push({k:"stk",title:`${L3("Պահեստում փոփոխություն","Изменения на складе","Stock changes")} · ${lines.length}`,sub:lines.slice(0,3).join("\n")+(lines.length>3?`\n+${lines.length-3}`:""),btn:t("nt_see"),hot:false})}}
   const lw=lowCount();if(lw&&tabsFor().includes("stock"))L.push({k:"low",title:`${lw} ${t("ss_lowS")}`,sub:t("nt_lowh"),btn:t("nt_see")});
   const oo=oldOpenList();if(oo.length)L.push({k:"opn",title:`🍷 ${oo.length} ${L3("շիշ բաց է","бут. открыто","bottle(s) open")} ${openWarn()}+ ${L3("օր","дн.","days")}`,sub:oo.slice(0,3).map(p=>dName(p)).join(", ")+(oo.length>3?"…":""),btn:t("nt_see"),hot:oo.some(p=>openDays(p)>=openWarn()+2)});
