@@ -5666,7 +5666,7 @@ function loginOn(){return !!S.settings.pinLogin}
 function loadSess(){try{return JSON.parse(localStorage.getItem("incheve-bo-session")||"null")}catch(e){return null}}
 function saveSess(v){try{v?localStorage.setItem("incheve-bo-session",JSON.stringify(v)):localStorage.removeItem("incheve-bo-session")}catch(e){}}
 function applySession(){const se=S.session;const bz=boundStaff();
-  if(bz&&se&&se.id!==bz.id){S.session=null;try{localStorage.removeItem("incheve-bo-session")}catch(e){}S.admin=false;return}
+  if(bz&&se&&se.role!=="owner"&&!canBe(se.id)){S.session=null;try{localStorage.removeItem("incheve-bo-session")}catch(e){}S.admin=false;return}
   if(!loginOn()&&!bz){S.admin=S.acctAdmin;return}
   if(!se){S.admin=false;return}
   {const lvMgr=se.role==="owner"||((S.staff.find(x=>x.id===se.id)||{}).level==="manager");S.admin=lvMgr&&S.acctAdmin;S.mgr=lvMgr&&!S.admin}ensureCosts();setTimeout(()=>{if(typeof migIng==="function")migIng();if(typeof migSouv==="function")migSouv().then(()=>{if(typeof migSouv2==="function")setTimeout(migSouv2,1500)});if(typeof migInv1==="function")setTimeout(migInv1,4500);if(typeof migJam1==="function")setTimeout(migJam1,6500);if(typeof migSnap1==="function")setTimeout(migSnap1,8500);if(typeof migSmm1==="function")setTimeout(migSmm1,10500);if(typeof migGlass1==="function")setTimeout(migGlass1,12500)},2500);if(se.role!=="owner"){S.cashier=se.id}}
@@ -5675,7 +5675,7 @@ function applySession(){const se=S.session;const bz=boundStaff();
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261111103221";
+const BUILD="20261111103846";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span>✨ Կա նոր տարբերակ</span><button type="button">Թարմացնել</button>`;document.body.appendChild(el);
@@ -5837,7 +5837,14 @@ function ensureCosts(){if(S._costSub||!S.db||!(S.admin||S.mgr||S.acctAdmin))retu
 function whoStamp(){const se=S.session||{};return{byName:sessName()||"",bySid:se.id||"",byRole:se.role||(S.admin?"owner":"")}}
 function sessName(){const se=S.session;if(!se)return"";return se.role==="owner"?t("lg_owner"):(staffName(se.id)||se.name||"")}
 function lockScreen(){const bz=boundStaff();if(!(loginOn()||bz)||S.session||!S.db){const l=$("lock");if(l)l.remove();return}
-  if(bz&&(!S._lk||S._lk.who!==bz.id))S._lk={who:bz.id,pin:""};
+  if(bz){const L0=S._lk||{};if(!(L0.alt||(L0.who&&canBe(L0.who))))S._lk={who:bz.id,pin:""}}
+  if(bz&&S._lk.alt&&!S._lk.who){let el0=$("lock");if(!el0){el0=document.createElement("div");el0.id="lock";document.body.append(el0)}
+    const M=S.staff.filter(x=>x.active!==false&&x.level==="manager"&&x.id!==bz.id&&x.pinHash);const own=S.sec&&S.sec.ownerPinHash;
+    const tile=(id,nm,sub)=>`<button class="lkp" data-lka="${esc(id)}"><span class="av${id==="__owner"?" own":""}" style="${id==="__owner"?"":`background:${avColor(id)}`}">${id==="__owner"?"★":avIn(id,initials(dn(nm)))}</span><span>${esc(id==="__owner"?nm:dn(nm))}</span><small class="muted">${esc(sub)}</small></button>`;
+    el0.innerHTML=`<div class="lkbox"><button class="btn ghost sm lkback" id="lk_ab">← ${t("lg_back")}</button><span class="logo lklogo" role="img" aria-label="Incheve"></span><h2>${L3("Ղեկավար կամ մենեջեր","Руководитель или менеджер","Owner or manager")}</h2><p class="muted" style="margin:-4px 0 14px">${L3("Այս հաշվից կարող են մտնել միայն ղեկավարները","С этого аккаунта могут войти только руководители","Only owners and managers can sign in from this account")}</p>
+      <div class="lkgrid">${own?tile("__owner",t("lg_owner"),"PIN"):""}${M.map(z=>tile(z.id,z.name,dnRole(z.role))).join("")}</div>${!own&&!M.length?`<p class="muted">${L3("Ղեկավարի PIN դեռ նշված չէ","PIN руководителя ещё не задан","No owner/manager PIN set yet")}</p>`:""}</div>`;
+    $("lk_ab").onclick=()=>{S._lk={who:bz.id,pin:""};lockScreen()};
+    el0.querySelectorAll("[data-lka]").forEach(b=>b.onclick=()=>{S._lk={who:b.dataset.lka,pin:"",alt:true};lockScreen()});return}
   let el=$("lock");if(!el){el=document.createElement("div");el.id="lock";document.body.append(el)}
   const people=S.staff.filter(s=>s.active!==false);const st=S._lk||{};
   const langSeg=`<div class="seg">${[["hy","ՀԱՅ"],["ru","РУС"],["en","ENG"]].map(([k,l])=>`<button data-lang-set="${k}" aria-pressed="${lang===k}">${l}</button>`).join("")}</div>`;
@@ -5859,10 +5866,11 @@ function lockScreen(){const bz=boundStaff();if(!(loginOn()||bz)||S.session||!S.d
     {const pf=$("lk_pinf");if(pf)pf.onclick=()=>{S._lk={};lockScreen()}}
     el.querySelectorAll("[data-lk]").forEach(b=>b.onclick=()=>{if(b.dataset.lk==="__owner"&&!(S.sec&&S.sec.ownerPinHash)){startSession({id:"__owner",role:"owner"});return}S._lk={who:b.dataset.lk,pin:""};lockScreen()});return}
   const who=st.who==="__owner"?{name:t("lg_owner")}:S.staff.find(s=>s.id===st.who)||{name:"?"};
-  el.innerHTML=`<div class="lkbox">${bz?`<small class="muted lkacc">${esc(S.userEmail||"")}</small>`:`<button class="btn ghost sm lkback" id="lk_b">← ${t("lg_back")}</button>`}<span class="av big" style="background:${st.who==="__owner"?"var(--primary)":avColor(st.who)}">${st.who==="__owner"?"★":avIn(st.who,initials(who.name))}</span><h2>${esc(who.name)}</h2>
+  el.innerHTML=`<div class="lkbox">${bz&&st.who===bz.id?`<small class="muted lkacc">${esc(S.userEmail||"")}</small>`:`<button class="btn ghost sm lkback" id="lk_b">← ${t("lg_back")}</button>`}<span class="av big" style="background:${st.who==="__owner"?"var(--primary)":avColor(st.who)}">${st.who==="__owner"?"★":avIn(st.who,initials(who.name))}</span><h2>${esc(who.name)}</h2>
    <p class="muted" id="lk_msg">${t("lg_pin")}</p><div class="dots${st.err?" shake":""}">${[0,1,2,3].map(i=>`<i class="${i<st.pin.length?"on":""}"></i>`).join("")}</div>
-   <div class="pad">${[1,2,3,4,5,6,7,8,9,"",0,"⌫"].map(k=>k===""?"<span></span>":`<button data-k="${k}" aria-label="${k}">${k}</button>`).join("")}</div></div>`;
-  if($("lk_b"))$("lk_b").onclick=()=>{S._lk={list:true};lockScreen()};
+   <div class="pad">${[1,2,3,4,5,6,7,8,9,"",0,"⌫"].map(k=>k===""?"<span></span>":`<button data-k="${k}" aria-label="${k}">${k}</button>`).join("")}</div>${bz&&st.who===bz.id?`<button class="linkb" id="lk_alt" style="margin-top:14px">${L3("Ղեկավար կամ մենեջեր","Руководитель или менеджер","Owner or manager")} →</button>`:""}</div>`;
+  if($("lk_b"))$("lk_b").onclick=()=>{S._lk=bz?{alt:true}:{list:true};lockScreen()};
+  if($("lk_alt"))$("lk_alt").onclick=()=>{S._lk={alt:true};lockScreen()};
   el.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>pinKey(b.dataset.k))}
 function avColor(id){const pv=id&&S.avs&&avParse(S.avs[id]);const f=id&&typeof famOf==="function"?famOf(id):null;if(pv&&(f==null||AVFAM[f].includes(pv.c)))return pv.c;if(f!=null)return AVFAM[f][1];const c=["#a82b33","#1d7480","#55801f","#80558c","#3f5fa8","#c2366f","#2b7a5a","#d08a1c","#4a4f9e","#8a3fae"];let h=0;for(const ch of String(id))h=(h*31+ch.charCodeAt(0))>>>0;return c[h%c.length]}
 /* PIN from the physical keyboard too (web) */
@@ -5879,7 +5887,8 @@ async function pinKey(k){const st=S._lk=S._lk||{};if(st.list)return;st.pin=st.pi
     if(C.length>1){st.cands=C;lockScreen();return}
     const id=C[0];await startSession(id==="__owner"?{id:"__owner",role:"owner"}:{id,role:"staff",name:(S.staff.find(x=>x.id===id)||{}).name});return}
   let ok=false;
-  if(st.who==="__owner"){const sec=S.sec||{};ok=sec.ownerPinHash?(await pinHash(st.pin,sec.ownerSalt))===sec.ownerPinHash:!!S.acctAdmin}
+  if(st.who==="__owner"){const sec=S.sec||{};ok=sec.ownerPinHash?(await pinHash(st.pin,sec.ownerSalt))===sec.ownerPinHash:(!boundStaff()&&!!S.acctAdmin)}
+  else if(!canBe(st.who))ok=false
   else{const s=S.staff.find(x=>x.id===st.who);ok=s&&(s.pinHash?(await pinHash(st.pin,s.pinSalt))===s.pinHash:false)}
   if(!ok){st.pin="";st.err=true;fx("err");lockScreen();const m=$("lk_msg");if(m){m.textContent=t("lg_bad");m.style.color="var(--bad)"}if(navigator.vibrate)try{navigator.vibrate(120)}catch(e){}return}
   await startSession(st.who==="__owner"?{id:"__owner",role:"owner"}:{id:st.who,role:"staff",name:(S.staff.find(x=>x.id===st.who)||{}).name})}
@@ -5887,6 +5896,8 @@ function normEmails(v){return String(v||"").toLowerCase().split(/[\s,;]+/).filte
 function staffEmails(z){return normEmails(z&&z.email).split(", ").filter(Boolean)}
 /* Google / email sign-in: if the account's email belongs to a staff member, open their session without the PIN */
 /* a staff member signed in with their own e-mail may only work as themselves (owners' accounts are not bound) */
+/* on a bartender's own account: only that person, managers, or the owner (with the owner PIN) */
+function canBe(id){const bz=boundStaff();if(!bz)return true;if(id==="__owner")return!!(S.sec&&S.sec.ownerPinHash);if(id===bz.id)return true;const z=S.staff.find(x=>x.id===id);return!!(z&&z.active!==false&&z.level==="manager")}
 function boundStaff(){if(S.ownerAcct!==false||!S.userEmail||!S.staff.length)return null;const e=S.userEmail.toLowerCase();return S.staff.find(x=>x.active!==false&&staffEmails(x).includes(e))||null}
 async function autoIdent(){if(S._autoDone||!(loginOn()||boundStaff())||S.session||!S.userEmail||!S.staff.length)return;const e=S.userEmail.toLowerCase();
   const z=S.staff.find(x=>x.active!==false&&staffEmails(x).includes(e));if(!z)return;S._autoDone=true;const lk=$("lock");if(lk)lk.remove();await startSession({id:z.id,role:"staff",name:z.name})}
