@@ -124,3 +124,8 @@ export async function send(to, m) {
   }
   throw new Error("Mail is not set up: add GMAIL_USER + GMAIL_APP_PASSWORD in Netlify");
 }
+
+// last-send status for the Settings screen (no addresses or keys stored, only counts and the error text)
+export async function logStatus(kind, ok, info) {
+  try { await db().doc("blobs/wkmail").set({ [kind]: { at: Date.now(), ok: !!ok, n: info && info.n || 0, via: info && info.via || "", err: info && info.err ? String(info.err).slice(0, 200) : "" } }, { merge: true }); } catch (e) { console.error("status log failed", e && e.message); }
+}
