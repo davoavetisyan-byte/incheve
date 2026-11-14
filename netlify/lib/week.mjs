@@ -78,14 +78,17 @@ async function buildRange(start, end, pstart, F, detail) {
   if (!detail) return out;
   out.top = Object.entries(q).sort((a, b) => b[1] - a[1]).slice(0, 10);
   const da = ymd(start), db_ = ymd(end - 1);
-  const [expS, movS, paysS] = await Promise.all([
+  const [expS, movS, paysS, shopS] = await Promise.all([
     F.collection("expenses").where("date", ">=", da).where("date", "<=", db_).get().catch(() => ({ docs: [] })),
     F.collection("moves").where("date", ">=", da).where("date", "<=", db_).get().catch(() => ({ docs: [] })),
-    F.collection("payments").where("date", ">=", da).where("date", "<=", db_).get().catch(() => ({ docs: [] }))]);
+    F.collection("payments").where("date", ">=", da).where("date", "<=", db_).get().catch(() => ({ docs: [] })),
+    F.collection("shop").where("date", ">=", da).where("date", "<=", db_).get().catch(() => ({ docs: [] }))]);
   const moves = movS.docs.map(d => d.data()), ins = moves.filter(m => m.type === "in");
   const exps = expS.docs.map(d => d.data()).filter(e => !(e.fromInv || ins.some(m => m.date === e.date && Math.round(+m.total || 0) === Math.round(+e.amount || 0))));
   const expCat = {}; exps.forEach(e => { const k = e.cat || "e_other"; expCat[k] = (expCat[k] || 0) + (+e.amount || 0); });
   const sup = {}; ins.forEach(m => { const k = m.supplier || "—"; sup[k] = (sup[k] || 0) + (+m.total || 0); });
+  const shopLab = { hy: "Գնումների ցուցակ", ru: "Список покупок", en: "Shopping list" }[(st.wkMail && st.wkMail.lang) || "hy"] || "Գնումների ցուցակ";
+  shopS.docs.map(d => d.data()).filter(x => x.status === "bought" && +x.price > 0).forEach(x => { if (+x.stockAdded > 0) sup[shopLab] = (sup[shopLab] || 0) + (+x.price); else expCat.e_cons = (expCat.e_cons || 0) + (+x.price); });
   const salBy = {}; paysS.docs.map(d => d.data()).forEach(p => { const k = staff[p.staffId] || "—"; salBy[k] = (salBy[k] || 0) + (+p.amount || 0); });
   regS.docs.map(d => d.data()).forEach(r => { if (r.salaryTaken && +r.salaryTaken.amount > 0) { const k = staff[r.salaryTaken.staffId] || "—"; salBy[k] = (salBy[k] || 0) + (+r.salaryTaken.amount); } });
   let loss = 0; moves.forEach(m => { if (m.type === "off") (m.items || []).forEach(l => loss += lineCost(l.id) * (+l.qty || 0)); if (m.type === "count" && +m.diffValue < 0) loss += -m.diffValue; });

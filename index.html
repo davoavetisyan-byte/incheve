@@ -3691,8 +3691,8 @@ function openConsEdit(){const el=document.createElement("div");el.className="vsh
   $("ce_def").onclick=()=>{$("ce_t").value=CONS_DEF.join("\n")};
   $("ce_s").onclick=async()=>{const L=[...new Set($("ce_t").value.split("\n").map(x=>x.trim()).filter(Boolean))];try{S.settings={...S.settings,consumables:L};await S.db.doc("settings/main").set(S.settings);el.remove();toast(t("saved"));if(S.tab==="shop")renderShop()}catch(e){toast(errMsg(e))}}}
 /* expenses for a date range, incl. priced purchases from the shopping list */
-async function expRange(a,b){let L=[];try{L=(await S.db.collection("expenses").where("date",">=",a).where("date","<=",b).get()).docs.map(d=>({id:d.id,...d.data()}))}catch(e){}
-  try{(await S.db.collection("shop").where("date",">=",a).where("date","<=",b).get()).docs.forEach(d=>{const x=d.data();if(x.status==="bought"&&+x.price>0&&!(+x.stockAdded>0))L.push({id:"shop_"+d.id,shop:true,date:x.date,cat:"e_cons",amount:+x.price,supplier:t("t_shop"),note:dnC(x.name)+" × "+shQty(x),ts:x.boughtAt||0})})}catch(e){}
+async function expRange(a,b,withStock){let L=[];try{L=(await S.db.collection("expenses").where("date",">=",a).where("date","<=",b).get()).docs.map(d=>({id:d.id,...d.data()}))}catch(e){}
+  try{(await S.db.collection("shop").where("date",">=",a).where("date","<=",b).get()).docs.forEach(d=>{const x=d.data();if(x.status==="bought"&&+x.price>0&&(withStock||!(+x.stockAdded>0)))L.push({id:"shop_"+d.id,shop:true,shopStock:+x.stockAdded>0,date:x.date,cat:"e_cons",amount:+x.price,supplier:t("t_shop"),note:dnC(x.name)+" × "+shQty(x),ts:x.boughtAt||0})})}catch(e){}
   return L}
 
 /* ---------- staff & pay ---------- */
@@ -4177,7 +4177,7 @@ async function loadRange(a,b,da,db){const key=da+"|"+db+"|"+(+a)+"|"+(+b);const 
     q(S.db.collection("archive").where("day",">=",da).where("day","<=",db).get()),
     q(S.db.collection("imported").where("day",">=",da).where("day","<=",db).get()),
     q(S.db.collection("moves").where("date",">=",da).where("date","<=",db).get()),
-    expRange(da,db).catch(()=>[]),
+    expRange(da,db,true).catch(()=>[]),
     q(S.db.collection("payments").where("date",">=",da).where("date","<=",db).get()),
     q(S.db.collection("registers").where("openedAt",">=",+new Date(da+"T00:00")).where("openedAt","<=",+new Date(db+"T23:59:59")).get())]);
   if(sl)out.sales=sl.docs.map(d=>d.data());if(ar)ar.docs.forEach(d=>out.sales.push(...(d.data().sales||[])));
@@ -4275,7 +4275,7 @@ async function renderRep(){
   if(!S._repDoc){S._repDoc=true;document.addEventListener("click",()=>{if($("rp_pm"))$("rp_pm").innerHTML="";if($("rp_em"))$("rp_em").innerHTML=""})}
   const [D,Dp]=await Promise.all([loadRange(P.a,P.b,P.da,P.db),loadRange(pa,pb,dayKey(pa),dayKey(new Date(pb-1)))]);if(S.tab!=="rep")return;
   /* stock purchases are inventory: they reach profit through cost of goods sold, so leave invoice expenses out of P&L (else counted twice) */
-  [D,Dp].forEach(X=>{(X.exp||[]).filter(e=>e.cat==="e_salary").forEach(e=>X.pays.push({id:"exp_"+(e.id||""),fromExp:true,staffId:e.staffId||"",who:e.supplier||e.note||"",date:e.date,amount:+e.amount||0}));X.exp=(X.exp||[]).filter(e=>e.cat!=="e_salary");X.expAll=(X.exp||[]).slice();const ins=(X.moves||[]).filter(mv=>mv.type==="in");X.exp=(X.exp||[]).filter(e=>!(e.fromInv||ins.some(mv=>mv.date===e.date&&Math.round(+mv.total||0)===Math.round(+e.amount||0))))});
+  [D,Dp].forEach(X=>{X.shopStock=(X.exp||[]).filter(e=>e.shopStock);X.exp=(X.exp||[]).filter(e=>!e.shopStock);(X.exp||[]).filter(e=>e.cat==="e_salary").forEach(e=>X.pays.push({id:"exp_"+(e.id||""),fromExp:true,staffId:e.staffId||"",who:e.supplier||e.note||"",date:e.date,amount:+e.amount||0}));X.exp=(X.exp||[]).filter(e=>e.cat!=="e_salary");X.expAll=(X.exp||[]).slice();const ins=(X.moves||[]).filter(mv=>mv.type==="in");X.exp=(X.exp||[]).filter(e=>!(e.fromInv||ins.some(mv=>mv.date===e.date&&Math.round(+mv.total||0)===Math.round(+e.amount||0))))});
   const R=summarize(D),Rp=summarize(Dp);const lines=R.lines;
   const exp=D.exp.reduce((a,e)=>a+e.amount,0);const sal=D.pays.reduce((a,p)=>a+p.amount,0);
   const lossR={};let loss=0;(D.moves||[]).forEach(mv=>{if(mv.type==="off"){mv.items.forEach(l=>{const v=lineCost(l.id)*l.qty;loss+=v;lossR[t(mv.reason||"wr_other")]=(lossR[t(mv.reason||"wr_other")]||0)+v})}
@@ -4396,7 +4396,7 @@ async function renderRep(){
     OV=`<div class="rov nx nx-${isPhone()?"M":lay}">${H}</div>`;
   }
   const cashOut=()=>{if(!S.admin)return"";const purch=(D.moves||[]).filter(mv=>mv.type==="in");const pv=purch.reduce((a,mv)=>a+(+mv.total||0),0);
-    const parts=[];if(pv>0)parts.push([L3("Ապրանքի գնումներ","Закупка товара","Stock purchases"),pv,"#e8913a"]);if(sal>0)parts.push([t("e_salary"),sal,"#4f8fd6"]);
+    const parts=[];if(pv>0)parts.push([L3("Ապրանքի գնումներ","Закупка товара","Stock purchases"),pv,"#e8913a"]);const shv=(D.shopStock||[]).reduce((a,e)=>a+(+e.amount||0),0);if(shv>0)parts.push([L3("Գնումների ցուցակ (պահեստ)","Список покупок (на склад)","Shopping list (to stock)"),shv,"#d4a017"]);if(sal>0)parts.push([t("e_salary"),sal,"#4f8fd6"]);
     const exC={};D.exp.forEach(e=>{const k=t(e.cat);exC[k]=(exC[k]||0)+(+e.amount||0)});const EP=["#c8507a","#57b98f","#a08ad9","#3fa7a0","#b56576","#8c6bb1","#6b8e23"];let ei=0;Object.entries(exC).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=>{if(v>0)parts.push([k,v,EP[(ei++)%EP.length]])});
     const out=parts.reduce((a,x)=>a+x[1],0),inc=R.tot.net;if(!out&&!inc)return"";
     let acc=0;const g=out?parts.map(([,v,c])=>{const a0=acc/out*360;acc+=v;return`${c} ${a0.toFixed(2)}deg ${(acc/out*360).toFixed(2)}deg`}).join(","):"var(--line) 0 360deg";
@@ -4407,7 +4407,7 @@ async function renderRep(){
     const pendH=pend.length?`<details class="cfdet"><summary>${L3("Սպասում է վճարման (չի հաշվված)","Ожидает выплаты (не учтено)","Awaiting payment (not counted)")} · ${pend.length}<b class="num">${money(Math.round(pendT))}</b></summary>${pend.map(x=>`<div><span>${esc(shortDay(x.date))} · ${esc(dn(staffName(x.staffId)||"—"))} <small class="muted">${x.salary?L3("աշխ.","зп","sal.")+" "+money(x.salary):""}${x.salary&&x.tips?" · ":""}${x.tips?L3("թեյ.","чай","tips")+" "+money(x.tips):""}</small></span><b class="num">${money(Math.round(x.salary+x.tips))}</b></div>`).join("")}</details>`:"";
     const supT={};purch.forEach(mv=>{const n=mv.supplier||L3("Առանց մատակարարի","Без поставщика","No supplier");supT[n]=(supT[n]||0)+(+mv.total||0)});
     /* per-day money in vs out */
-    const outD={};const addD=(k,v)=>{if(k)outD[k]=(outD[k]||0)+v};purch.forEach(mv=>addD(mv.date,+mv.total||0));D.exp.forEach(e=>addD(e.date,+e.amount||0));D.pays.forEach(p=>addD(p.date,+p.amount||0));
+    const outD={};const addD=(k,v)=>{if(k)outD[k]=(outD[k]||0)+v};purch.forEach(mv=>addD(mv.date,+mv.total||0));(D.shopStock||[]).forEach(e=>addD(e.date,+e.amount||0));D.exp.forEach(e=>addD(e.date,+e.amount||0));D.pays.forEach(p=>addD(p.date,+p.amount||0));
     let B=null;if(!single){let K=keys.map(k=>[k,(R.days[k]||{}).net||0,outD[k]||0,shortDay(k)]);if(K.length>62){const M={};K.forEach(([k,a,b])=>{const mk=k.slice(0,7);M[mk]=M[mk]||[0,0];M[mk][0]+=a;M[mk][1]+=b});const MN=MON_S[lang]||MON_S.en;K=Object.keys(M).sort().map(mk=>[mk,M[mk][0],M[mk][1],MN[+mk.slice(5)-1]])}
       const mx=Math.max(1,...K.map(x=>Math.max(x[1],x[2])));B=`<div class="cfbars${K.length>16?" many":""}">${K.map(([k,a,b,l])=>`<div class="cfb" title="${esc(l)} · ${L3("մուտք","приход","in")} ${money(Math.round(a))} · ${L3("ելք","расход","out")} ${money(Math.round(b))}"><span class="cfp"><i class="in" style="height:${Math.max(a?3:0,a/mx*100).toFixed(1)}%"></i><i class="out" style="height:${Math.max(b?3:0,b/mx*100).toFixed(1)}%"></i></span><small>${esc(K.length>16?String(l).replace(/\s.*$/,""):l)}</small></div>`).join("")}</div><div class="cfkey"><span><i class="in"></i>${L3("Վաճառք","Продажи","Sales")}</span><span><i class="out"></i>${L3("Ծախսեր և վճարումներ","Расходы и выплаты","Spending")}</span></div>`}
     const det=(ti,o)=>{const E=Object.entries(o).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]);return E.length?`<details class="cfdet"><summary>${ti}<b class="num">${money(Math.round(E.reduce((a,x)=>a+x[1],0)))}</b></summary>${E.map(([n,v])=>`<div><span>${esc(n)}</span><b class="num">${money(Math.round(v))}</b></div>`).join("")}</details>`:""};
@@ -5922,7 +5922,7 @@ function applySession(){const se=S.session;const bz=boundStaff();
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261114152237";
+const BUILD="20261114154555";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span class="upsp" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2.5l1.9 5.6 5.6 1.9-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.9z"/><path d="M19 15l.8 2.2 2.2.8-2.2.8L19 21l-.8-2.2-2.2-.8 2.2-.8z"/></svg></span><span>${L3("Կա նոր տարբերակ","Есть новая версия","New version available")}</span><button type="button" class="upgo">${L3("Թարմացնել","Обновить","Update")}</button>`;document.body.appendChild(el);
