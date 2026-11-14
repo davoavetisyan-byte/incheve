@@ -4181,9 +4181,10 @@ async function loadRange(a,b,da,db){const key=da+"|"+db+"|"+(+a)+"|"+(+b);const 
     q(S.db.collection("payments").where("date",">=",da).where("date","<=",db).get()),
     q(S.db.collection("registers").where("openedAt",">=",+new Date(da+"T00:00")).where("openedAt","<=",+new Date(db+"T23:59:59")).get())]);
   if(sl)out.sales=sl.docs.map(d=>d.data());if(ar)ar.docs.forEach(d=>out.sales.push(...(d.data().sales||[])));
-  if(im)out.imported=im.docs.map(d=>d.data());if(mv)out.moves=mv.docs.map(d=>d.data());out.exp=ex||[];if(py)out.pays=py.docs.map(d=>d.data());
+  if(im)out.imported=im.docs.map(d=>d.data());if(mv)out.moves=mv.docs.map(d=>d.data());out.exp=ex||[];if(py)out.pays=py.docs.map(d=>({id:d.id,...d.data()}));out.pend=[];
   /* salary taken from the till at close is a payment too (same as the staff page counts it) */
-  if(rg)rg.docs.forEach(d=>{const x=d.data();if(x.salaryTaken&&+x.salaryTaken.amount>0)out.pays.push({fromReg:true,staffId:x.salaryTaken.staffId,date:dayKey(new Date(x.openedAt)),amount:+x.salaryTaken.amount})});
+  if(rg)rg.docs.forEach(d=>{const x=d.data();if(x.salaryTaken&&+x.salaryTaken.amount>0)out.pays.push({id:"reg_"+d.id,fromReg:true,staffId:x.salaryTaken.staffId,date:dayKey(new Date(x.openedAt)),amount:+x.salaryTaken.amount});
+    const X=x.transfer;if(X&&!X.paidAt&&(+X.salary>0||+X.tips>0))out.pend.push({staffId:X.staffId||x.cashier||"",date:dayKey(new Date(x.openedAt)),salary:+X.salary||0,tips:+X.tips||0})});
   _rangeCache.set(key,{at:Date.now(),v:out});if(_rangeCache.size>24)_rangeCache.delete(_rangeCache.keys().next().value);
   return JSON.parse(JSON.stringify(out))}
 Object.assign(T,{
@@ -4274,7 +4275,7 @@ async function renderRep(){
   if(!S._repDoc){S._repDoc=true;document.addEventListener("click",()=>{if($("rp_pm"))$("rp_pm").innerHTML="";if($("rp_em"))$("rp_em").innerHTML=""})}
   const [D,Dp]=await Promise.all([loadRange(P.a,P.b,P.da,P.db),loadRange(pa,pb,dayKey(pa),dayKey(new Date(pb-1)))]);if(S.tab!=="rep")return;
   /* stock purchases are inventory: they reach profit through cost of goods sold, so leave invoice expenses out of P&L (else counted twice) */
-  [D,Dp].forEach(X=>{X.expAll=(X.exp||[]).slice();const ins=(X.moves||[]).filter(mv=>mv.type==="in");X.exp=(X.exp||[]).filter(e=>!(e.fromInv||ins.some(mv=>mv.date===e.date&&Math.round(+mv.total||0)===Math.round(+e.amount||0))))});
+  [D,Dp].forEach(X=>{(X.exp||[]).filter(e=>e.cat==="e_salary").forEach(e=>X.pays.push({id:"exp_"+(e.id||""),fromExp:true,staffId:e.staffId||"",who:e.supplier||e.note||"",date:e.date,amount:+e.amount||0}));X.exp=(X.exp||[]).filter(e=>e.cat!=="e_salary");X.expAll=(X.exp||[]).slice();const ins=(X.moves||[]).filter(mv=>mv.type==="in");X.exp=(X.exp||[]).filter(e=>!(e.fromInv||ins.some(mv=>mv.date===e.date&&Math.round(+mv.total||0)===Math.round(+e.amount||0))))});
   const R=summarize(D),Rp=summarize(Dp);const lines=R.lines;
   const exp=D.exp.reduce((a,e)=>a+e.amount,0);const sal=D.pays.reduce((a,p)=>a+p.amount,0);
   const lossR={};let loss=0;(D.moves||[]).forEach(mv=>{if(mv.type==="off"){mv.items.forEach(l=>{const v=lineCost(l.id)*l.qty;loss+=v;lossR[t(mv.reason||"wr_other")]=(lossR[t(mv.reason||"wr_other")]||0)+v})}
@@ -4293,7 +4294,7 @@ async function renderRep(){
   lines.forEach(l=>{const k=l.name+(l.variant?` · ${t(l.variant)}`:"");const it=byItem[k]=byItem[k]||{q:0,a:0,c:0};it.q+=l.qty;it.a+=l.amt;it.c+=lineCost(l.id)*l.qty;
     const g=t("g_"+(l.group||"other"));byGroup[g]=(byGroup[g]||0)+l.amt;const pk=l.pay==="imported"?t("imported"):t(l.pay);byPay[pk]=(byPay[pk]||0)+l.amt;if(l.variant==="Glass"||l.variant==="Bottle")gb[l.variant]+=l.amt;
     if(l.hour!=null)byHour[l.hour]=(byHour[l.hour]||0)+l.amt;if(l.pay!=="imported"){const sn=staffName(l.staffId)||"—";byStaff[sn]=(byStaff[sn]||0)+l.amt}});
-  const ex={};D.exp.forEach(e=>ex[t(e.cat)]=(ex[t(e.cat)]||0)+e.amount);if(sal)ex[t("e_salary")]=sal;
+  const ex={};D.exp.forEach(e=>ex[t(e.cat)]=(ex[t(e.cat)]||0)+e.amount);if(sal)ex[t("e_salary")]=(ex[t("e_salary")]||0)+sal;
   const rev=lines.reduce((a,l)=>a+l.amt,0);const allI=Object.entries(byItem).sort((x,y)=>y[1].a-x[1].a);let cum=0;const abcOf={};allI.forEach(([n,v])=>{cum+=v.a;const sh=rev?cum/rev:1;abcOf[n]=sh<=0.8+1e-9||cum===v.a?"A":sh<=0.95?"B":"C"});
   const byW={};lines.forEach(l=>{const o=byW[l.name]=byW[l.name]||{a:0,c:0,nc:0,q:0};o.a+=l.amt;o.q+=l.qty;const lc=lineCost(l.id)*l.qty;o.c+=lc;if(!lc)o.nc+=l.amt});
   const prof=Object.entries(byW).filter(([,v])=>v.c>0).map(([n,v])=>[n,v,v.a-v.c,v.a?(v.a-v.c)/v.a*100:0]).sort((x,y)=>y[2]-x[2]);const ncRev=Object.values(byW).reduce((a,v)=>a+v.nc,0);const ncN=Object.values(byW).filter(v=>v.nc>0).length;
@@ -4399,7 +4400,11 @@ async function renderRep(){
     const exC={};D.exp.forEach(e=>{const k=t(e.cat);exC[k]=(exC[k]||0)+(+e.amount||0)});const EP=["#c8507a","#57b98f","#a08ad9","#3fa7a0","#b56576","#8c6bb1","#6b8e23"];let ei=0;Object.entries(exC).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=>{if(v>0)parts.push([k,v,EP[(ei++)%EP.length]])});
     const out=parts.reduce((a,x)=>a+x[1],0),inc=R.tot.net;if(!out&&!inc)return"";
     let acc=0;const g=out?parts.map(([,v,c])=>{const a0=acc/out*360;acc+=v;return`${c} ${a0.toFixed(2)}deg ${(acc/out*360).toFixed(2)}deg`}).join(","):"var(--line) 0 360deg";
-    const bySt={};D.pays.forEach(p=>{const n=dn(staffName(p.staffId)||"—").split(/\s+/)[0];bySt[n]=(bySt[n]||0)+(+p.amount||0)});
+    const pn=p=>p.staffId?dn(staffName(p.staffId)||"—"):(p.who?dn(p.who):"—");const bySt={};D.pays.forEach(p=>{const n=pn(p);bySt[n]=(bySt[n]||0)+(+p.amount||0)});
+    const srcOf=p=>p.fromReg?L3("դրամարկղից","из кассы","from till"):p.fromExp?L3("ծախսերից","из расходов","from expenses"):String(p.id||"").startsWith("xf_")?L3("փոխանցում","перевод","transfer"):L3("աշխատակազմի էջից","со страницы персонала","staff page");
+    const payList=D.pays.length?`<details class="cfdet"><summary>${L3("Աշխատավարձի բոլոր վճարումները","Все выплаты зарплаты","All salary payments")} · ${D.pays.length}<b class="num">${money(Math.round(sal))}</b></summary>${D.pays.slice().sort((a,b)=>(a.date||"").localeCompare(b.date||"")).map(p=>`<div><span>${esc(shortDay(p.date||""))} · ${esc(pn(p))} <small class="muted">${esc(srcOf(p))}</small></span><b class="num">${money(Math.round(+p.amount||0))}</b></div>`).join("")}</details>`:"";
+    const pend=(D.pend||[]);const pendT=pend.reduce((a,x)=>a+x.salary+x.tips,0);
+    const pendH=pend.length?`<details class="cfdet"><summary>${L3("Սպասում է վճարման (չի հաշվված)","Ожидает выплаты (не учтено)","Awaiting payment (not counted)")} · ${pend.length}<b class="num">${money(Math.round(pendT))}</b></summary>${pend.map(x=>`<div><span>${esc(shortDay(x.date))} · ${esc(dn(staffName(x.staffId)||"—"))} <small class="muted">${x.salary?L3("աշխ.","зп","sal.")+" "+money(x.salary):""}${x.salary&&x.tips?" · ":""}${x.tips?L3("թեյ.","чай","tips")+" "+money(x.tips):""}</small></span><b class="num">${money(Math.round(x.salary+x.tips))}</b></div>`).join("")}</details>`:"";
     const supT={};purch.forEach(mv=>{const n=mv.supplier||L3("Առանց մատակարարի","Без поставщика","No supplier");supT[n]=(supT[n]||0)+(+mv.total||0)});
     /* per-day money in vs out */
     const outD={};const addD=(k,v)=>{if(k)outD[k]=(outD[k]||0)+v};purch.forEach(mv=>addD(mv.date,+mv.total||0));D.exp.forEach(e=>addD(e.date,+e.amount||0));D.pays.forEach(p=>addD(p.date,+p.amount||0));
@@ -4410,7 +4415,7 @@ async function renderRep(){
     return`<div class="card cfcard"><h3>${L3("Վաճառք և ծախսեր","Продажи и расходы","Sales & spending")}</h3><small class="muted cfsub">${L3("Իրական վճարումները՝ ապրանքի գնումներ, աշխատավարձ, ծախսեր","Реальные выплаты: закупка, зарплата, расходы","Actual payments: stock purchases, salaries, expenses")}</small>
      <div class="cfk"><div><small>${L3("Վաճառք","Продажи","Sales")}</small><b class="num cin">${money(Math.round(inc))}</b></div><div><small>${L3("Ծախսեր և վճարումներ","Расходы и выплаты","Spending")}</small><b class="num cout">${money(Math.round(out))}</b></div><div><small>${L3("Տարբերություն","Разница","Difference")}</small><b class="num ${bal<0?"neg":"cin"}">${bal<0?"−":""}${money(Math.abs(Math.round(bal)))}</b></div></div>
      ${out?`<div class="cfpie"><div class="cfd" style="background:conic-gradient(${g})"><span><small>${L3("Ծախս","Расход","Spent")}</small><b class="num">${kmb(out)}</b></span></div><div class="cfl">${parts.map(([n,v,c])=>`<div><i style="background:${c}"></i><span>${esc(n)}</span><b class="num">${money(Math.round(v))}</b><em class="num">${Math.round(v/out*100)}%</em></div>`).join("")}</div></div>`:`<p class="muted">${L3("Այս ժամանակահատվածում ծախս կամ վճարում չկա","Нет расходов и выплат за период","No spending in this period")}</p>`}
-     ${B||""}${det(L3("Աշխատավարձ ըստ աշխատակցի","Зарплата по сотрудникам","Salaries by person"),bySt)}${det(L3("Գնումներ ըստ մատակարարի","Закупки по поставщикам","Purchases by supplier"),supT)}</div>`};
+     ${B||""}${det(L3("Աշխատավարձ ըստ աշխատակցի","Зарплата по сотрудникам","Salaries by person"),bySt)}${payList}${pendH}${det(L3("Գնումներ ըստ մատակարարի","Закупки по поставщикам","Purchases by supplier"),supT)}</div>`};
   $("repBody").innerHTML=`${OV||`<div class="rov">${kpis}${empty}${body}</div>`}${cashOut()}${isPhone()?itemsListHTML(lines):""}
    ${wdayHTML(R,P)}<div class="summ"><div class="exphead"><b>${t("r_export")}</b><button class="btn sm ghost" id="rp_dcsv"${dayRows.length?"":" disabled"}>CSV</button></div>
     <div class="twrap"><table class="dtab"><thead><tr><th>${t("date")}</th><th class="r">${t("r_gross")}</th><th class="r hmc">${t("r_ref")}</th><th class="r hmc">${t("r_disc")}</th><th class="r">${t("r_net")}</th><th class="r hmc">${t("r_cogs")}</th><th class="r">${t("r_gp")}</th></tr></thead>
@@ -5917,7 +5922,7 @@ function applySession(){const se=S.session;const bz=boundStaff();
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261114145021";
+const BUILD="20261114152237";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span class="upsp" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2.5l1.9 5.6 5.6 1.9-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.9z"/><path d="M19 15l.8 2.2 2.2.8-2.2.8L19 21l-.8-2.2-2.2-.8 2.2-.8z"/></svg></span><span>${L3("Կա նոր տարբերակ","Есть новая версия","New version available")}</span><button type="button" class="upgo">${L3("Թարմացնել","Обновить","Update")}</button>`;document.body.appendChild(el);
