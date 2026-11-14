@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#183f60">
 <meta name="robots" content="noindex">
-<title>Incheve Back Office</title>
+<title>Incheve - Management</title><meta name="apple-mobile-web-app-title" content="Incheve"><meta name="application-name" content="Incheve">
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
@@ -2994,7 +2994,7 @@ function renderShell(){document.body.classList.toggle("can-mgr",!!(S.admin||S.mg
   const rc=$("roleChip");if(S.db){rc.hidden=false;rc.textContent=S.admin?t("owner"):S.write?t("staffRole"):t("viewer")}
   if(VIEW0&&S.db&&(!loginOn()||S.session)){if(tabsFor().includes(VIEW0.tab)||(VIEW0.tab==="imp"&&S.admin)){S.tab=VIEW0.tab;if(VIEW0.tab==="tables"&&VIEW0.ot)S.openTable=VIEW0.ot;if(VIEW0.rep&&S.rep)Object.assign(S.rep,VIEW0.rep)}VIEW0=null}
   if(!tabsFor().includes(S.tab)&&!(S.tab==="imp"&&S.admin))S.tab="tables";
-  $("pageTitle").textContent=t(TABKEY[S.tab]);document.title=t(TABKEY[S.tab])+" · Incheve";
+  $("pageTitle").textContent=t(TABKEY[S.tab]);document.title=appTitle();
   if($("bnav"))$("bnav").innerHTML=S.db?bottomNav():"";
   if(typeof refreshOnBar==="function")refreshOnBar();if($("bellSlot"))$("bellSlot").innerHTML=bellHTML();if($("whoSlot"))$("whoSlot").innerHTML=whoChip();if($("langSlot"))$("langSlot").innerHTML=langBtnHTML();if($("langMenu"))$("langMenu").remove();if(typeof updOff==="function")updOff();const rcp=$("roleChip");
   if($("railFoot"))$("railFoot").innerHTML=railFoot()+(loginOn()&&S.session?`<div class="rofoot"><button class="btn ghost" id="railOut" title="${esc(t("lg_out")+" · "+sessName())}" aria-label="${esc(t("lg_out")+" · "+sessName())}">${DOOR_SVG}<span class="ro-t">${t("lg_out")} · ${esc(sessName())}</span></button></div>`:"");if(typeof applyTheme==="function")applyTheme();
@@ -5295,6 +5295,7 @@ function wireAccess(el){
     card.querySelector("[data-acmore]").onclick=e=>{const sw=card.querySelector(".acsw");sw.hidden=!sw.hidden;e.target.textContent=(sw.hidden?L3("Մանրամասն","Подробнее","Details"):L3("Թաքցնել","Скрыть","Hide"))+" ›"}});
   el.querySelector("#ac_save").onclick=async()=>{const P={...((S.settings||{}).perms||{})};el.querySelectorAll("[data-acp]").forEach(c=>{const sid=c.dataset.acs;P[sid]={...(P[sid]||{}),[c.dataset.acp]:c.checked}});
     try{S.settings={...S.settings,perms:P};await S.db.doc("settings/main").set(S.settings);toast(t("saved"));el.remove();renderSet()}catch(e){toast(errMsg(e))}}}
+function appTitle(){return isPhone()?"Incheve":L3("Ինչևէ - Կառավարում","Инчеве - Управление","Incheve - Management")}
 function renderSet(){if(!LI.users)LI.users=ICONS.staff;const st=S.settings;const nIn=allTables().filter(x=>x.area==="in").length,nOut=allTables().filter(x=>x.area==="out").length;const tx=taxCfg();const MG=S.admin||S.mgr;
   const nB=S.staff.filter(z=>z.active!==false&&z.level!=="manager").length,nM=S.staff.filter(z=>z.active!==false&&z.level==="manager").length;
   const ck=chkLists();const w=st.wkMail||{};const nw=(w.to||[]).length;const ON=L3("Միացված","Вкл.","On"),OFF=L3("Անջատված","Выкл.","Off");
@@ -5916,7 +5917,7 @@ function applySession(){const se=S.session;const bz=boundStaff();
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261114144600";
+const BUILD="20261114144814";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span class="upsp" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2.5l1.9 5.6 5.6 1.9-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.9z"/><path d="M19 15l.8 2.2 2.2.8-2.2.8L19 21l-.8-2.2-2.2-.8 2.2-.8z"/></svg></span><span>${L3("Կա նոր տարբերակ","Есть новая версия","New version available")}</span><button type="button" class="upgo">${L3("Թարմացնել","Обновить","Update")}</button>`;document.body.appendChild(el);
