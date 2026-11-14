@@ -5101,7 +5101,7 @@ function orderTextRu(it,o){const st=S.settings;const c=hy2ru(o.contact||"");cons
   const days=w.length?(run?`${/^(вт|ср)/.test(DAYRU[w[0]])?"со":"с"} ${DAYRU[w[0]]} по ${DAYRU2[w[w.length-1]]}`:w.map(d=>DAYRU2[d]).join(", ")):"";
   const rv=recvParts(st.ordRecv||ORD_DEF.recv);
   const L=[c?`${c}, здравствуйте!`:"Здравствуйте!","","Хочу заказать:",...it.map(r=>`${r.p.name} — ${r.q} ${u(r.p)}`)];if(o.note&&o.note.trim())L.push("",o.note.trim());
-  L.push("",`Адрес доставки: ${st.ordAddrRu||"г. Гюмри, ул. Горганяна 234/1"} (винный бар «Инчеве»)`);if(rv.name)L.push(`Получатель: ${hy2ru(rv.name)}`);if(rv.phone)L.push(`Телефон: ${rv.phone}`);
+  L.push("",`Адрес доставки: ${st.ordAddrRu||"г. Гюмри, ул. Горганяна 234/1"} (винный бар «Инчевэ»)`);if(rv.name)L.push(`Получатель: ${hy2ru(rv.name)}`);if(rv.phone)L.push(`Телефон: ${rv.phone}`);
   L.push("","Реквизиты ИП:",st.ordLegalRu||"ИП Кристина Солоян",`ИНН ${st.taxId||"57448313"}`);
   if(days)L.push("",`Пожалуйста, привезите заказ в рабочие дни бара: ${days}, с ${hoursOpen()} до ${hoursClose()}.`);
   L.push("","Спасибо!");return L.join("\n")}
@@ -5295,7 +5295,7 @@ function wireAccess(el){
     card.querySelector("[data-acmore]").onclick=e=>{const sw=card.querySelector(".acsw");sw.hidden=!sw.hidden;e.target.textContent=(sw.hidden?L3("Մանրամասն","Подробнее","Details"):L3("Թաքցնել","Скрыть","Hide"))+" ›"}});
   el.querySelector("#ac_save").onclick=async()=>{const P={...((S.settings||{}).perms||{})};el.querySelectorAll("[data-acp]").forEach(c=>{const sid=c.dataset.acs;P[sid]={...(P[sid]||{}),[c.dataset.acp]:c.checked}});
     try{S.settings={...S.settings,perms:P};await S.db.doc("settings/main").set(S.settings);toast(t("saved"));el.remove();renderSet()}catch(e){toast(errMsg(e))}}}
-function appTitle(){return isPhone()?"Incheve":L3("Ինչևէ - Կառավարում","Инчеве - Управление","Incheve - Management")}
+function appTitle(){return isPhone()?"Incheve":L3("Ինչևէ - Կառավարում","Инчевэ - Управление","Incheve - Management")}
 function renderSet(){if(!LI.users)LI.users=ICONS.staff;const st=S.settings;const nIn=allTables().filter(x=>x.area==="in").length,nOut=allTables().filter(x=>x.area==="out").length;const tx=taxCfg();const MG=S.admin||S.mgr;
   const nB=S.staff.filter(z=>z.active!==false&&z.level!=="manager").length,nM=S.staff.filter(z=>z.active!==false&&z.level==="manager").length;
   const ck=chkLists();const w=st.wkMail||{};const nw=(w.to||[]).length;const ON=L3("Միացված","Вкл.","On"),OFF=L3("Անջատված","Выкл.","Off");
@@ -5917,7 +5917,7 @@ function applySession(){const se=S.session;const bz=boundStaff();
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261114144814";
+const BUILD="20261114145021";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span class="upsp" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2.5l1.9 5.6 5.6 1.9-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.9z"/><path d="M19 15l.8 2.2 2.2.8-2.2.8L19 21l-.8-2.2-2.2-.8 2.2-.8z"/></svg></span><span>${L3("Կա նոր տարբերակ","Есть новая версия","New version available")}</span><button type="button" class="upgo">${L3("Թարմացնել","Обновить","Update")}</button>`;document.body.appendChild(el);
