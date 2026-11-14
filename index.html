@@ -2846,6 +2846,9 @@ input.sw{appearance:none;-webkit-appearance:none;width:46px;height:28px;border-r
 .sap .sastp{height:46px!important;border:1.5px solid var(--primary)!important;border-radius:12px!important}.sap .sastp .iac{width:44px!important;min-width:44px!important;font-size:22px!important}
 .sap .sastp input{font-size:18px!important;font-weight:700!important;color:var(--ink);height:100%!important;min-height:0!important;padding:0!important;box-shadow:none!important;outline:0}
 .istk{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 16px 0;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}.istk span{font-size:13px;color:var(--muted)}.istk b{color:var(--ink);font-weight:600;white-space:nowrap}.istk .btn{white-space:nowrap;flex:none}
+.qty button,.shq .iac,.sastp .iac{transition:background .12s,color .12s}
+.qty button:first-child:active,.qty button:first-child.tap,.shq .iac:first-child:active,.shq .iac:first-child.tap,.sastp .iac:first-child:active,.sastp .iac:first-child.tap{background:var(--bad)!important;color:#fff!important}
+.qty button:last-child:active,.qty button:last-child.tap,.shq .iac:last-child:active,.shq .iac:last-child.tap,.sastp .iac:last-child:active,.sastp .iac:last-child.tap{background:var(--primary)!important;color:#fff!important}
 </style>
 
 <header class="appbar"><button class="iconbtn" id="menuBtn" aria-label="Menu"><svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><h1 id="pageTitle">Incheve</h1>
@@ -5974,7 +5977,7 @@ function applySession(){const se=S.session;const bz=boundStaff();
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261114171215";
+const BUILD="20261114172444";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span class="upsp" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2.5l1.9 5.6 5.6 1.9-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.9z"/><path d="M19 15l.8 2.2 2.2.8-2.2.8L19 21l-.8-2.2-2.2-.8 2.2-.8z"/></svg></span><span>${L3("Կա նոր տարբերակ","Есть новая версия","New version available")}</span><button type="button" class="upgo">${L3("Թարմացնել","Обновить","Update")}</button>`;document.body.appendChild(el);
@@ -6482,6 +6485,7 @@ function gridCls(g){if(!g)return;const L=sellView()==="list";g.classList.toggle(
 const eyeSVG=()=>`<svg class="eyei" viewBox="0 0 24 24" aria-hidden="true"><g class="lid"><path class="eo" d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><g class="pupil"><circle class="pp" cx="12" cy="12" r="2.8"/></g></g></svg>`;
 (function(){let raf=0,mx=0,my=0;const upd=()=>{raf=0;document.querySelectorAll(".eyei").forEach(e=>{const r=e.getBoundingClientRect();if(!r.width)return;const cx=r.left+r.width/2,cy=r.top+r.height*.54;const dx=mx-cx,dy=my-cy,d=Math.hypot(dx,dy)||1,k=Math.min(1,d/160);e.style.setProperty("--px",(dx/d*2.2*k).toFixed(2)+"px");e.style.setProperty("--py",(dy/d*1.3*k).toFixed(2)+"px")})};
   addEventListener("pointermove",e=>{mx=e.clientX;my=e.clientY;if(!raf)raf=requestAnimationFrame(upd)},{passive:true})})();
+document.addEventListener("pointerdown",e=>{const b=e.target.closest&&e.target.closest(".qty button,.shq .iac,.sastp .iac");if(!b)return;b.classList.add("tap");setTimeout(()=>b.classList.remove("tap"),220)},{passive:true});
 const RUSH_IC='<svg class="rbolt" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2.75 5.5 13.25h5.75L10.5 21.25 18.5 10.75h-5.75z"/></svg>';
 const rushBtn=()=>`<button class="rushb" data-rush aria-pressed="${RUSH}" title="${t("rush")}" aria-label="${t("rush")}">${RUSH_IC}<span>${t("rush")}</span></button>`;
 /* ---- table timer level ---- */
