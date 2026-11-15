@@ -2898,6 +2898,7 @@ input.sw{appearance:none;-webkit-appearance:none;width:46px;height:28px;border-r
 .rst{display:flex;flex-direction:column;align-items:flex-end;line-height:1.15;white-space:nowrap}.rst b{font-size:16px;font-weight:600}.rst small{font-size:12px;color:var(--muted)}.rst.low b{color:#c98a12}
 .plist .prow .pm{min-width:0}.plist .prow .pt{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .plist .prow .pr2{align-items:center!important;align-self:center}.plist .prow .rst{justify-content:center;margin:0}
+.rpr{color:var(--muted);font-variant-numeric:tabular-nums}.rpg{font-style:normal;display:inline-flex;align-items:center;gap:2px;margin-left:8px}.rpg .rgl{width:11px;height:11px;stroke:var(--muted)!important;stroke-width:2.2}
 </style>
 
 <header class="appbar"><button class="iconbtn" id="menuBtn" aria-label="Menu"><svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><h1 id="pageTitle">Incheve</h1>
@@ -5908,9 +5909,10 @@ function recListHTML(L,SEL){let last="";return`<div class="plist">${L.map(s=>{co
 /* phone stock row: open bottle = small glass by the name + one muted line; stock stacked on the right; prices only when sorting by price/margin */
 const ROW_GL='<svg class="rgl" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10l-1 7a4 4 0 0 1-8 0z"/><path d="M12 14v7M8.5 21h7"/></svg>';
 function rowOpenIc(p){const d=openDays(p);if(d==null)return"";return`<span class="ropen${d>=openWarn()?" old":""}" title="${L3("Շիշը բաց է","Бутылка открыта","Bottle is open")}">${ROW_GL}</span>`}
-function rowSub(p,g,A){const bits=[];const d=openDays(p);if(d!=null)bits.push(`<span class="rso${d>=openWarn()?" old":""}">${d<1?L3("բաց է այսօր","открыта сегодня","opened today"):L3(`բաց է ${d} օր`,`открыта ${d} дн.`,`open ${d} day${d>1?"s":""}`)}</span>`);
+function rowSub(p,g,A){const bits=[];const d=openDays(p);if(d!=null)bits.push(`<span class="rso${d>=openWarn()?" old":""}">${d<1?L3("բաց՝ այսօր","откр. сегодня","open today"):L3(`բաց՝ ${d} օր`,`откр. ${d} дн.`,`open ${d}d`)}</span>`);
   const ed=expDays(p);if(ed!=null&&ed<=5)bits.push(`<span class="rso old">${ed<0?L3("ժամկետանց","просрочено","expired"):L3(`ժամկետ՝ ${ed} օր`,`срок ${ed} дн.`,`expires in ${ed}d`)}</span>`);
-  if(/^(price|margin)/.test(S.stockSort||"")){const c=S.costs[p.id];const m=c&&p.price?Math.round((1-c/p.price)*100):null;bits.push(`<span>${g?money(p.price)+" / "+money(g.price):p.variable?"—":money(p.price)}${A&&m!=null?` · <b class="rmg ${mgCls(m)}">${m}%</b>`:""}</span>`)}
+  if(!p.variable&&p.price!=null&&!(p.group==="ingredient"||p.ingredient)){const c=S.costs[p.id];const m=c&&p.price?Math.round((1-c/p.price)*100):null;
+    bits.push(`<span class="rpr">${money(p.price)}${g&&g.price?`<i class="rpg">${ROW_GL}${money(g.price)}</i>`:""}${A&&m!=null&&/^margin/.test(S.stockSort||"")?` <b class="rmg ${mgCls(m)}">${m}%</b>`:""}</span>`)}
   return bits.length?`<small class="rsub">${bits.join(" · ")}</small>`:""}
 function rowStk(p){if(p.stock==null)return"";if(p.stock<=0.0001)return`<span class="sx sxo">${t("outStock")}</span>`;const lo=isLow(p)?" low":"";
   if(isBtlP(p)){const G=GPB(),tot=Math.round(p.stock*G),f=Math.floor(tot/G),r=tot%G;return`<span class="rst${lo}"><b>${f?f+" "+t("btl"):r+" "+t("gls")}</b>${f&&r?`<small>+ ${r} ${t("gls")}</small>`:""}</span>`}
@@ -6060,7 +6062,7 @@ function applySession(){const se=S.session;const bz=boundStaff();
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261115102712";
+const BUILD="20261115103222";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span class="upsp" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2.5l1.9 5.6 5.6 1.9-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.9z"/><path d="M19 15l.8 2.2 2.2.8-2.2.8L19 21l-.8-2.2-2.2-.8 2.2-.8z"/></svg></span><span>${L3("Կա նոր տարբերակ","Есть новая версия","New version available")}</span><button type="button" class="upgo">${L3("Թարմացնել","Обновить","Update")}</button>`;document.body.appendChild(el);
