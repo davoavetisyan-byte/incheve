@@ -2899,6 +2899,25 @@ input.sw{appearance:none;-webkit-appearance:none;width:46px;height:28px;border-r
 .plist .prow .pm{min-width:0}.plist .prow .pt{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .plist .prow .pr2{align-items:center!important;align-self:center}.plist .prow .rst{justify-content:center;margin:0}
 .rpr{color:var(--muted);font-variant-numeric:tabular-nums}.rpg{font-style:normal;display:inline-flex;align-items:center;gap:2px;margin-left:8px}.rpg .rgl{width:11px;height:11px;stroke:var(--muted)!important;stroke-width:2.2}
+.hwrap{max-width:820px}.hwrap>h2{margin:4px 0 12px}
+.hfl{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px;margin-bottom:6px}.hfl::-webkit-scrollbar{display:none}.hfl .sfc{flex:none}
+.hday{font-size:12.5px;font-weight:700;color:var(--muted);margin:16px 4px 8px}
+.hc{background:var(--surface);border:1px solid var(--line);border-radius:16px;margin-bottom:10px;overflow:hidden}
+.hch{display:flex;align-items:center;gap:12px;padding:12px 14px}
+.hci{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;flex:none;background:var(--raise);color:var(--muted)}.hci .li{width:19px;height:19px}
+.hc-in .hci{background:color-mix(in srgb,var(--ok,#2e7d4f) 13%,transparent);color:var(--ok,#2e7d4f)}.hc-off .hci{background:color-mix(in srgb,var(--bad,#c0392b) 12%,transparent);color:var(--bad,#c0392b)}.hc-count .hci{background:color-mix(in srgb,#d99a1e 15%,transparent);color:#b77d0e}.hc-edit .hci{background:color-mix(in srgb,var(--primary) 12%,transparent);color:var(--primary)}
+.hct{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.3}.hct b{font-size:15px}.hct small{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hcv{font-weight:700;font-size:14px;flex:none}.hcv.neg{color:var(--bad,#c0392b)}
+.hcl{border-top:1px solid var(--line)}
+.hli{display:flex;align-items:center;gap:10px;min-height:44px;padding:8px 14px;border-bottom:1px solid var(--line);font-size:14px}.hli:last-child{border-bottom:0}
+.hli.hlk{cursor:pointer}.hli.hlk:active{background:var(--raise)}@media(hover:hover){.hli.hlk:hover{background:var(--raise)}}
+.hln{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hln small{color:var(--muted)}
+.hlc{flex:none;text-align:right;white-space:nowrap;font-size:13.5px}.hlc .muted{font-size:12.5px}
+.hrev{all:unset;flex:none;width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:var(--muted);border:1px solid var(--line);cursor:pointer}.hrev .li{width:16px;height:16px}.hrev.ask{width:auto;padding:0 8px;font-size:12px;font-weight:600;color:var(--bad,#c0392b);border-color:currentColor}
+.hmore{all:unset;display:block;width:100%;box-sizing:border-box;padding:10px 14px;font-size:13px;font-weight:600;color:var(--primary);cursor:pointer;border-top:1px solid var(--line)}
+.hfile{display:flex;align-items:center;gap:6px;padding:10px 14px;border-top:1px solid var(--line);font-size:13px;font-weight:600}.hfile .li{width:16px;height:16px}
+@media(max-width:600px){.hlc{max-width:55%;white-space:normal}}
+.hc-edit .hli{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:10px;row-gap:2px;align-items:center}.hc-edit .hln{grid-column:1}.hc-edit .hlc{grid-column:1;grid-row:2;text-align:left;max-width:none;white-space:normal;color:var(--ink)}.hc-edit .hrev{grid-column:2;grid-row:1/3}
 </style>
 
 <header class="appbar"><button class="iconbtn" id="menuBtn" aria-label="Menu"><svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><h1 id="pageTitle">Incheve</h1>
@@ -4938,24 +4957,35 @@ function editFv(l,v){if(v==null||v==="")return"—";if(l.f==="active")return v?L
 function editLab(f){return f==="price"?L3("Գին","Цена","Price"):f==="cost"?L3("Ինքնարժեք","Себест.","Cost"):f==="stock"?L3("Մնացորդ","Остаток","Stock"):f==="active"?L3("Վաճառք","Продажа","On sale"):f}
 function editLine(l){if(l.f==="new")return`${esc(l.name)} <span class="muted">${L3("նոր ապրանք","новый товар","new product")}</span>`;return`${esc(l.name)}${l.variant?" · "+esc(t(l.variant)):""} <span class="muted">${editLab(l.f)}</span> <b class="num">${esc(editFv(l,l.from))} → ${esc(editFv(l,l.to))}</b>`}
 async function renderHistory(){
-  $("stockBody").innerHTML=`<h2>${t("sv_hist")}</h2><div id="hist">${loaderHTML()}</div>`;
+  $("stockBody").innerHTML=`<div class="hwrap"><h2>${t("sv_hist")}</h2><div id="hist">${loaderHTML()}</div></div>`;
   let L=[];try{L=(await S.db.collection("moves").orderBy("ts","desc").limit(100).get()).docs.map(d=>({id:d.id,...d.data()}))}catch(e){}
   if(S.tab!=="stock"||S.stockView!=="hist")return;L=L.filter(m=>m.type!=="po"&&m.id!=="_ordlist"&&Array.isArray(m.items));
   const lab={in:"sv_in",off:"sv_off",count:"sv_count",edit:"sv_edit"};const cls={in:"ok",off:"void",count:"low",edit:"blue"};
   const r2=x=>Math.round((+x||0)*100)/100;
   const dt=ts=>{const d=new Date(ts);const p=n=>String(n).padStart(2,"0");return`${p(d.getDate())}.${p(d.getMonth()+1)} ${p(d.getHours())}:${p(d.getMinutes())}`};
   const chg=(m,l)=>m.type==="edit"&&l.f==="new"?`<b class="hpos">${L3("Նոր","Новый","New")}</b>${l.to?` · ${money(l.to)}`:""}${l.stock?` · ${bgQ(l.id,l.stock)}`:""}`:m.type==="edit"?`<span class="muted">${editLab(l.f).toLowerCase()}</span> ${esc(editFv(l,l.from))} → <b>${esc(editFv(l,l.to))}</b>`:`<b class="${m.type==="off"||(m.type==="count"&&l.diff<0)?"hneg":"hpos"}">${m.type==="count"?bgQ(l.id,l.diff,1):(m.type==="off"?"−":"+")+bgQ(l.id,l.qty)}</b>`;
-  const CE=can("stock_edit"),RV=S.admin||S.mgr;S._histL=L;
-  $("hist").innerHTML=L.length?`<div class="card" style="padding:4px 8px"><div class="twrap"><table class="htab"><thead><tr><th>${L3("Երբ · ով","Когда · кто","When · who")}</th><th>${t("items")}</th><th class="r">${L3("Փոփոխություն","Изменение","Change")}</th></tr></thead><tbody>
-   ${L.map(m=>{const val=m.type==="edit"?0:m.type==="in"?m.total:m.type==="count"?m.diffValue:-m.items.reduce((a,l)=>{const p=prodOf(l.id);const b=bottleOf(p);const c=b?(S.costs[b.id]||0)/GPB():(S.costs[l.id]||0);return a+c*l.qty},0);
-     let its=m.type==="count"?m.items.filter(l=>r2(l.diff)!==0):m.items;const more=its.length>6?its.length-6:0;its=its.slice(0,6);const w=m.byName?dn(m.byName).split(/\s+/)[0]:"";
-     const rows=Math.max(1,its.length)+(more?1:0);
-     const meta=`<td rowspan="${rows}" class="hmeta"><span class="num">${dt(m.ts)}</span>${w?`<br><b>${esc(w)}</b>`:""}<br><span class="pill ${cls[m.type]||""}">${t(lab[m.type]||m.type)}</span>${m.supplier?`<br><small class="muted">${esc(m.supplier)}</small>`:""}${m.reason?`<br><small class="muted">${esc(t(m.reason))}</small>`:""}${S.admin&&val?`<br><small class="muted num">${money(Math.round(val))}</small>`:""}${m.file&&/^[0-9a-f]{32}$/.test(m.file)?`<br><a href="#" data-blobl="${m.file}" style="font-size:12.5px">📄 ${t("ai_file")}</a>`:""}</td>`;
-     if(!its.length)return`<tr class="hfirst">${meta}<td colspan="2" class="muted">${L3("Տարբերություն չկա","Без расхождений","No differences")}</td></tr>`;
-     return its.map((l,k)=>{const ok=CE&&prodOf(l.id);const rv=RV&&m.type==="edit"&&["price","stock","cost","active"].includes(l.f)&&l.from!==undefined&&prodOf(l.id);return`<tr class="${k===0?"hfirst ":""}${ok?"hrow":""}"${ok?` data-hp="${esc(l.id)}" title="${L3("Բացել և ուղղել","Открыть и исправить","Open and fix")}"`:""}>${k===0?meta:""}<td>${esc(l.name)}${l.variant&&!/^bottle$/i.test(l.variant)?` <span class="muted">${esc(t(l.variant))}</span>`:""}</td><td class="r num hchg">${chg(m,l)}${rv?`<button type="button" class="hrev" data-hrev="${esc(m.id)}|${m.items.indexOf(l)}" title="${L3("Հետ բերել նախկին արժեքը","Вернуть прежнее значение","Restore previous value")}" aria-label="${L3("Հետ բերել","Вернуть","Undo")}">↩</button>`:""}</td></tr>`}).join("")+(more?`<tr><td colspan="2" class="muted">+${more}</td></tr>`:"")}).join("")}</tbody></table></div></div>`:`<div class="empty card">${t("noData")}</div>`;
-  $("hist").querySelectorAll("[data-hp]").forEach(r=>r.onclick=e=>{if(e.target.closest("[data-hrev],a,.hmeta"))return;openStockPanel(r.dataset.hp)});
+  const CE=can("stock_edit"),RV=S.admin||S.mgr;S._histL=L;S.histF=S.histF||"all";
+  const TI={in:'<path d="M12 4v12M7 11l5 5 5-5"/><path d="M5 20h14"/>',off:'<path d="M5 7h14M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',count:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9zM8.5 13l2.5 2.5 4.5-5"/>',edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>'};
+  const day=ts=>{const d=new Date(ts),n=new Date();const k=x=>x.toDateString();if(k(d)===k(n))return L3("Այսօր","Сегодня","Today");const y=new Date(n);y.setDate(n.getDate()-1);if(k(d)===k(y))return L3("Երեկ","Вчера","Yesterday");const p=v=>String(v).padStart(2,"0");return`${p(d.getDate())}.${p(d.getMonth()+1)}.${d.getFullYear()}`};
+  const hm=ts=>{const d=new Date(ts);const p=v=>String(v).padStart(2,"0");return`${p(d.getHours())}:${p(d.getMinutes())}`};
+  const cnt={all:L.length};L.forEach(m=>cnt[m.type]=(cnt[m.type]||0)+1);
+  const FL=[["all",L3("Բոլորը","Все","All")],["in","sv_in"],["off","sv_off"],["count","sv_count"],["edit","sv_edit"]].filter(([k])=>k==="all"||cnt[k]);
+  const V=L.filter(m=>S.histF==="all"||m.type===S.histF);let lastDay="";
+  const card=m=>{const val=m.type==="edit"?0:m.type==="in"?m.total:m.type==="count"?m.diffValue:-m.items.reduce((a,l)=>{const p=prodOf(l.id);const b=bottleOf(p);const c=b?(S.costs[b.id]||0)/GPB():(S.costs[l.id]||0);return a+c*l.qty},0);
+    let its=m.type==="count"?m.items.filter(l=>r2(l.diff)!==0):m.items;const open=S._histOpen&&S._histOpen.has(m.id);const more=!open&&its.length>5?its.length-5:0;if(more)its=its.slice(0,5);
+    const w=m.byName?dn(m.byName).split(/\s+/)[0]:"";const sub=[m.supplier?esc(m.supplier):"",m.reason?esc(t(m.reason)):"",m.note?esc(m.note):""].filter(Boolean).join(" · ");
+    return`<article class="hc hc-${m.type}"><header class="hch"><span class="hci">${'<svg class="li" viewBox="0 0 24 24" aria-hidden="true">'+(TI[m.type]||TI.edit)+'</svg>'}</span><span class="hct"><b>${t(lab[m.type]||m.type)}</b><small>${hm(m.ts)}${w?` · ${esc(w)}`:""}${sub?` · ${sub}`:""}</small></span>${S.admin&&val?`<span class="hcv num ${val<0?"neg":""}">${val>0?"+":""}${money(Math.round(val))}</span>`:""}</header>
+     <div class="hcl">${its.length?its.map(l=>{const ok=CE&&prodOf(l.id);const rv=RV&&m.type==="edit"&&["price","stock","cost","active"].includes(l.f)&&l.from!==undefined&&prodOf(l.id);
+       return`<div class="hli${ok?" hlk":""}"${ok?` data-hp="${esc(l.id)}" role="button" tabindex="0"`:""}><span class="hln">${esc(l.name)}${l.variant&&!/^bottle$/i.test(l.variant)?` <small>${esc(t(l.variant))}</small>`:""}</span><span class="hlc num">${chg(m,l)}</span>${rv?`<button type="button" class="hrev" data-hrev="${esc(m.id)}|${m.items.indexOf(l)}" title="${L3("Հետ բերել նախկին արժեքը","Вернуть прежнее значение","Restore previous value")}" aria-label="${L3("Հետ բերել","Вернуть","Undo")}"><svg class="li" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button>`:""}</div>`}).join(""):`<div class="hli muted">${L3("Տարբերություն չկա","Без расхождений","No differences")}</div>`}
+     ${more?`<button type="button" class="hmore" data-hmore="${esc(m.id)}">${L3(`Եվս ${more}`,`Ещё ${more}`,`${more} more`)}</button>`:""}</div>
+     ${m.file&&/^[0-9a-f]{32}$/.test(m.file)?`<a class="hfile" href="#" data-blobl="${m.file}"><svg class="li" viewBox="0 0 24 24"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/></svg>${t("ai_file")}</a>`:""}</article>`};
+  $("hist").innerHTML=`<div class="hfl" role="group">${FL.map(([k,l])=>`<button type="button" class="sfc" data-hf="${k}" aria-pressed="${S.histF===k}"><span>${k==="all"?l:t(l)}</span><b class="num">${cnt[k]||0}</b></button>`).join("")}</div>
+   ${V.length?V.map(m=>{const d=day(m.ts);const h=d!==lastDay?`<div class="hday">${d}</div>`:"";lastDay=d;return h+card(m)}).join(""):`<div class="empty card">${t("noData")}</div>`}`;
+  $("hist").querySelectorAll("[data-hf]").forEach(b=>b.onclick=()=>{S.histF=b.dataset.hf;renderHistory()});
+  $("hist").querySelectorAll("[data-hmore]").forEach(b=>b.onclick=()=>{(S._histOpen=S._histOpen||new Set).add(b.dataset.hmore);renderHistory()});
+  $("hist").querySelectorAll("[data-hp]").forEach(r=>r.onclick=e=>{if(e.target.closest("[data-hrev],a"))return;openStockPanel(r.dataset.hp)});
   $("hist").querySelectorAll("[data-hrev]").forEach(b=>b.onclick=async e=>{e.stopPropagation();const [mid,ix]=b.dataset.hrev.split("|");const m=(S._histL||[]).find(x=>x.id===mid);const l=m&&m.items[+ix];if(!l)return;
-    if(b.dataset.c!=="1"){b.dataset.c="1";b.textContent=L3("Հետ բերե՞լ ","Вернуть? ","Undo? ")+editFv(l,l.from);b.classList.add("ask");setTimeout(()=>{if(b.isConnected){b.dataset.c="";b.textContent="↩";b.classList.remove("ask")}},4000);return}
+    if(b.dataset.c!=="1"){b.dataset.c="1";const ih=b.innerHTML;b.textContent=L3("Հետ բերե՞լ ","Вернуть? ","Undo? ")+editFv(l,l.from);b.classList.add("ask");setTimeout(()=>{if(b.isConnected){b.dataset.c="";b.innerHTML=ih;b.classList.remove("ask")}},4000);return}
     b.disabled=true;const p=prodOf(l.id);try{const cur=l.f==="cost"?(S.costs[l.id]??null):l.f==="active"?p.active!==false:(p[l.f]??null);
       if(l.f==="cost"){const nc={...S.costs};if(l.from==null)delete nc[l.id];else nc[l.id]=l.from;try{await S.db.doc("costs/all").set({map:nc});S.costs=nc}catch(err){throw err}}
       else await S.db.doc("products/"+l.id).update({[l.f]:l.from});
@@ -6062,7 +6092,7 @@ function applySession(){const se=S.session;const bz=boundStaff();
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261115103222";
+const BUILD="20261115105302";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span class="upsp" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2.5l1.9 5.6 5.6 1.9-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.9z"/><path d="M19 15l.8 2.2 2.2.8-2.2.8L19 21l-.8-2.2-2.2-.8 2.2-.8z"/></svg></span><span>${L3("Կա նոր տարբերակ","Есть новая версия","New version available")}</span><button type="button" class="upgo">${L3("Թարմացնել","Обновить","Update")}</button>`;document.body.appendChild(el);
