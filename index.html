@@ -2931,6 +2931,21 @@ input.sw{appearance:none;-webkit-appearance:none;width:46px;height:28px;border-r
 .rocard2 .roqty{height:38px}.rocard2 .roqty button{width:32px}.rocard2 .roqty .num{min-width:34px;font-size:15px;line-height:1}.rocard2 .roqty .num small{font-size:10.5px}
 .rocard2 .rox{width:32px;height:32px}
 .gfx{display:flex;flex-direction:column;gap:0;max-height:60vh;overflow:auto;border:1px solid var(--line);border-radius:14px}.gfr{display:flex;flex-direction:column;gap:8px;padding:12px 14px;border-bottom:1px solid var(--line)}.gfr:last-child{border-bottom:0}.gfn{display:flex;justify-content:space-between;gap:8px;font-weight:600}.gfc{display:flex;flex-wrap:wrap;gap:6px}.gfc{flex-wrap:nowrap!important}.gfc .chip{height:32px;padding:0 10px;margin:0;font-size:13px;flex:1 1 auto;justify-content:center;min-width:0}.gfc .chip[aria-pressed="true"]{background:var(--primary);color:#fff;border-color:var(--primary)}
+#lock:has(.lk2){align-items:stretch;padding:max(10px,env(safe-area-inset-top,0px)) 16px max(12px,env(safe-area-inset-bottom,0px))}
+#lock .lk2{width:100%;max-width:420px;margin:0 auto;min-height:100%;display:flex!important;flex-direction:column;align-items:center;justify-content:space-between;gap:clamp(6px,1.6vh,16px)!important;padding:0!important}
+.lk2 .lktop{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px}
+.lk2 .lkname{display:inline-flex;align-items:center;gap:6px;margin:0;font-size:14px;text-decoration:none;color:var(--muted)}.lk2 .lkname .li{width:18px;height:18px}
+.lklang{position:relative}.lklb{all:unset;display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-weight:700;font-size:13.5px;letter-spacing:.03em;cursor:pointer}.lklb .li{width:17px;height:17px}.lklb .lkcv{width:15px;height:15px;color:var(--muted)}
+.lklm{position:absolute;right:0;top:calc(100% + 6px);min-width:150px;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.14);padding:6px;z-index:5;display:flex;flex-direction:column}.lklm[hidden]{display:none}
+.lklm button{all:unset;padding:10px 12px;border-radius:10px;font-size:14.5px;cursor:pointer}.lklm button[aria-pressed="true"]{background:var(--raise);font-weight:700}
+.lk2 .lkhero{display:flex;flex-direction:column;align-items:center;gap:clamp(2px,.8vh,8px)}
+.lk2 .lklogo.big{height:clamp(40px,8.5vh,84px)!important;width:auto!important;aspect-ratio:220/84;margin:0!important}
+.lk2 .lkclock{font-size:clamp(34px,7vh,56px);margin:0}.lk2 .lkdate{font-size:clamp(12.5px,1.9vh,15px)}
+.lk2 .lkpw{display:flex;flex-direction:column;align-items:center;gap:clamp(6px,1.4vh,14px)}.lk2 #lk_msg{margin:0}
+.lk2 .dots{margin:0!important}
+.lk2 .pad{gap:clamp(8px,1.8vh,18px) clamp(14px,4vw,22px)!important;margin:0!important}
+.lk2 .pad button{width:clamp(56px,9.6vh,76px)!important;height:clamp(56px,9.6vh,76px)!important;font-size:clamp(22px,3.4vh,28px)!important}
+.lk2 .pad span{width:clamp(56px,9.6vh,76px)}
 </style>
 
 <header class="appbar"><button class="iconbtn" id="menuBtn" aria-label="Menu"><svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><h1 id="pageTitle">Incheve</h1>
@@ -6125,7 +6140,7 @@ function applySession(){const se=S.session;const bz=boundStaff();
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261115203910";
+const BUILD="20261115222406";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span class="upsp" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2.5l1.9 5.6 5.6 1.9-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.9z"/><path d="M19 15l.8 2.2 2.2.8-2.2.8L19 21l-.8-2.2-2.2-.8 2.2-.8z"/></svg></span><span>${L3("Կա նոր տարբերակ","Есть новая версия","New version available")}</span><button type="button" class="upgo">${L3("Թարմացնել","Обновить","Update")}</button>`;document.body.appendChild(el);
@@ -6340,10 +6355,12 @@ function lockScreen(){const bz=boundStaff();if(!(loginOn()||bz)||S.session||!S.d
   if(!st.who&&!st.list){const now=new Date();const pin=st.pin||"";
     if(st.cands){el.innerHTML=`<div class="lkbox"><span class="logo lklogo" role="img" aria-label="Incheve"></span><h2>${t("lg_who")}</h2><div class="lkgrid">${st.cands.map(id=>{const z=id==="__owner"?{name:t("lg_owner")}:S.staff.find(x=>x.id===id)||{};return`<button class="lkp" data-lkc="${esc(id)}"><span class="av${id==="__owner"?" own":""}" style="${id==="__owner"?"":`background:${avColor(id)}`}">${id==="__owner"?"★":avIn(id,initials(dn(z.name||"")))}</span><span>${esc(id==="__owner"?z.name:dn(z.name||""))}</span></button>`}).join("")}</div><button class="linkb" id="lk_b2">← ${t("lg_back")}</button></div>`;
       el.querySelectorAll("[data-lkc]").forEach(b=>b.onclick=()=>{const id=b.dataset.lkc;S._lk={};startSession(id==="__owner"?{id:"__owner",role:"owner"}:{id,role:"staff",name:(S.staff.find(x=>x.id===id)||{}).name})});$("lk_b2").onclick=()=>{S._lk={};lockScreen()};return}
-    el.innerHTML=`<div class="lkbox lkpin"><span class="logo lklogo big" role="img" aria-label="Incheve"></span><div class="lkclock" id="lk_clock">${fmtT(now)}</div><div class="lkdate">${(()=>{if(lang==="hy"){const M=["հունվարի","փետրվարի","մարտի","ապրիլի","մայիսի","հունիսի","հուլիսի","օգոստոսի","սեպտեմբերի","հոկտեմբերի","նոյեմբերի","դեկտեմբերի"];const d=DAYF[now.getDay()];return d[0].toUpperCase()+d.slice(1)+", "+now.getDate()+" "+M[now.getMonth()]}try{return now.toLocaleDateString({hy:"hy-AM",ru:"ru-RU",en:"en-GB"}[lang],{weekday:"long",day:"numeric",month:"long"})}catch(e){return dmy(dayKey(now))}})()}</div>
-     <p class="muted" id="lk_msg">${t("lg_pinonly")}</p><div class="dots${st.err?" shake":""}">${[0,1,2,3].map(i=>`<i class="${i<pin.length?"on":""}"></i>`).join("")}</div>
+    el.innerHTML=`<div class="lkbox lkpin lk2"><div class="lktop"><button class="linkb lkname" id="lk_list"><svg class="li" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18.5 14.8c1.7.8 2.7 2.5 3 5.2"/></svg>${t("lg_byname")}</button><div class="lklang"><button class="lklb" id="lk_lang" aria-haspopup="true" aria-expanded="false"><svg class="li" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/></svg>${{hy:"ՀԱՅ",ru:"РУС",en:"ENG"}[lang]}<svg class="li lkcv" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></svg></button><div class="lklm" id="lk_lm" hidden>${[["hy","Հայերեն"],["ru","Русский"],["en","English"]].map(([k,l])=>`<button data-lang-set="${k}" aria-pressed="${lang===k}">${l}</button>`).join("")}</div></div></div>
+     <div class="lkhero"><span class="logo lklogo big" role="img" aria-label="Incheve"></span><div class="lkclock" id="lk_clock">${fmtT(now)}</div><div class="lkdate">${(()=>{if(lang==="hy"){const M=["հունվարի","փետրվարի","մարտի","ապրիլի","մայիսի","հունիսի","հուլիսի","օգոստոսի","սեպտեմբերի","հոկտեմբերի","նոյեմբերի","դեկտեմբերի"];const d=DAYF[now.getDay()];return d[0].toUpperCase()+d.slice(1)+", "+now.getDate()+" "+M[now.getMonth()]}try{return now.toLocaleDateString({hy:"hy-AM",ru:"ru-RU",en:"en-GB"}[lang],{weekday:"long",day:"numeric",month:"long"})}catch(e){return dmy(dayKey(now))}})()}</div>
+     </div><div class="lkpw"><p class="muted" id="lk_msg">${t("lg_pinonly")}</p><div class="dots${st.err?" shake":""}">${[0,1,2,3].map(i=>`<i class="${i<pin.length?"on":""}"></i>`).join("")}</div>
      <div class="pad">${[1,2,3,4,5,6,7,8,9,"",0,"⌫"].map(k=>k===""?"<span></span>":`<button data-k="${k}" aria-label="${k}">${k}</button>`).join("")}</div>
-     <div class="lkfoot2"><button class="linkb" id="lk_list">${t("lg_byname")}</button>${langSeg}</div></div>`;
+     </div></div>`;
+    {const lb=$("lk_lang"),lm=$("lk_lm");lb.onclick=e=>{e.stopPropagation();lm.hidden=!lm.hidden;lb.setAttribute("aria-expanded",String(!lm.hidden))};if(!el._lkc){el._lkc=1;el.addEventListener("click",e=>{const m=$("lk_lm");if(m&&!e.target.closest(".lklang"))m.hidden=true})}}
     if(st.err){const m=$("lk_msg");if(m){m.textContent=t("lg_bad");m.style.color="var(--bad)"}}
     $("lk_list").onclick=()=>{S._lk={list:true};lockScreen()};
     el.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>pinKey(b.dataset.k));
