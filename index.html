@@ -2974,9 +2974,8 @@ input.sw{appearance:none;-webkit-appearance:none;width:46px;height:28px;border-r
 #lock:has(.lkwho){align-items:flex-start}.lkwho{width:min(560px,100%)!important;max-width:560px;margin:0 auto;box-sizing:border-box}.lkwho .lktop{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px;margin-bottom:8px}.lkwho .lkname{display:inline-flex;align-items:center;gap:6px;margin:0;font-size:14px;text-decoration:none;color:var(--muted)}.lkwho .lkname .li{width:18px;height:18px}
 .lkwho .lkgrid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))!important}.lkwho .lkp{min-width:0}.lkwho .lkp>span:not(.av),.lkwho .lkp small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .railfoot .langb{width:auto!important;align-self:flex-start;flex:none!important;justify-content:flex-start}
-.langrow{display:flex;gap:2px;padding:3px;border-radius:999px;background:var(--surface);border:1px solid var(--line);box-shadow:0 6px 20px rgba(0,0,0,.14);transform:translateY(-50%);animation:lrIn .14s ease-out}
-.langrow.tl{transform-origin:right center}.langrow.tr{transform-origin:left center}@keyframes lrIn{from{opacity:0;transform:translateY(-50%) scaleX(.85)}to{opacity:1;transform:translateY(-50%) scaleX(1)}}
-.langrow button{all:unset;cursor:pointer;height:32px;padding:0 11px;border-radius:999px;font-size:12.5px;font-weight:700;letter-spacing:.04em;color:var(--ink)}.langrow button[aria-pressed="true"]{background:var(--primary);color:#fff}@media(hover:hover){.langrow button:not([aria-pressed="true"]):hover{background:var(--raise)}}
+.langrow{display:flex;flex-direction:column;gap:2px;padding:4px;border-radius:16px;background:var(--surface);border:1px solid var(--line);box-shadow:0 8px 22px rgba(0,0,0,.14);box-sizing:border-box;transform-origin:top center;animation:lrIn .14s ease-out}@keyframes lrIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.langrow button{all:unset;cursor:pointer;height:34px;padding:0 12px;border-radius:12px;text-align:center;font-size:12.5px;font-weight:700;letter-spacing:.04em;color:var(--ink)}.langrow button[aria-pressed="true"]{background:var(--primary);color:#fff}@media(hover:hover){.langrow button:not([aria-pressed="true"]):hover{background:var(--raise)}}
 .acout{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);padding:8px 4px}.acout svg{width:16px;height:16px}.lkbox>.acout{align-self:center;margin-top:6px}.railfoot .acout{margin-top:6px}
 </style>
 
@@ -6213,7 +6212,7 @@ function applySession(){const se=S.session;const bz=boundStaff();
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261116160116";
+const BUILD="20261116161726";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span class="upsp" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2.5l1.9 5.6 5.6 1.9-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.9z"/><path d="M19 15l.8 2.2 2.2.8-2.2.8L19 21l-.8-2.2-2.2-.8 2.2-.8z"/></svg></span><span>${L3("Կա նոր տարբերակ","Есть новая версия","New version available")}</span><button type="button" class="upgo">${L3("Թարմացնել","Обновить","Update")}</button>`;document.body.appendChild(el);
@@ -7676,8 +7675,8 @@ function acctOutHTML(){return`<button class="acout" onclick="incheveSignOut()">$
 function langBtnHTML(v){return`<button class="langb${v?" "+v:""}"${v?"":` id="langBtn"`} data-langbtn aria-haspopup="true" aria-label="${t("lang_l")}">${LANG_GLOBE}<span>${{hy:"ՀԱՅ",ru:"РУС",en:"ENG"}[lang]}</span><svg class="li lcv" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg></button>`}
 function openLangMenu(b){const ex=$("langMenu");if(ex){ex.remove();return}b=b||$("langBtn");if(!b)return;const r=b.getBoundingClientRect();const m=document.createElement("div");m.id="langMenu";m.className="dmenu langm";
   /* compact row that slides out to the left of the button (to the right when there is no room) */
-  m.className="langrow";const left=r.left>190;
-  m.style.cssText=`position:fixed;top:${Math.round(r.top+r.height/2)}px;${left?`right:${Math.round(innerWidth-r.left+6)}px`:`left:${Math.round(r.right+6)}px`};z-index:10050`;m.classList.add(left?"tl":"tr");
+  m.className="langrow";const rt=r.left>innerWidth/2;
+  m.style.cssText=`position:fixed;top:${Math.round(r.bottom+6)}px;${rt?`right:${Math.round(innerWidth-r.right)}px`:`left:${Math.round(r.left)}px`};min-width:${Math.round(r.width)}px;z-index:10050`;
   m.innerHTML=[["hy","ՀԱՅ","Հայերեն"],["ru","РУС","Русский"],["en","ENG","English"]].map(([k,c,l])=>`<button data-lang-set="${k}" aria-pressed="${lang===k}" title="${l}" aria-label="${l}">${c}</button>`).join("");document.body.append(m);
   setTimeout(()=>document.addEventListener("click",function h(e){if(!e.target.closest("#langMenu,[data-langbtn]")){m.remove();document.removeEventListener("click",h)}}),0)}
 
