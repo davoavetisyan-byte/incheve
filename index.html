@@ -2956,7 +2956,7 @@ input.sw{appearance:none;-webkit-appearance:none;width:46px;height:28px;border-r
 .aclk-plain b{font-size:15px}
 .clkset{display:flex;flex-direction:column;gap:12px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}.clkset>b{font-size:14.5px}
 .clkm{display:flex}.clkm button{flex:1}
-.clks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.clks.dim{opacity:.4;pointer-events:none}
+.clks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.clks.dim{opacity:.4;pointer-events:none}
 .clkopt{all:unset;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px 6px;border:1.5px solid var(--line);border-radius:14px;cursor:pointer;text-align:center}.clkopt[aria-pressed="true"]{border-color:var(--primary);box-shadow:0 0 0 1px var(--primary) inset}
 .clkopt small{font-size:11.5px;color:var(--muted);line-height:1.25}
 .clkpv{background:#1d4e74!important;color:#fff!important;padding:5px 9px!important;border-radius:10px;min-height:38px;margin:0!important;display:flex!important}
@@ -2966,6 +2966,7 @@ input.sw{appearance:none;-webkit-appearance:none;width:46px;height:28px;border-r
 .che{flex:none;display:flex;flex-direction:column;line-height:1.2;padding:0 8px;border-left:1px solid var(--line)}.che b{font-size:13px}.che i{font-style:normal;font-size:11px;color:var(--muted)}.che small{font-size:11px;color:var(--muted)}.che em{font-style:normal;font-weight:700}.che em.up{color:#c0392b}.che em.dn{color:var(--ok,#2e7d4f)}
 .opl{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:14px;overflow:hidden}.opr{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line);cursor:pointer}.opr:last-child{border-bottom:0}.opr .li{width:18px;height:18px;color:var(--muted)}
 .opn{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.3;font-weight:600}.opn small{font-weight:400;font-size:12.5px;color:#c98a12}
+#clkSlot.aclk{padding:5px 12px!important;border-radius:12px;min-width:64px;margin-right:6px!important}#clkSlot.aclk-plain{padding:7px 14px!important}#clkSlot.aclk-plain b{font-size:15.5px}.clkpv{padding:6px 12px!important;min-width:64px}
 </style>
 
 <header class="appbar"><button class="iconbtn" id="menuBtn" aria-label="Menu"><svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><h1 id="pageTitle">Incheve</h1>
@@ -5388,7 +5389,7 @@ function setSecHTML(k){const st=S.settings;const sv=`<div class="setsv"><button 
   if(k==="hrs")return`<div class="f">${t("workDays")}<div class="wdch">${[1,2,3,4,5,6,0].map(d=>`<button type="button" class="wdc" data-wd="${d}" aria-pressed="${workDays().includes(d)}">${t("d"+d)}</button>`).join("")}</div></div><div class="row"><label class="f">${t("hoursOpen")}<input type="time" id="s_o" value="${hoursOpen()}"></label><label class="f">${t("hoursClose")}<input type="time" id="s_c" value="${hoursClose()}"></label></div>
    ${(()=>{const c=clkCfg();return`<div class="clkset"><b>${L3("Ժամացույց վերևում","Часы вверху","Clock in the header")}</b>
     <div class="f">${L3("Երբ ցույց տալ","Когда показывать","When to show")}<div class="seg2 clkm" role="group">${[["auto",L3("Ավտոմատ","Авто","Auto")],["always",L3("Միշտ","Всегда","Always")],["off",L3("Անջատված","Выкл.","Off")]].map(([k,l])=>`<button type="button" data-clkm="${k}" aria-pressed="${c.mode===k}">${l}</button>`).join("")}</div><small class="muted" id="clk_mh">${c.mode==="auto"?L3("Երևում է միայն, եթե ձեր ժամը տարբերվում է Երևանի ժամից","Видно, только если ваше время отличается от ереванского","Shown only when your time differs from Yerevan"):""}</small></div>
-    <div class="f">${L3("Տեսք","Вид","Style")}<div class="clks">${["city","status","plain"].map(k=>`<button type="button" class="clkopt" data-clks="${k}" aria-pressed="${c.style===k}"><span class="aclk aclk-${k} clkpv">${clkHTML({style:k})}</span><small>${k==="city"?L3("Երևանի ժամ","Время Еревана","Yerevan time"):k==="status"?L3("Ժամ + բարը բաց է/փակ է","Время + открыт/закрыт","Time + open/closed"):L3("Միայն ժամ","Только время","Time only")}</small></button>`).join("")}</div></div></div>`})()}${sv}`;
+    <div class="f">${L3("Տեսք","Вид","Style")}<div class="clks">${["city","plain"].map(k=>`<button type="button" class="clkopt" data-clks="${k}" aria-pressed="${c.style===k}"><span class="aclk aclk-${k} clkpv">${clkHTML({style:k})}</span><small>${k==="city"?L3("Երևանի ժամ","Время Еревана","Yerevan time"):k==="status"?L3("Ժամ + բարը բաց է/փակ է","Время + открыт/закрыт","Time + open/closed"):L3("Միայն ժամ","Только время","Time only")}</small></button>`).join("")}</div></div></div>`})()}${sv}`;
   if(k==="gpb")return`<label class="f">${t("gpb")}<input id="s_g" type="number" min="1" max="10" inputmode="numeric" value="${GPB()}" style="width:100px"><span style="font-weight:400">${t("gpbHelp")}</span></label>${sv}`;
   if(k==="msg"){S._tplEd=S._tplEd||{hy:(st.ordTpl||{}).hy||ORD_TPL.hy,ru:(st.ordTpl||{}).ru||ORD_TPL.ru,en:(st.ordTpl||{}).en||ORD_TPL.en};S._tplLg=S._tplLg||"hy";const li=S.lang==="ru"?2:S.lang==="en"?3:1;
     return`<label class="f">${t("su_legal")}<input id="su_legal" value="${esc(st.ordLegal||ORD_DEF.legal)}"></label><label class="f">${t("su_addr")}<input id="su_addr" value="${esc(st.ordAddr||ORD_DEF.addr)}"></label><label class="f">${t("su_recv")}<input id="su_recv" value="${esc(st.ordRecv||ORD_DEF.recv)}"></label>
@@ -6201,7 +6202,7 @@ function applySession(){const se=S.session;const bz=boundStaff();
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261116135350";
+const BUILD="20261116151742";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span class="upsp" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2.5l1.9 5.6 5.6 1.9-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.9z"/><path d="M19 15l.8 2.2 2.2.8-2.2.8L19 21l-.8-2.2-2.2-.8 2.2-.8z"/></svg></span><span>${L3("Կա նոր տարբերակ","Есть новая версия","New version available")}</span><button type="button" class="upgo">${L3("Թարմացնել","Обновить","Update")}</button>`;document.body.appendChild(el);
@@ -6210,7 +6211,7 @@ const BUILD="20261116135350";
 addEventListener("scroll",()=>{const h=document.querySelector(".mhead");if(h)h.classList.toggle("stuck",scrollY>4)},{passive:true});
 /* header clock: Yerevan time, plus the viewer's own time when it differs */
 /* clock settings: settings/main.clock = {mode:"auto"|"always"|"off", style:"city"|"status"|"plain"} */
-function clkCfg(){const c=S.settings.clock||{};return{mode:c.mode||"auto",style:c.style||"city"}}
+function clkCfg(){const c=S.settings.clock||{};return{mode:c.mode||"auto",style:c.style==="plain"?"plain":"city"}}
 function yvNow(){try{const p=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Yerevan",weekday:"short",hour:"2-digit",minute:"2-digit",hour12:false}).formatToParts(new Date());const g=k=>(p.find(x=>x.type===k)||{}).value;const wd=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].indexOf(g("weekday"));return{wd,min:(+g("hour")%24)*60+ +g("minute")}}catch(e){const d=new Date();return{wd:d.getDay(),min:d.getHours()*60+d.getMinutes()}}}
 function barState(){const W=workDays(),hm=x=>{const [h,m]=String(x).split(":").map(Number);return h*60+(m||0)};const o=hm(hoursOpen()),c=hm(hoursClose());const {wd,min}=yvNow();const over=c<=o;
   const openOn=(d,t)=>W.includes(d)&&(over?t>=o:t>=o&&t<c);const prevOver=over&&W.includes((wd+6)%7)&&min<c;
