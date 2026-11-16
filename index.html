@@ -2952,6 +2952,15 @@ input.sw{appearance:none;-webkit-appearance:none;width:46px;height:28px;border-r
 .estr>input[type=checkbox]{flex:none;width:20px;height:20px}.estn{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.3;font-size:14px}.estn small{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .estc{display:inline-flex;align-items:center;gap:4px;flex:none}.estc input{width:84px;height:38px;text-align:right;font-weight:600}.estc i{font-style:normal;color:var(--muted)}
 .estlab{margin-left:6px;padding:1px 7px;border-radius:99px;background:#fff1d6;color:#9a6b00;font-size:11px;font-weight:700;vertical-align:1px}
+.aclk-status{align-items:flex-end}.aclk .clst{display:inline-flex;align-items:center;gap:4px;font-size:10px;opacity:.9;white-space:nowrap}.aclk .clst i{width:6px;height:6px;border-radius:50%;background:#c9cfd6}.aclk .clst.on i{background:#4cd27f}
+.aclk-plain b{font-size:15px}
+.clkset{display:flex;flex-direction:column;gap:12px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}.clkset>b{font-size:14.5px}
+.clkm{display:flex}.clkm button{flex:1}
+.clks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.clks.dim{opacity:.4;pointer-events:none}
+.clkopt{all:unset;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px 6px;border:1.5px solid var(--line);border-radius:14px;cursor:pointer;text-align:center}.clkopt[aria-pressed="true"]{border-color:var(--primary);box-shadow:0 0 0 1px var(--primary) inset}
+.clkopt small{font-size:11.5px;color:var(--muted);line-height:1.25}
+.clkpv{background:#1d4e74!important;color:#fff!important;padding:5px 9px!important;border-radius:10px;min-height:38px;margin:0!important;display:flex!important}
+.seg2>button[aria-pressed=true]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}.clkpv small{color:rgba(255,255,255,.85)!important;font-size:10px!important;line-height:1.2}.clkset .seg2{margin:4px 0 2px}
 </style>
 
 <header class="appbar"><button class="iconbtn" id="menuBtn" aria-label="Menu"><svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><h1 id="pageTitle">Incheve</h1>
@@ -5365,7 +5374,10 @@ function m0AddCards(){const st=S.settings;$("setExtra").innerHTML=`<div class="c
 function setSecHTML(k){const st=S.settings;const sv=`<div class="setsv"><button class="btn primary" id="ss_save">${t("save")}</button></div>`;
   if(k==="biz")return`<label class="f">${t("bizName")}<input id="s_n" value="${esc(st.name||"")}"></label><label class="f">${t("address")}<input id="s_a" value="${esc(st.address||"")}"></label><label class="f">${t("taxId")}<input id="s_t" value="${esc(st.taxId||"")}" inputmode="numeric"></label><label class="f">${t("footer")}<input id="s_f" value="${esc(st.footer||"")}"></label>${sv}`;
   if(k==="tab")return`<label class="f">${t("tablesIn")}<input id="s_ti" value="${esc(allTables().filter(x=>x.area==="in").map(x=>x.name).join(", "))}"></label><label class="f">${t("tablesOut")}<input id="s_to" value="${esc(allTables().filter(x=>x.area==="out").map(x=>x.name).join(", "))}"></label><div class="tgrow"><label class="acrow"><span><b>${t("outSeason")}</b></span><span class="tgl"><input type="checkbox" id="s_od"${outdoorOn()?" checked":""}><i></i></span></label><label class="acrow"><span><b>${L3("«+ Սեղան» վանդակ","Плитка «+ Стол»","“+ Table” tile")}</b><small class="muted">${L3("սեղանների էջում արագ ավելացնելու համար","для быстрого добавления на странице столов","quick add on the tables page")}</small></span><span class="tgl"><input type="checkbox" id="s_tadd"${st.showAddTable?" checked":""}><i></i></span></label></div>${sv}`;
-  if(k==="hrs")return`<div class="f">${t("workDays")}<div class="wdch">${[1,2,3,4,5,6,0].map(d=>`<button type="button" class="wdc" data-wd="${d}" aria-pressed="${workDays().includes(d)}">${t("d"+d)}</button>`).join("")}</div></div><div class="row"><label class="f">${t("hoursOpen")}<input type="time" id="s_o" value="${hoursOpen()}"></label><label class="f">${t("hoursClose")}<input type="time" id="s_c" value="${hoursClose()}"></label></div>${sv}`;
+  if(k==="hrs")return`<div class="f">${t("workDays")}<div class="wdch">${[1,2,3,4,5,6,0].map(d=>`<button type="button" class="wdc" data-wd="${d}" aria-pressed="${workDays().includes(d)}">${t("d"+d)}</button>`).join("")}</div></div><div class="row"><label class="f">${t("hoursOpen")}<input type="time" id="s_o" value="${hoursOpen()}"></label><label class="f">${t("hoursClose")}<input type="time" id="s_c" value="${hoursClose()}"></label></div>
+   ${(()=>{const c=clkCfg();return`<div class="clkset"><b>${L3("Ժամացույց վերևում","Часы вверху","Clock in the header")}</b>
+    <div class="f">${L3("Երբ ցույց տալ","Когда показывать","When to show")}<div class="seg2 clkm" role="group">${[["auto",L3("Ավտոմատ","Авто","Auto")],["always",L3("Միշտ","Всегда","Always")],["off",L3("Անջատված","Выкл.","Off")]].map(([k,l])=>`<button type="button" data-clkm="${k}" aria-pressed="${c.mode===k}">${l}</button>`).join("")}</div><small class="muted" id="clk_mh">${c.mode==="auto"?L3("Երևում է միայն, եթե ձեր ժամը տարբերվում է Երևանի ժամից","Видно, только если ваше время отличается от ереванского","Shown only when your time differs from Yerevan"):""}</small></div>
+    <div class="f">${L3("Տեսք","Вид","Style")}<div class="clks">${["city","status","plain"].map(k=>`<button type="button" class="clkopt" data-clks="${k}" aria-pressed="${c.style===k}"><span class="aclk aclk-${k} clkpv">${clkHTML({style:k})}</span><small>${k==="city"?L3("Երևանի ժամ","Время Еревана","Yerevan time"):k==="status"?L3("Ժամ + բարը բաց է/փակ է","Время + открыт/закрыт","Time + open/closed"):L3("Միայն ժամ","Только время","Time only")}</small></button>`).join("")}</div></div></div>`})()}${sv}`;
   if(k==="gpb")return`<label class="f">${t("gpb")}<input id="s_g" type="number" min="1" max="10" inputmode="numeric" value="${GPB()}" style="width:100px"><span style="font-weight:400">${t("gpbHelp")}</span></label>${sv}`;
   if(k==="msg"){S._tplEd=S._tplEd||{hy:(st.ordTpl||{}).hy||ORD_TPL.hy,ru:(st.ordTpl||{}).ru||ORD_TPL.ru,en:(st.ordTpl||{}).en||ORD_TPL.en};S._tplLg=S._tplLg||"hy";const li=S.lang==="ru"?2:S.lang==="en"?3:1;
     return`<label class="f">${t("su_legal")}<input id="su_legal" value="${esc(st.ordLegal||ORD_DEF.legal)}"></label><label class="f">${t("su_addr")}<input id="su_addr" value="${esc(st.ordAddr||ORD_DEF.addr)}"></label><label class="f">${t("su_recv")}<input id="su_recv" value="${esc(st.ordRecv||ORD_DEF.recv)}"></label>
@@ -5392,7 +5404,7 @@ function wireTpl(el){const ta=el.querySelector("#su_tpl"),pv=el.querySelector("#
 async function saveSetSec(k){const st=S.settings;const v=id=>$(id)?$(id).value.trim():null;let d={};
   if(k==="biz")d={name:v("s_n"),address:v("s_a"),taxId:v("s_t"),footer:v("s_f")};
   if(k==="tab")d={outdoor:$("s_od").checked,showAddTable:$("s_tadd").checked,tables:[...v("s_ti").split(",").map(x=>x.trim()).filter(Boolean).map((n,i)=>({id:"t"+(i+1),name:n,area:"in"})),...v("s_to").split(",").map(x=>x.trim()).filter(Boolean).map((n,i)=>({id:"o"+(i+1),name:n,area:"out"}))]};
-  if(k==="hrs")d={workDays:[...document.querySelectorAll(".setsheet [data-wd]")].filter(x=>x.getAttribute("aria-pressed")==="true").map(x=>+x.dataset.wd),open:v("s_o")||"16:30",close:v("s_c")||"23:00"};
+  if(k==="hrs"){const pm=document.querySelector('.setsheet [data-clkm][aria-pressed="true"]'),ps=document.querySelector('.setsheet [data-clks][aria-pressed="true"]');d={workDays:[...document.querySelectorAll(".setsheet [data-wd]")].filter(x=>x.getAttribute("aria-pressed")==="true").map(x=>+x.dataset.wd),open:v("s_o")||"16:30",close:v("s_c")||"23:00",clock:{mode:pm?pm.dataset.clkm:"auto",style:ps?ps.dataset.clks:"city"}};setTimeout(clkTick,300)}
   if(k==="gpb")d={gpb:Math.max(1,+v("s_g")||6)};
   if(k==="msg"){const E=S._tplEd||{};if($("su_tpl"))E[S._tplLg]=$("su_tpl").value;const tp={};["hy","ru","en"].forEach(l=>{const x=String(E[l]??"").replace(/\r/g,"").trim();tp[l]=x&&x!==ORD_TPL[l].trim()?x:""});
     d={ordLegal:v("su_legal")||ORD_DEF.legal,ordAddr:v("su_addr")||ORD_DEF.addr,ordRecv:v("su_recv")||ORD_DEF.recv,ordTpl:tp};S._tplEd=null}
@@ -5557,7 +5569,7 @@ function renderSet(){if(!LI.users)LI.users=ICONS.staff;const st=S.settings;const
     if(k==="logo"){openSetSheet(L3("Լոգո","Логотип","Logo"),logoHTML(),el=>wireLogo(el));return}
     if(k==="acc"){openSetSheet(L3("Մուտքի իրավունքներ","Права доступа","Access rights"),accessHTML(),el=>wireAccess(el),true);return}
     if(k==="wkm"){openSetSheet(L3("Ամփոփում email-ով","Итоги на e-mail","Summary by e-mail"),wkmHTML(),el=>wireWkm(el));return}
-    S._tplEd=null;S._tplLg=null;openSetSheet(t(titles[k]),setSecHTML(k),el=>{el.querySelectorAll(".wdc").forEach(w=>w.onclick=()=>w.setAttribute("aria-pressed",w.getAttribute("aria-pressed")!=="true"));if(k==="msg")wireTpl(el);el.querySelector("#ss_save").onclick=async()=>{if(await saveSetSec(k)){el.remove();renderSet()}}})})}
+    S._tplEd=null;S._tplLg=null;openSetSheet(t(titles[k]),setSecHTML(k),el=>{el.querySelectorAll(".wdc").forEach(w=>w.onclick=()=>w.setAttribute("aria-pressed",w.getAttribute("aria-pressed")!=="true"));if(k==="msg")wireTpl(el);if(k==="hrs"){el.querySelectorAll("[data-clkm]").forEach(b=>b.onclick=()=>{el.querySelectorAll("[data-clkm]").forEach(x=>x.setAttribute("aria-pressed",x===b));const h=el.querySelector("#clk_mh");if(h)h.style.display=b.dataset.clkm==="auto"?"":"none";el.querySelector(".clks").classList.toggle("dim",b.dataset.clkm==="off")});el.querySelectorAll("[data-clks]").forEach(b=>b.onclick=()=>el.querySelectorAll("[data-clks]").forEach(x=>x.setAttribute("aria-pressed",x===b)))}el.querySelector("#ss_save").onclick=async()=>{if(await saveSetSec(k)){el.remove();renderSet()}}})})}
 
 /* ---------- contacts ---------- */
 /* contacts + suppliers live in blobs/contacts so bartenders (own e-mail accounts) can add and edit them; settings/main keeps a legacy copy */
@@ -6171,7 +6183,7 @@ function applySession(){const se=S.session;const bz=boundStaff();
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261116104524";
+const BUILD="20261116114648";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span class="upsp" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2.5l1.9 5.6 5.6 1.9-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.9z"/><path d="M19 15l.8 2.2 2.2.8-2.2.8L19 21l-.8-2.2-2.2-.8 2.2-.8z"/></svg></span><span>${L3("Կա նոր տարբերակ","Есть новая версия","New version available")}</span><button type="button" class="upgo">${L3("Թարմացնել","Обновить","Update")}</button>`;document.body.appendChild(el);
@@ -6179,9 +6191,23 @@ const BUILD="20261116104524";
   setTimeout(chk,8000);setInterval(chk,5*60*1000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)chk()})})();
 addEventListener("scroll",()=>{const h=document.querySelector(".mhead");if(h)h.classList.toggle("stuck",scrollY>4)},{passive:true});
 /* header clock: Yerevan time, plus the viewer's own time when it differs */
-function clkTick(){const el=document.getElementById("clkSlot");if(!el)return;const n=Date.now(),a=fmtT(n),b=fmtL(n);
+/* clock settings: settings/main.clock = {mode:"auto"|"always"|"off", style:"city"|"status"|"plain"} */
+function clkCfg(){const c=S.settings.clock||{};return{mode:c.mode||"auto",style:c.style||"city"}}
+function yvNow(){try{const p=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Yerevan",weekday:"short",hour:"2-digit",minute:"2-digit",hour12:false}).formatToParts(new Date());const g=k=>(p.find(x=>x.type===k)||{}).value;const wd=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].indexOf(g("weekday"));return{wd,min:(+g("hour")%24)*60+ +g("minute")}}catch(e){const d=new Date();return{wd:d.getDay(),min:d.getHours()*60+d.getMinutes()}}}
+function barState(){const W=workDays(),hm=x=>{const [h,m]=String(x).split(":").map(Number);return h*60+(m||0)};const o=hm(hoursOpen()),c=hm(hoursClose());const {wd,min}=yvNow();const over=c<=o;
+  const openOn=(d,t)=>W.includes(d)&&(over?t>=o:t>=o&&t<c);const prevOver=over&&W.includes((wd+6)%7)&&min<c;
+  if(openOn(wd,min)||prevOver)return{open:true,txt:L3(`բաց է մինչև ${hoursClose()}`,`открыто до ${hoursClose()}`,`open till ${hoursClose()}`)};
+  if(W.includes(wd)&&min<o)return{open:false,txt:L3(`կբացվի ${hoursOpen()}-ին`,`откроется в ${hoursOpen()}`,`opens ${hoursOpen()}`)};
+  for(let i=1;i<=7;i++){const d=(wd+i)%7;if(W.includes(d))return{open:false,txt:i===1?L3(`փակ է · վաղը ${hoursOpen()}`,`закрыто · завтра ${hoursOpen()}`,`closed · tomorrow ${hoursOpen()}`):L3(`փակ է · ${t("d"+d).toLowerCase()} ${hoursOpen()}`,`закрыто · ${t("d"+d).toLowerCase()} ${hoursOpen()}`,`closed · ${t("d"+d)} ${hoursOpen()}`)}}
+  return{open:false,txt:L3("փակ է","закрыто","closed")}}
+function clkHTML(cfg){const n=Date.now(),a=fmtT(n);const yl=lang==="ru"?"Ереван":lang==="en"?"Yerevan":"Երևան";
+  if(cfg.style==="plain")return`<b class="num">${a}</b>`;
+  if(cfg.style==="status"){const st=barState();return`<b class="num">${a}</b><small class="clst${st.open?" on":""}"><i></i>${st.txt}</small>`}
+  return`<small>${yl}</small><b class="num">${a}</b>`}
+function clkTick(){const el=document.getElementById("clkSlot");if(!el)return;const n=Date.now(),a=fmtT(n),b=fmtL(n);const cfg=clkCfg();
   const yl=lang==="ru"?"Ереван":lang==="en"?"Yerevan":"Երևան",ml=lang==="ru"?"у вас":lang==="en"?"you":"ձեր";
-  if(a===b){el.innerHTML="";el.title="";return}el.innerHTML=`<small>${yl}</small><b class="num">${a}</b>`;el.title=`${yl} ${a} · ${ml} ${b}`}
+  if(cfg.mode==="off"||(cfg.mode==="auto"&&a===b)){el.innerHTML="";el.title="";return}
+  el.className="aclk aclk-"+cfg.style;el.innerHTML=clkHTML(cfg);el.title=a===b?`${yl} ${a}`:`${yl} ${a} · ${ml} ${b}`}
 setTimeout(clkTick,0);setInterval(clkTick,15000);setTimeout(()=>{const el=document.getElementById("clkSlot");if(el)el.onclick=()=>toast(el.title)},0);document.addEventListener("click",e=>{if(e.target.closest&&e.target.closest("[data-lang]"))setTimeout(clkTick,50)},true);
 /* weekly summary by e-mail: settings/main.wkMail = {on, to:[...], lang}; the Netlify function sends it every Sunday 23:30 Yerevan */
 function wkmHTML(){const w=S.settings.wkMail||{};const L=w.lang||"hy";const net=!!window.INCHEVE_FIREBASE;
