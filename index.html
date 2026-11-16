@@ -2980,6 +2980,8 @@ input.sw{appearance:none;-webkit-appearance:none;width:46px;height:28px;border-r
 .langrow button{all:unset;cursor:pointer;height:34px;padding:0 8px;border-radius:6px;text-align:center;color:inherit!important;font-size:12.5px;font-weight:700;letter-spacing:.04em;color:var(--ink)}.langrow button[aria-pressed="true"]{background:var(--primary);color:#fff!important}@media(hover:hover){.langrow button:not([aria-pressed="true"]):hover{background:var(--raise)}}
 .acout{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);padding:8px 4px}.acout svg{width:16px;height:16px}.lkbox>.acout{align-self:center;margin-top:6px}.railfoot .acout{margin-top:6px}
 .langrow.dk{border:0!important;box-shadow:0 10px 18px rgba(0,0,0,.25)}.langb:not(.lt).lopen{border-color:transparent!important;box-shadow:none!important;outline:0}
+.langrow.dk button{color:rgba(255,255,255,.88)!important}.langrow.dk button[aria-pressed="true"]{background:#fff!important;color:#123a5a!important}@media(hover:hover){.langrow.dk button:not([aria-pressed="true"]):hover{background:rgba(255,255,255,.14)!important}}
+.langrow button[aria-pressed="true"]::before{content:"✓";margin-right:5px;font-size:11px}
 </style>
 
 <header class="appbar"><button class="iconbtn" id="menuBtn" aria-label="Menu"><svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><h1 id="pageTitle">Incheve</h1>
@@ -6215,7 +6217,7 @@ function applySession(){const se=S.session;const bz=boundStaff();
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261116163211";
+const BUILD="20261116183510";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span class="upsp" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2.5l1.9 5.6 5.6 1.9-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.9z"/><path d="M19 15l.8 2.2 2.2.8-2.2.8L19 21l-.8-2.2-2.2-.8 2.2-.8z"/></svg></span><span>${L3("Կա նոր տարբերակ","Есть новая версия","New version available")}</span><button type="button" class="upgo">${L3("Թարմացնել","Обновить","Update")}</button>`;document.body.appendChild(el);
