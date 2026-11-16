@@ -2930,6 +2930,7 @@ input.sw{appearance:none;-webkit-appearance:none;width:46px;height:28px;border-r
 .rocard2 .rosupsel{all:unset;display:inline-block;width:auto;margin-top:3px;font-size:12.5px;font-weight:600;color:var(--primary);cursor:pointer;max-width:100%}.rocard2 .rosupsel::after{content:""}
 .rocard2 .roqty{height:38px}.rocard2 .roqty button{width:32px}.rocard2 .roqty .num{min-width:34px;font-size:15px;line-height:1}.rocard2 .roqty .num small{font-size:10.5px}
 .rocard2 .rox{width:32px;height:32px}
+.gfx{display:flex;flex-direction:column;gap:0;max-height:60vh;overflow:auto;border:1px solid var(--line);border-radius:14px}.gfr{display:flex;flex-direction:column;gap:8px;padding:12px 14px;border-bottom:1px solid var(--line)}.gfr:last-child{border-bottom:0}.gfn{display:flex;justify-content:space-between;gap:8px;font-weight:600}.gfc{display:flex;flex-wrap:wrap;gap:6px}.gfc{flex-wrap:nowrap!important}.gfc .chip{height:32px;padding:0 10px;margin:0;font-size:13px;flex:1 1 auto;justify-content:center;min-width:0}.gfc .chip[aria-pressed="true"]{background:var(--primary);color:#fff;border-color:var(--primary)}
 </style>
 
 <header class="appbar"><button class="iconbtn" id="menuBtn" aria-label="Menu"><svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><h1 id="pageTitle">Incheve</h1>
@@ -3101,6 +3102,8 @@ function toggleMenu(force){const mob=matchMedia("(max-width:760px)").matches,mid
   else if(mid){const on=force!=null?force:!b.classList.contains("expanded");b.classList.toggle("expanded",on)}
   else if(force==null){b.classList.toggle("collapsed");try{localStorage.setItem("incheve-bo-rail",b.classList.contains("collapsed")?"1":"")}catch(e){}}menuIcon()}
 try{if(localStorage.getItem("incheve-bo-rail"))document.body.classList.add("collapsed")}catch(e){}
+/* keep the top-bar icon in sync with the drawer however it is closed (back button, Escape, swipe, scrim) */
+try{let _mo=null;new MutationObserver(()=>{const o=document.body.classList.contains("menu")||document.body.classList.contains("expanded");if(o!==_mo){_mo=o;menuIcon()}}).observe(document.body,{attributes:true,attributeFilter:["class"]})}catch(e){}
 function render(){renderShell();if(!S.db)return;setTimeout(()=>{try{updateOrdPill()}catch(e){}},0);if((S.tab==="rec"||S.tab==="cash")&&Date.now()-(S._pullAt||0)>15e3){S._pullAt=Date.now();setTimeout(pullSales,50)}if(S.tab!=="staff"&&(S.tab!=="stock"||(S.stockView||"list")!=="list")&&$("sapanel"))closeStockPanel();if(S.tab!=="staff")S.stSel=null;const f={shop:renderShop,cont:renderCont,cash:renderCash,tables:renderTables,sell:renderSell,rec:renderRec,stock:renderStock,exp:renderExp,staff:renderStaff,rep:renderRep,imp:renderImp,set:renderSet,learn:renderLearn}[S.tab];saveView();f()}
 function saveView(){if(VIEW0||!(!loginOn()||S.session))return;try{const v=JSON.stringify({tab:S.tab,ot:S.tab==="tables"?S.openTable||null:null,rep:S.tab==="rep"?S.rep:null,at:Date.now()});sessionStorage.setItem("inc-view",v);localStorage.setItem("inc-view",v)}catch(e){}}
 
@@ -3446,7 +3449,7 @@ function stGroupHead(k,L,phone){if(k==="_all")return"";const ck=(S.stockGroup||"
   return`<button class="sagh${phone?" ph":""}" data-sgrp="${esc(ck)}" aria-expanded="${!coll}"><svg class="ico chv" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg><i style="background:${stGColor(k)}"></i><b>${esc(stGLabel(k))}</b><small>${L.length}</small>${nLow?`<span class="pill low">${nLow} ${t("sa_lowN")}</span>`:""}</button>`}
 function stockListA(L,A,gOf){const onPO=poQty(S.pos||[]);
   return`<div class="salist card${A?" adm":""}"><div class="sar sah"><span></span><span>${t("sa_item")}</span><span class="r">${t("price")}</span>${A?`<span class="r">${t("margin")}</span>`:""}<span class="r">${t("stock")}</span>${A?"<span></span>":""}</div>
-   ${stGroups(L).map(([k,G])=>stGroupHead(k,G)+(!S.stockQ&&stCollapsed().has((S.stockGroup||"type")+":"+k)?"":G.map(p=>saRow(p,gOf(p),A,onPO)).join(""))).join("")}</div>`}
+   ${stGroups(L).map(([k,G])=>stGroupHead(k,G)+(!S.stockQ&&stCollapsed().has((S.stockGroup||"type")+":"+k)?"":stTrkLast(G).map(p=>saRow(p,gOf(p),A,onPO)).join(""))).join("")}</div>`}
 const stTrkLast=G=>{const ok=p=>p.stock!=null&&p.active!==false;return[...G.filter(ok),...G.filter(p=>!ok(p))]};
 function stockListGrpPhone(L,A,gOf){return stGroups(L).map(([k,G])=>stGroupHead(k,G,true)+(!S.stockQ&&stCollapsed().has((S.stockGroup||"type")+":"+k)?"":stockListPhone(stTrkLast(G),A,gOf))).join("")}
 function stSort(L){const k=S.stockSort||"name";const st=p=>p.stock==null?1e9:p.stock/stTarget(p);const mg=p=>{const c=S.costs[p.id];return c&&p.price?(1-c/p.price):9};
@@ -4965,8 +4968,8 @@ function bgQ(id,v,sg){const x=+v||0;const p=prodOf(id);const pre=sg?(x>0?"+":x<0
   if(p&&p.bottleId&&p.variant==="Glass")return pre+Math.round(Math.abs(x)*100)/100+" "+t("gls");
   if(p&&isBtlP(p)){const g=GPB(),n=Math.round(Math.abs(x)*g),f=Math.floor(n/g),r=n%g;return pre+([f?f+" "+t("btl"):"",r?r+" "+t("gls"):""].filter(Boolean).join(x<0?" − ":" + ")||"0")}
   return pre+String(Math.round(Math.abs(x)*100)/100)}
-function editFv(l,v){if(v==null||v==="")return"—";if(l.f==="active")return v?L3("միացված","вкл.","on"):L3("թաքցված","скрыт","hidden");if(l.f==="stock")return bgQ(l.id,v);return money(v)}
-function editLab(f){return f==="price"?L3("Գին","Цена","Price"):f==="cost"?L3("Ինքնարժեք","Себест.","Cost"):f==="stock"?L3("Մնացորդ","Остаток","Stock"):f==="active"?L3("Վաճառք","Продажа","On sale"):f}
+function editFv(l,v){if(v==null||v==="")return"—";if(l.f==="group")return v==="ingredient"?L3("Բաղադրիչ","Ингредиент","Ingredient"):t("g_"+v);if(l.f==="active")return v?L3("միացված","вкл.","on"):L3("թաքցված","скрыт","hidden");if(l.f==="stock")return bgQ(l.id,v);return money(v)}
+function editLab(f){return f==="group"?L3("Խումբ","Группа","Group"):f==="price"?L3("Գին","Цена","Price"):f==="cost"?L3("Ինքնարժեք","Себест.","Cost"):f==="stock"?L3("Մնացորդ","Остаток","Stock"):f==="active"?L3("Վաճառք","Продажа","On sale"):f}
 function editLine(l){if(l.f==="new")return`${esc(l.name)} <span class="muted">${L3("նոր ապրանք","новый товар","new product")}</span>`;return`${esc(l.name)}${l.variant?" · "+esc(t(l.variant)):""} <span class="muted">${editLab(l.f)}</span> <b class="num">${esc(editFv(l,l.from))} → ${esc(editFv(l,l.to))}</b>`}
 async function renderHistory(){
   $("stockBody").innerHTML=`<div class="hwrap"><h2>${t("sv_hist")}</h2><div id="hist">${loaderHTML()}</div></div>`;
@@ -5670,8 +5673,26 @@ function aiApply(op,r){
     let id=x.id&&x.id!=="null"?String(x.id):null;const ak=normKey(txt);if(S.aliases&&S.aliases[ak])id=S.aliases[ak];
     const p=id?prodOf(id):null;
     if(p&&stockable(p))addInvLine(op,p,qty,cost,txt);
-    else op.unmatched.push({text:txt,qty,cost,name:String(x.name||txt).slice(0,80),group:GROUPS.includes(x.group)?x.group:"wine"})}
+    else op.unmatched.push({text:txt,qty,cost,name:String(x.name||txt).slice(0,80),group:GROUPS.includes(x.group)||x.group==="ingredient"?x.group:guessGroup(txt+" "+(x.name||""),op.cat)})}
   return n}
+/* guess a product group from its name (invoice lines, review tool): food/ingredient words win over the invoice category */
+const GG_ING=/կարագ|պանիր|ձու|ալյուր|շաքար|աղ(?![ա-ֆ])|կաթ|սեր|մածուն|յուղ|ձեթ|ձիթապտ|լոլիկ|չորալոլիկ|վարունգ|սոխ|սխտոր|կանաչի|համեմ|պղպեղ|մեղր|ընկույզ|նուշ|պնդուկ|չամիչ|չիր|մրգ|միս|հավ|խոզ|տավար|երշիկ|ձուկ|հաց|լավաշ|կրեկեր|թխվածք|շոկոլադ|սոուս|քացախ|butter|cheese|egg|flour|sugar|salt|milk|cream|oil|olive|tomato|onion|garlic|honey|nut|meat|ham|salami|bread|sauce|vinegar|масло|сыр|яйц|мука|сахар|соль|молок|слив|томат|лук|чеснок|мёд|мед\b|орех|мясо|хлеб|соус|уксус|կգ(?![ա-ֆ])|kg\b|кг\b|գր(?![ա-ֆ])|gr\b/iu;
+const GG_DRK=/ջուր|հյութ|լիմոնադ|կոլա|գարեջուր|սուրճ|թեյ|tonic|water|juice|soda|cola|beer|coffee|tea|вода|сок|пиво|кофе|чай|лимонад/iu;
+const GG_WINE=/գինի|wine|вино|red|white|rose|rosé|dry|brut|sparkling|pet.?nat|areni|voskehat|kakhet|rkatsit|saperavi|cabernet|merlot|chardonnay|кармир|сухое|игрист|կարմիր|սպիտակ|վարդագույն|փրփրուն|չոր(?![ա-ֆ])|կիսաչոր|կիսաքաղցր/iu;
+function grpSuspects(){return S.products.filter(p=>p.group==="wine"&&!p.bottleId&&!isArch(p)&&!(typeof WINFO!=="undefined"&&WINFO[p.name])&&!S.products.some(g=>g.bottleId===p.id)&&!(p.category&&/RED|WHITE|ROSE|ORANGE|SPARK|DESSERT|c_/i.test(p.category))&&guessGroup(p.name)!=="wine")}
+function openGrpFix(){const X=grpSuspects();if(!X.length){toast(L3("Ամեն ինչ կարգին է","Всё в порядке","All good"));return}const ch={};X.forEach(p=>ch[p.id]=guessGroup(p.name)==="drinks"?"drinks":"ingredient");
+  const G=["wine","drinks","food","ingredient"];
+  const el=openSetSheet(L3("Ստուգել խմբերը","Проверить группы","Review groups"),`<p class="muted" style="margin:0 0 12px;font-size:13px">${L3("Այս ապրանքները նշված են որպես գինի, բայց անունով գինի չեն թվում։ Ընտրիր ճիշտ խումբը։ Բաղադրիչը չի երևում վաճառքում։","Эти товары отмечены как вино, но по названию не похожи. Выберите группу. Ингредиенты не видны в продаже.","These are filed as wine but don't look like it. Pick the right group. Ingredients are hidden from sale.")}</p>
+   <div class="gfx">${X.map(p=>`<div class="gfr"><span class="gfn">${esc(dName(p))}<small class="muted">${p.stock!=null?esc(String(Math.round(p.stock*100)/100)):""}</small></span><div class="gfc">${G.map(g=>`<button type="button" class="chip" data-gfp="${esc(p.id)}" data-gfg="${g}" aria-pressed="${ch[p.id]===g}">${g==="ingredient"?L3("Բաղադրիչ","Ингредиент","Ingredient"):t("g_"+g)}</button>`).join("")}</div></div>`).join("")}</div>
+   <div class="row" style="gap:8px;margin-top:14px"><button class="btn ghost" id="gf_x">${t("cancel")}</button><button class="btn primary" id="gf_ok" style="flex:1">${t("save")}</button></div>`);
+  el.querySelectorAll("[data-gfp]").forEach(b=>b.onclick=()=>{ch[b.dataset.gfp]=b.dataset.gfg;el.querySelectorAll(`[data-gfp="${b.dataset.gfp}"]`).forEach(x=>x.setAttribute("aria-pressed",x.dataset.gfg===b.dataset.gfg))});
+  el.querySelector("#gf_x").onclick=()=>el.remove();
+  el.querySelector("#gf_ok").onclick=async()=>{const bt=el.querySelector("#gf_ok");bt.disabled=true;const items=[];
+    try{for(const p of X){const g=ch[p.id];if(g==="wine")continue;const up={group:g,variant:g==="ingredient"&&/կգ|kg|кг/i.test(p.name)?"kg":(p.variant==="Bottle"?"":p.variant||"")};
+        await S.db.doc("products/"+p.id).update(up);items.push({id:p.id,name:p.name,variant:"",f:"group",from:"wine",to:g});Object.assign(p,up)}
+      if(items.length)await S.db.collection("moves").add({type:"edit",date:dayKey(new Date()),ts:Date.now(),items,note:"group fix",by:S.uid||"",...whoStamp()});
+      toast(L3(`Ուղղվեց՝ ${items.length}`,`Исправлено: ${items.length}`,`Fixed: ${items.length}`));el.remove();updateBadges();if(S.tab==="stock")renderStock()}catch(e){bt.disabled=false;toast(errMsg(e))}}}
+function guessGroup(txt,cat){const x=String(txt||"");if(GG_WINE.test(x)&&!GG_ING.test(x.replace(GG_WINE,"")))return"wine";if(GG_ING.test(x))return"ingredient";if(GG_DRK.test(x))return"drinks";return cat&&cat!=="e_wine"?"ingredient":"wine"}
 function addInvLine(op,p,qty,cost,src){const ex=op.lines.find(l=>l.id===p.id);
   if(ex){ex.qty=(+ex.qty||0)+qty;if(cost)ex.cost=cost;if(src)ex.src=(ex.src?ex.src+" + ":"")+src}
   else op.lines.push({id:p.id,name:p.name,variant:p.variant||"",qty,cost:cost||S.costs[p.id]||"",before:p.stock,src:src||"",ai:!!src,oldCost:S.costs[p.id]||null})}
@@ -5700,13 +5721,13 @@ function wireInvoiceAI(op){
   document.querySelectorAll("[data-uskip]").forEach(b=>b.onclick=()=>{op.unmatched.splice(+b.dataset.uskip,1);renderInvoice()});
   document.querySelectorAll("[data-unew]").forEach(b=>b.onclick=()=>{const i=+b.dataset.unew;const u=op.unmatched[i];const w=u.group==="wine";
     $("un_"+i).innerHTML=`<div class="row" style="margin-top:8px"><label class="f" style="flex:2 1 200px">${t("name")}<input id="nn_${i}" value="${esc(u.name)}"></label>
-     <label class="f">${t("group")}<select id="ng_${i}">${GROUPS.map(g=>`<option value="${g}"${g===u.group?" selected":""}>${t("g_"+g)}</option>`).join("")}</select></label>
+     <label class="f">${t("group")}<select id="ng_${i}">${[...GROUPS,"ingredient"].map(g=>`<option value="${g}"${g===u.group?" selected":""}>${t("g_"+g)}</option>`).join("")}</select></label>
      <label class="f" style="width:110px">${w?t("ai_bprice"):t("price")}<input id="nb_${i}" type="number" inputmode="numeric"></label>
      ${w?`<label class="f" style="width:110px">${t("ai_gprice")}<input id="nq_${i}" type="number" inputmode="numeric"></label>`:""}
      <button class="btn primary" id="nsv_${i}">${t("add")}</button></div>`;
     $("nsv_"+i).onclick=async()=>{const name=$("nn_"+i).value.trim();if(!name)return;const g=$("ng_"+i).value;const bp=+$("nb_"+i).value||0;const gp=$("nq_"+i)?+$("nq_"+i).value||0:0;
       const id="p"+Date.now().toString(36);const isWine=g==="wine";
-      const prod={id,name,variant:isWine?"Bottle":"",group:g,category:"",price:bp,variable:!bp,stock:0,low:null,active:true};
+      const prod={id,name,variant:isWine?"Bottle":g==="ingredient"&&/կգ|kg|кг/i.test(u.text||"")?"kg":"",group:g,category:"",price:bp,variable:!bp,stock:0,low:null,active:true};
       try{await S.db.doc("products/"+id).set(prod);
         if(isWine&&gp){const gid=id+"g";await S.db.doc("products/"+gid).set({id:gid,name,variant:"Glass",group:g,category:"",price:gp,variable:false,stock:null,low:null,active:true,bottleId:id})}
         if(!S.products.find(p=>p.id===id))S.products.push(prod);
@@ -6104,7 +6125,7 @@ function applySession(){const se=S.session;const bz=boundStaff();
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261115110929";
+const BUILD="20261115203910";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span class="upsp" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2.5l1.9 5.6 5.6 1.9-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.9z"/><path d="M19 15l.8 2.2 2.2.8-2.2.8L19 21l-.8-2.2-2.2-.8 2.2-.8z"/></svg></span><span>${L3("Կա նոր տարբերակ","Есть новая версия","New version available")}</span><button type="button" class="upgo">${L3("Թարմացնել","Обновить","Update")}</button>`;document.body.appendChild(el);
@@ -6846,7 +6867,7 @@ Object.assign(T,{
  ro_none:{hy:"Պատվիրելու բան չկա 🎉",ru:"Заказывать нечего 🎉",en:"Nothing to order 🎉"},ro_unknown:{hy:"Մատակարարը նշված չէ",ru:"Поставщик не указан",en:"No supplier set"},
  ro_msg:{hy:"Բարև ձեզ, Incheve գինու բարի պատվերը՝",ru:"Здравствуйте, заказ от винного бара Инчевэ:",en:"Hello, order from Incheve Wine Bar:"},ro_toIn:{hy:"→ Դարձնել մուտք",ru:"→ Оформить приход",en:"→ Make invoice"},
  ro_have:{hy:"կա",ru:"есть",en:"have"},pcs:{hy:"հատ",ru:"шт.",en:"pcs"},
- stop:{hy:"Ստոպ",ru:"Стоп",en:"Stop"},stopOn:{hy:"⛔ Ստոպ այսօր (չվաճառել)",ru:"⛔ Стоп на сегодня",en:"⛔ Stop for tonight"},stopOff:{hy:"✓ Վերադարձնել վաճառքի",ru:"✓ Вернуть в продажу",en:"✓ Back on sale"},
+ stop:{hy:"Ստոպ",ru:"Стоп",en:"Stop"},stopOn:{hy:"Այսօր չվաճառել",ru:"Не продавать сегодня",en:"Don't sell today"},stopOff:{hy:"Վերադարձնել վաճառքի",ru:"Вернуть в продажу",en:"Back on sale"},
  stopList:{hy:"Ստոպ-լիստ",ru:"Стоп-лист",en:"Stop list"},stopped:{hy:"ստոպ",ru:"стоп",en:"stopped"},
  Taste:{hy:"Համտես 50 մլ",ru:"Дегустация 50 мл",en:"Tasting 50 ml"},tastePrice:{hy:"Համտեսի գին (50 մլ)",ru:"Цена дегустации (50 мл)",en:"Tasting price (50 ml)"},
  extras:{hy:"Հավելումներ",ru:"Добавки",en:"Extras"},extrasHelp:{hy:"Օր.՝ մեղր +500, մեծ ափսե +2000",ru:"Напр.: мёд +500, большая тарелка +2000",en:"E.g. honey +500, large plate +2000"},addExtra:{hy:"+ Հավելում",ru:"+ Добавка",en:"+ Extra"},
@@ -6992,6 +7013,7 @@ function ncTasks(){if(!S.db||!S.write)return[];if(!S._mgrSub&&(S.admin||S.mgr))s
       L.push({k:"ct",title:`${L3("Կոնտակտներ","Контакты","Contacts")} · ${lines.length}`,sub:lines.slice(0,3).join("\n")+(lines.length>3?`\n+${lines.length-3}`:""),btn:t("nt_see"),hot:false})}}
   if(S.admin||S.mgr){const W=S.products.filter(p=>p.active!==false&&!isArch(p)&&!p.bottleId&&p.group==="wine"&&!S.costs[p.id]&&!(Array.isArray(p.recipe)&&p.recipe.length)&&(p.stock==null||p.stock>0));
     if(W.length)L.push({k:"nocost",title:L3(`${W.length} գինի առանց ինքնարժեքի`,`${W.length} вин без себестоимости`,`${W.length} wines without cost`),sub:W.slice(0,3).map(p=>dName(p)).join(", ")+(W.length>3?` +${W.length-3}`:"")+"\n"+L3("Շահույթը սխալ է հաշվվում","Прибыль считается неверно","Profit is miscounted"),btn:t("nt_see"),hot:false})}
+  if(S.admin||S.mgr){const X=grpSuspects();if(X.length)L.push({k:"wgrp",title:L3(`${X.length} ապրանք գինու խմբում, որ գինի չի թվում`,`${X.length} товаров в «Вине», похожих не на вино`,`${X.length} items under Wine that don't look like wine`),sub:X.slice(0,3).map(p=>dName(p)).join(", ")+(X.length>3?` +${X.length-3}`:""),btn:L3("Ստուգել","Проверить","Review"),hot:true})}
   const lw=lowCount();if(lw&&tabsFor().includes("stock"))L.push({k:"low",title:`${lw} ${t("ss_lowS")}`,sub:t("nt_lowh"),btn:t("nt_see")});
   const oo=oldOpenList();if(oo.length)L.push({k:"opn",title:`🍷 ${oo.length} ${L3("շիշ բաց է","бут. открыто","bottle(s) open")} ${openWarn()}+ ${L3("օր","дн.","days")}`,sub:oo.slice(0,3).map(p=>dName(p)).join(", ")+(oo.length>3?"…":""),btn:t("nt_see"),hot:oo.some(p=>openDays(p)>=openWarn()+2)});
   return L}
@@ -7012,6 +7034,7 @@ function openBell(){closeBell();const L=ncList();const all=lowCount();const d=do
     if(k==="sum"){try{await S.db.doc("registers/"+b.dataset.rid).update({reportSent:"later"})}catch(e){}openSummary(b.dataset.day);return}
     if(k==="opn"){closeBell();openOldBottles();return}
     if(k==="pay"){const r=(S.unpaidRegs||[]).find(x=>x.id===b.dataset.rid);if(!r)return;const X={...r.transfer,paidAt:Date.now(),paidBy:S.uid||""};try{await S.db.doc("registers/"+r.id).update({transfer:X});r.transfer=X;xferPaySync(r,X);toast(L3("Նշվեց՝ վճարված է","Отмечено как оплачено","Marked as paid"));updateBadges()}catch(e){toast(errMsg(e))}return}
+    if(k==="wgrp"){openGrpFix();return}
     if(k==="nocost"){S.tab="stock";S.stockView="list";S.stockF="nocost";S.stockQ="";$("main").innerHTML="";render();scrollTo({top:0});return}
     if(k==="ct"){try{localStorage.setItem("inc-ctseen",String(Date.now()))}catch(e){}updateBadges();S.tab="cont";S.ctG="";$("main").innerHTML="";render();scrollTo({top:0});return}
     if(k==="stk"){try{localStorage.setItem("inc-stkseen",String(Date.now()))}catch(e){}updateBadges();S.tab="stock";S.stockView="hist";$("main").innerHTML="";render();scrollTo({top:0});return}
