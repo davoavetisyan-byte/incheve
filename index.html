@@ -6225,7 +6225,7 @@ function applySession(){const se=S.session;const bz=boundStaff();
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261116184517";
+const BUILD="20261116200013";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span class="upsp" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2.5l1.9 5.6 5.6 1.9-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.9z"/><path d="M19 15l.8 2.2 2.2.8-2.2.8L19 21l-.8-2.2-2.2-.8 2.2-.8z"/></svg></span><span>${L3("Կա նոր տարբերակ","Есть новая версия","New version available")}</span><button type="button" class="upgo">${L3("Թարմացնել","Обновить","Update")}</button>`;document.body.appendChild(el);
@@ -6728,7 +6728,7 @@ function openInfo(id){const p=prodOf(id);if(!p)return;try{ensureCosts()}catch(_)
   el.onclick=async e=>{const ci=e.target.closest("[data-cvi]");const fl=e.target.closest(".vopt.flip");if(ci||fl){e.preventDefault();(ci||fl).closest(".vopt").classList.toggle("flip");return}const a=e.target.closest("[data-iadd]");if(a){el.remove();addSmart(a.dataset.iadd);return}
     if(e.target.closest("#if_pic")){if(!S.write)return;el.remove();const b=bottleOf(p)||vs.find(v=>v.variant!=="Glass")||p;pickPhoto(b.id);return}
     if(e.target.closest("#if_edit")){el.remove();openWineEdit(p.name);return}
-    {const sk=e.target.closest("#if_stk");if(sk){const sid=sk.dataset.sid;el.remove();S.tab="stock";S.stockView="list";S.stockF="all";$("main").innerHTML="";render();setTimeout(()=>openStockPanel(sid),60);return}}
+    {const sk=e.target.closest("#if_stk");if(sk){const sid=sk.dataset.sid;el.remove();closeOverlays();S.tab="stock";S.stockView="list";S.stockF="all";$("main").innerHTML="";render();setTimeout(()=>openStockPanel(sid),60);return}}
     {const ob=e.target.closest("#if_ord");if(ob){if(ob.disabled)return;const b=bottleOf(p)||vs.find(v=>v.variant!=="Glass")||p;ob.disabled=true;await shAdd({name:b.name+(b.variant&&b.variant!=="kg"&&b.variant!=="Piece"?" · "+b.variant:""),pid:b.id,qty:1,unit:shUnitOf(b)});ob.classList.add("on");ob.textContent="✓ "+t("ic_onl");return}}
     if(e.target.closest("#if_stop")){const tgt=bottleOf(p)||p;const on=!isStopped(tgt);el.remove();try{for(const x of S.products.filter(z=>z.name===p.name))await S.db.doc("products/"+x.id).update({stop:on?dayKey(new Date()):null})}catch(err){toast(errMsg(err))}return}
     if(e.target.closest("#if_fav")){const f=(Array.isArray(S.settings.favs)?S.settings.favs:[]).slice();const i=f.indexOf(p.name);if(i>=0)f.splice(i,1);else f.push(p.name);S.settings={...S.settings,favs:f};el.remove();try{await S.db.doc("settings/main").set(S.settings)}catch(err){toast(errMsg(err))}if(S.tab==="sell")drawGrid();return}
@@ -7684,6 +7684,8 @@ function showGuest(total,tip,items,disc,tipCtl){const el=document.createElement(
 /* ---------- language picker in the top bar ---------- */
 /* one language control everywhere: globe + code + chevron, opens the same menu */
 const LANG_GLOBE='<svg class="li" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/></svg>';
+/* close every floating window (cart sheet, add-items sheet, product sheets, menus) before jumping to another page */
+function closeOverlays(){try{const c=$("cart");if(c)c.classList.remove("open");if($("layer"))$("layer").innerHTML="";document.querySelectorAll(".gview,.vsheet,.infobox,.setsheet,#langMenu,#sortMenu,.dmenu").forEach(x=>x.remove());document.body.classList.remove("menu","expanded","cart-open");if(typeof closeStockPanel==="function"&&$("sapanel"))closeStockPanel()}catch(e){}}
 function acctOutHTML(){return`<button class="acout" onclick="incheveSignOut()">${DOOR_SVG}${{hy:"Ելք հաշվից",ru:"Выйти из аккаунта",en:"Sign out"}[lang]}</button>`}
 function langBtnHTML(v){return`<button class="langb${v?" "+v:""}"${v?"":` id="langBtn"`} data-langbtn aria-haspopup="true" aria-label="${t("lang_l")}">${LANG_GLOBE}<span>${{hy:"ՀԱՅ",ru:"РУС",en:"ENG"}[lang]}</span><svg class="li lcv" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg></button>`}
 function closeLangMenu(){const ex=$("langMenu");if(ex)ex.remove();document.querySelectorAll(".langb.lopen").forEach(x=>x.classList.remove("lopen"))}
