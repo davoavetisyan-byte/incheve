@@ -4647,18 +4647,18 @@ async function renderRep(){
     const big=A?netP:R.tot.net,bigP=A?netPp:Rp.tot.net;
     const cogs=R.tot.cogs||0,expO=Math.max(0,exp),mx=Math.max(1,R.tot.net);
     const fr=(lab,v,c,sign,cls)=>`<div class="qfr ${cls||""}"><div class="qfl"><span>${sign?`<i class="qsg">${sign}</i>`:""}${lab}</span><b class="num">${money(Math.round(v))}</b></div><div class="qfb"><span style="width:${Math.max(v>0?1.5:0,Math.min(100,Math.abs(v)/mx*100)).toFixed(1)}%;background:${c}"></span></div></div>`;
-    const flow=A?`<details class="qflow"><summary>${L3("Ինչպե՞ս ստացվեց այս թիվը","Как получилась эта цифра","How we got this number")}<i class="qchev">›</i></summary><div class="qfw">
-      ${fr(L3("Վաճառեցինք","Продали","We sold"),R.tot.net,"#57b98f","")}
-      ${fr(L3("Վաճառածի գինը մեզ համար","Себестоимость проданного","What the goods cost us"),cogs,"#f39b7f","−")}
+    const flow=A?`<details class="qflow"><summary>${L3("Ինչպե՞ս է հաշվվում շահույթը","Как считается прибыль","How profit is calculated")}<i class="qchev">›</i></summary><div class="qfw">
+      ${fr(L3("Եկամուտ","Выручка","Revenue"),R.tot.net,"#57b98f","")}
+      ${fr(L3("Ինքնարժեք","Себестоимость","Cost of goods"),cogs,"#f39b7f","−")}
       ${fr(L3("Ծախսեր","Расходы","Expenses"),expO,"#a08ad9","−")}
       ${fr(L3("Աշխատավարձ","Зарплата","Salaries"),sal,"#5aa2dc","−")}
-      ${loss>0?fr(L3("Կոտրված, թափված, պակասորդ","Бой, списания, недостача","Breakage and shortage"),loss,"#c8507a","−"):""}
-      ${fr(L3("Մնաց մեզ","Осталось нам","What we kept"),netP,netP>=0?"var(--good,#2e9e63)":"var(--bad,#c4362a)","=","qtot")}
+      ${loss>0?fr(L3("Կորուստներ","Потери","Losses"),loss,"#c8507a","−"):""}
+      ${fr(L3("Մաքուր շահույթ","Чистая прибыль","Net profit"),netP,netP>=0?"var(--good,#2e9e63)":"var(--bad,#c4362a)","=","qtot")}
       ${R.tips?`<p class="qnote">${L3("Թեյավճարը","Чаевые","Tips")} (${money(Math.round(R.tips))}) ${L3("աշխատողներինն է, այստեղ հաշվված չէ։","принадлежат персоналу и сюда не входят.","belong to the staff and aren't counted here.")}</p>`:""}
       ${R.tot.cogsEst?`<p class="qnote">${L3("Որոշ ապրանքների գինը մոտավոր է։","Цена части товаров примерная.","Some item costs are estimates.")}</p>`:""}</div></details>`:"";
     const hero=`<div class="qc qhero"><div class="qq">${L3("Ինչքա՞ն վաստակեցինք","Сколько заработали?","How much did we make?")}</div><div class="qbig num${big<0?" neg":""}">${money(Math.round(big))}</div>${chg(big,bigP)}
-      <div class="qpills"><span><b class="num">${kmb(R.tot.net)}</b> ${L3("վաճառք","продажи","sales")}</span><span><b class="num">${R.nR}</b> ${L3("կտրոն","чеков","receipts")}</span><span><b class="num">${kmb(R.avg||0)}</b> ${L3("միջին կտրոն","средний чек","avg receipt")}</span></div>${flow}</div>`;
-    let spent="";if(A){const SP=[[L3("Վաճառածի գինը","Себестоимость","Cost of goods"),cogs,"#f39b7f"],...Object.entries(ex).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).map(([n,v],i)=>[n,v,n===t("e_salary")?"#5aa2dc":["#a08ad9","#3fa7a0","#d4a017","#b56576","#8c6bb1"][i%5]]),...(loss>0?[[L3("Կորուստներ","Потери","Losses"),loss,"#c8507a"]]:[])].filter(x=>x[1]>0);const st=SP.reduce((a,x)=>a+x[1],0)||1;
+      <div class="qpills"><span><b class="num">${kmb(R.tot.net)}</b> ${L3("եկամուտ","выручка","revenue")}</span><span><b class="num">${R.nR}</b> ${L3("կտրոն","чеков","receipts")}</span><span><b class="num">${kmb(R.avg||0)}</b> ${L3("միջին կտրոն","средний чек","avg receipt")}</span></div>${flow}</div>`;
+    let spent="";if(A){const SP=[[L3("Ինքնարժեք","Себестоимость","Cost of goods"),cogs,"#f39b7f"],...Object.entries(ex).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).map(([n,v],i)=>[n,v,n===t("e_salary")?"#5aa2dc":["#a08ad9","#3fa7a0","#d4a017","#b56576","#8c6bb1"][i%5]]),...(loss>0?[[L3("Կորուստներ","Потери","Losses"),loss,"#c8507a"]]:[])].filter(x=>x[1]>0);const st=SP.reduce((a,x)=>a+x[1],0)||1;
       spent=`<div class="qc"><div class="qq">${L3("Ո՞ւր գնաց գումարը","Куда ушли деньги?","Where did the money go?")}<b class="num">${money(Math.round(st))}</b></div><div class="qstack">${SP.map(([n,v,c])=>`<span style="flex:${v};background:${c}" title="${esc(n)}"></span>`).join("")}</div>
         <div class="qleg">${SP.slice(0,5).map(([n,v,c])=>`<div><i style="background:${c}"></i><span>${esc(n)}</span><b class="num">${money(Math.round(v))}</b><em>${Math.round(v/st*100)}%</em></div>`).join("")}</div>
         <details class="qmore"><summary>${L3("Մանրամասն՝ գնումներ, դրամարկղ","Подробно: закупки, касса","Details: purchases, till")}<i class="qchev">›</i></summary>${cashOut()}${tillOutsHTML(D)}</details></div>`}
@@ -6288,7 +6288,7 @@ function applySession(){const se=S.session;const bz=boundStaff();
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261116210157";
+const BUILD="20261116210700";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span class="upsp" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2.5l1.9 5.6 5.6 1.9-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.9z"/><path d="M19 15l.8 2.2 2.2.8-2.2.8L19 21l-.8-2.2-2.2-.8 2.2-.8z"/></svg></span><span>${L3("Կա նոր տարբերակ","Есть новая версия","New version available")}</span><button type="button" class="upgo">${L3("Թարմացնել","Обновить","Update")}</button>`;document.body.appendChild(el);
