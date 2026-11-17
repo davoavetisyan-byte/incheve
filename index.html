@@ -2997,7 +2997,7 @@ input.sw{appearance:none;-webkit-appearance:none;width:46px;height:28px;border-r
 :root[data-theme="dark"] .toast.tact>.tactb{background:rgba(0,0,0,.08)!important;color:var(--bg)!important;box-shadow:inset 0 0 0 1px rgba(0,0,0,.18)}
 .toast.tact::after{content:"";position:absolute;left:0;bottom:0;height:3px;width:100%;background:var(--primary-l,#7fb0e0);transform-origin:left;animation:tbar 6s linear forwards;opacity:.9}
 @keyframes tbar{to{transform:scaleX(0)}}
-@media (prefers-reduced-motion:reduce){.toast.tact::after{animation:none}}.toast.tact>span.tt{display:flex!important;flex-direction:column;gap:2px;-webkit-line-clamp:unset}.toast.tact .tt1{font-weight:700;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.toast.tact .tt2{font-weight:500;font-size:12.5px;opacity:.75}</style>
+@media (prefers-reduced-motion:reduce){.toast.tact::after{animation:none}}.toast.tact>span.tt{display:flex!important;flex-direction:column;gap:2px;-webkit-line-clamp:unset}.toast.tact .tt1{font-weight:700;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.toast.tact .tt2{font-weight:500;font-size:12.5px;opacity:.75}.toast.tact>.tactb,:root[data-theme="dark"] .toast.tact>.tactb{background:#d93a2e!important;color:#fff!important;box-shadow:none!important}.toast.tact>.tactb:hover,.toast.tact>.tactb:active{background:#b92e23!important}</style>
 
 <header class="appbar"><button class="iconbtn" id="menuBtn" aria-label="Menu"><svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><h1 id="pageTitle">Incheve</h1>
   <div class="who"><span id="clkSlot" class="aclk" aria-live="off"></span><span id="offSlot"></span><span id="bellSlot"></span><span id="whoSlot"></span><span class="role" id="roleChip" hidden></span><span id="langSlot"></span><button class="iconbtn" id="themeBtn" aria-label="Theme"></button>
@@ -6252,7 +6252,7 @@ function applySession(){const se=S.session;const bz=boundStaff();
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261116203525";
+const BUILD="20261116203640";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span class="upsp" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2.5l1.9 5.6 5.6 1.9-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.9z"/><path d="M19 15l.8 2.2 2.2.8-2.2.8L19 21l-.8-2.2-2.2-.8 2.2-.8z"/></svg></span><span>${L3("Կա նոր տարբերակ","Есть новая версия","New version available")}</span><button type="button" class="upgo">${L3("Թարմացնել","Обновить","Update")}</button>`;document.body.appendChild(el);
