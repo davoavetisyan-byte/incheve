@@ -3646,9 +3646,9 @@ function openStockPanel(id){if(!can("stock_edit")){toast(L3("Խմբագրելո�
     if("active"in up)ch.push({...nm,f:"active",from:p.active!==false,to:up.active});
     try{if(Object.keys(up).length)await S.db.doc("products/"+id).update(up);if(g&&Object.keys(gup).length)await S.db.doc("products/"+g.id).update(gup);
       if(ch.length)S.db.collection("moves").add({type:"edit",date:dayKey(new Date()),ts:Date.now(),items:ch,by:S.uid||"",...whoStamp()}).catch(()=>{});
-      if(c!==(c0??null)){const nc={...S.costs};if(c==null)delete nc[id];else nc[id]=c;try{await S.db.doc("costs/all").set({map:nc});S.costs=nc;if(c>0)costHistPush(id,c,"edit")}catch(e){console.warn("costs",e)}
+      let cFail=false;if(c!==(c0??null)){try{await costPut(id,c);if(c>0)costHistPush(id,c,"edit")}catch(e){cFail=true;costErr(e)}
         if(S.costEst&&S.costEst[id]){const es={...S.costEst};delete es[id];try{await S.db.doc("costs/est").set({map:es});S.costEst=es}catch(_){}}}
-      if(dirty)toast(t("saved"));if(goNext&&next){openStockPanel(next);setTimeout(()=>{if(S.tab==="stock"&&!(document.activeElement&&$("sapanel")&&$("sapanel").contains(document.activeElement)))renderStock()},0)}else{closeStockPanel();if(S.tab==="stock")renderStock()}}catch(e){toast(errMsg(e))}};
+      if(cFail){const ci=$("sa_c");if(ci){ci.classList.add("needf");ci.focus()}return}if(dirty)toast(t("saved"));if(goNext&&next){openStockPanel(next);setTimeout(()=>{if(S.tab==="stock"&&!(document.activeElement&&$("sapanel")&&$("sapanel").contains(document.activeElement)))renderStock()},0)}else{closeStockPanel();if(S.tab==="stock")renderStock()}}catch(e){toast(errMsg(e))}};
   {const dt=$("sa_dots");if(dt)dt.onclick=()=>{const d=el.querySelector(".sadng");d.hidden=!d.hidden;dt.setAttribute("aria-expanded",String(!d.hidden));if(!d.hidden)d.scrollIntoView({block:"nearest"})}}
   {const wb=$("sa_wo");if(wb){const f=$("sa_wof");wb.onclick=()=>{f.hidden=!f.hidden;wb.classList.toggle("on",!f.hidden);if(!f.hidden)f.scrollIntoView({block:"nearest"})};$("sa_wox").onclick=()=>{f.hidden=true;wb.classList.remove("on")};
     f.querySelectorAll("[data-wrr]").forEach(b=>b.onclick=()=>f.querySelectorAll("[data-wrr]").forEach(x=>x.setAttribute("aria-pressed",x===b)));
@@ -3724,7 +3724,7 @@ function openNewProduct(o={}){closeStockPanel();const el=saPanelEl();const f={ty
      const price=ty==="ingredient"?0:+f.price||0;const doc={id,name,variant:isW?"Bottle":f.unit,group:ty==="souv"?"other":ty,category:ty==="souv"&&!/SOUVENIR|HANDMADE/i.test(cat)?"SOUVENIR "+cat:cat,price,variable:ty!=="ingredient"&&!f.price,stock:f.track?(+f.stock||0):null,low:f.track&&f.low!==""&&f.low!=null?+f.low:null,active:true,...(f.sup?{supplier:f.sup}:{})};
      try{await S.db.doc("products/"+id).set(doc);
        if(isW&&f.glass&&price){await S.db.doc("products/"+id+"g").set({id:id+"g",bottleId:id,name,variant:"Glass",group:"wine",category:cat,price:+f.gp||glassGuess(price),variable:false,stock:null,low:null,active:true})}
-       if(f.cost!==""&&f.cost!=null){const nc={...S.costs,[id]:+f.cost};try{await S.db.doc("costs/all").set({map:nc});S.costs=nc}catch(e){console.warn("costs",e)}}
+       if(f.cost!==""&&f.cost!=null){try{await costPut(id,+f.cost)}catch(e){costErr(e)}}
        S.db.collection("moves").add({type:"edit",date:dayKey(new Date()),ts:Date.now(),items:[{id,name,variant:doc.variant||"",f:"new",from:null,to:price||null,stock:doc.stock}],by:S.uid||"",...whoStamp()}).catch(()=>{});
        toast(`${t("np_added")}: ${name}`);const keepT={type:ty,color:f.color,unit:f.unit,cat:f.cat,glass:f.glass,sup:f.sup};
        if(o.after)o.after(id);else if(isW)aiBackground(id,{id,name,category:cat});
@@ -3814,7 +3814,7 @@ async function loadCostHist(){if(S.costHist)return S.costHist;try{const d=await 
 async function costHistPush(id,c,src){if(!(c>0)||!S.db)return;try{const H={...(await loadCostHist())};const a=(H[id]||[]).slice();const last=a[a.length-1];if(last&&last[1]===c)return;a.push([Date.now(),c,src||""]);H[id]=a.slice(-12);await S.db.doc("costs/hist").set({map:H});S.costHist=H}catch(e){console.warn("hist",e)}}
 function costHistHTML(id,unit){const a=(S.costHist||{})[id]||[];if(!a.length)return"";const L=a.slice(-4).reverse();const d=ts=>{const x=new Date(ts);return String(x.getDate()).padStart(2,"0")+"."+String(x.getMonth()+1).padStart(2,"0")};
   return`<div class="chist"><span class="chh">${L3("Գնի պատմություն","История цены","Price history")}</span>${L.map((e,i)=>{const prev=a[a.length-1-i-1];const ch=prev?Math.round((e[1]/prev[1]-1)*100):null;return`<span class="che"><b>${money(e[1])}</b>${unit?`<i>/${unit}</i>`:""}<small>${d(e[0])}${ch?` <em class="${ch>0?"up":"dn"}">${ch>0?"+":""}${ch}%</em>`:""}</small></span>`}).join("")}</div>`}
-async function shSetCost(x,price){const p=x&&x.pid?prodOf(x.pid):null;if(!p||!isIng(p)||!(S.admin||S.mgr)||!(price>0))return;const q=shToStock(x.qty,x.unit,p);if(!(q>0))return;const c=Math.round(price/q*100)/100;costHistPush(p.id,c,"shop");if(S.costs[p.id]===c)return;try{const nc={...S.costs,[p.id]:c};await S.db.doc("costs/all").set({map:nc});S.costs=nc;toast(`${t("foodCost")}: ${dn(p.name)} — ${money(c)} / ${t(uKey(p.variant))}`)}catch(e){}};
+async function shSetCost(x,price){const p=x&&x.pid?prodOf(x.pid):null;if(!p||!isIng(p)||!(S.admin||S.mgr)||!(price>0))return;const q=shToStock(x.qty,x.unit,p);if(!(q>0))return;const c=Math.round(price/q*100)/100;costHistPush(p.id,c,"shop");if(S.costs[p.id]===c)return;try{await costPut(p.id,c);toast(`${t("foodCost")}: ${dn(p.name)} — ${money(c)} / ${t(uKey(p.variant))}`)}catch(e){}};
 function shUnitOf(p){if(!p)return"pc";if(p.variant==="kg")return"kg";if(["g","l","ml"].includes(p.variant))return p.variant;if(p.variant==="Bottle"||isWineBtl(p))return"btl";return"pc"}
 const shQty=x=>`${Math.round((+x.qty||1)*100)/100} ${t("u_"+(x.unit||"pc"))}`;
 function shOpen(){return (S.shop||[]).filter(x=>x.status!=="bought").sort((a,b)=>(a.ts||0)-(b.ts||0))}
@@ -5047,7 +5047,7 @@ function renderInvoice(){
   document.querySelectorAll("[data-ivx]").forEach(b=>b.onclick=()=>{keep();op.lines.splice(+b.dataset.ivx,1);renderInvoice()});
   const sv=$("iv_save");if(sv)sv.onclick=async()=>{keep();sv.disabled=true;const lines=op.lines.filter(l=>+l.qty>0);if(!lines.length){sv.disabled=false;return}
     try{const out=[];for(const l of lines){const ref=S.db.doc("products/"+l.id);const sn=await ref.get();const cur=sn.exists&&typeof sn.data().stock==="number"?sn.data().stock:0;const after=Math.round((cur+ +l.qty)*1e4)/1e4;await ref.update({stock:after});out.push({...l,qty:+l.qty,cost:+l.cost||0,before:cur,after})}
-      const nc={...S.costs};out.forEach(l=>{if(l.cost)nc[l.id]=l.cost});try{await S.db.doc("costs/all").set({map:nc});S.costs=nc;for(const l of out)if(l.cost)await costHistPush(l.id,l.cost,"in")}catch(e){console.warn("costs",e)}
+      try{for(const l of out)if(l.cost){await costPut(l.id,l.cost);await costHistPush(l.id,l.cost,"in")}}catch(e){costErr(e)}
       const total=out.reduce((a,l)=>a+l.qty*l.cost,0);
       const fileId=await keepInvoiceFile(op);
       await S.db.collection("moves").add({type:"in",date:op.date,ts:Date.now(),supplier:op.supplier.trim(),invoiceNo:op.noinv?"":op.invoiceNo.trim(),...(op.noinv?{noInvoice:true}:{}),items:out.map(({src,ai,oldCost,...l})=>l),total,by:S.uid||"",...whoStamp(),...(fileId?{file:fileId,fileName:op.fileName||""}:{})});
@@ -6171,7 +6171,7 @@ function openProdSheetOld(id){const p=prodOf(id);if(!p)return;const c=S.costs[id
   $("pe_t").onclick=async()=>{try{await S.db.doc("products/"+id).update({active:p.active===false});el.remove();toast(t("saved"))}catch(e){toast(errMsg(e))}};
   $("pe_ok").onclick=async()=>{const d={};const pv=$("pe_p").value;if(pv!==""){d.price=Math.max(0,+pv||0);d.variable=false}
     if($("pe_s")){d.stock=$("pe_s").value===""?null:+$("pe_s").value;d.low=$("pe_l").value===""?null:+$("pe_l").value}if($("pe_ex"))d.exp=$("pe_ex").value||null;
-    try{await S.db.doc("products/"+id).update(d);const cv=$("pe_c").value;const nc={...S.costs};if(cv==="")delete nc[id];else nc[id]=+cv;if((cv===""?undefined:+cv)!==c)await S.db.doc("costs/all").set({map:nc});el.remove();toast(t("saved"))}catch(e){toast(errMsg(e))}};
+    try{await S.db.doc("products/"+id).update(d);const cv=$("pe_c").value;if((cv===""?undefined:+cv)!==c){try{await costPut(id,cv)}catch(e){costErr(e);return}}el.remove();toast(t("saved"))}catch(e){toast(errMsg(e))}};
 }
 
 /* ---------- tips + split bill ---------- */
@@ -6304,7 +6304,7 @@ function applySession(){const se=S.session;const bz=boundStaff();
 const MIG_ING=[["ing_creamcheese","Կրեմ պանիր","kg","CHEESE"],["ing_driedtom","Չորալոլիկ","kg","INGREDIENT"],["ing_spices","Համեմունքներ","Piece","INGREDIENT"],["ing_lavash","Լավաշ","Piece","BREAD"],["ing_crisp","Չորահաց","Piece","BREAD"],["ing_oil","Ձեթ","l","INGREDIENT"],["ing_tea_green","Թեյ կանաչ","Piece","TEA"],["ing_tea_black","Թեյ սև","Piece","TEA"],["ing_tea_herb","Թեյ խոտաբույսերով","Piece","TEA"]];
 /* re-read the flag from the server so a one-time update can never run twice (e.g. before settings finished loading) */
 /* new-version notice (Netlify build only): the package carries version.json; when it changes, offer a one-tap reload */
-const BUILD="20261118171350";
+const BUILD="20261119112640";
 (function(){if(/^__/.test(BUILD)||!/^https?:/.test(location.protocol))return;let shown=false;
   const chk=()=>{if(shown||document.hidden)return;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.b||j.b===BUILD||shown)return;shown=true;
     const el=document.createElement("div");el.className="upbar";el.innerHTML=`<span class="upsp" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2.5l1.9 5.6 5.6 1.9-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.9z"/><path d="M19 15l.8 2.2 2.2.8-2.2.8L19 21l-.8-2.2-2.2-.8 2.2-.8z"/></svg></span><span>${L3("Կա նոր տարբերակ","Есть новая версия","New version available")}</span><button type="button" class="upgo">${L3("Թարմացնել","Обновить","Update")}</button>`;document.body.appendChild(el);
@@ -6505,6 +6505,10 @@ async function migIng(){if(_migRun||!S.db||!(S.admin||S.mgr)||!S.products.length
     for(const [id,name,v,cat] of MIG_ING){if(S.products.some(x=>x.id===id||x.name.trim().toLowerCase()===name.toLowerCase()))continue;await S.db.doc("products/"+id).set({id,name,variant:v,group:"ingredient",category:cat,price:0,variable:false,stock:0,low:null,active:true})}
     const c=Array.isArray(S.settings.consumables)?S.settings.consumables:null;const st={...S.settings,mig_ing2:Date.now()};if(c&&!c.includes("Ապակու հեղուկ"))st.consumables=[...c,"Ապակու հեղուկ"];
     S.settings=st;await S.db.doc("settings/main").set(st)}catch(e){_migRun=false}}
+async function costPut(id,c){const v=(c==null||c==="")?null:+c;const ref=S.db.doc("costs/all");
+  try{await ref.update({["map."+id]:v})}catch(e){const m=String(e&&(e.code||e.message)||"");if(/not.?found|no document/i.test(m))await ref.set({map:{...(S.costs||{}),[id]:v}});else throw e}
+  const nc={...(S.costs||{})};if(v==null)delete nc[id];else nc[id]=v;S.costs=nc;return nc}
+function costErr(e){const m=String(e&&(e.code||e.message)||"");toast(/permission|insufficient/i.test(m)?L3("Ինքնարժեքը չպահվեց․ այս հաշվով մուտք գործած սարքից ինքնարժեք փոխել չի թույլատրվում։ Փոխեք տիրոջ կամ մենեջերի մոտից։","Себестоимость не сохранена: с этого аккаунта её менять нельзя. Измените с устройства владельца или менеджера.","Cost not saved: this account isn't allowed to change costs. Change it from the owner's or manager's device."):L3("Ինքնարժեքը չպահվեց","Себестоимость не сохранена","Cost not saved")+" · "+errMsg(e))}
 function ensureCosts(){if(S._costSub||!S.db||!(S.admin||S.mgr||S.acctAdmin))return;loadCostEst();S._costSub=S.db.doc("costs/all").onSnapshot(s=>{S.costs=s.exists?(s.data().map||{}):{};if(S.tab==="stock"&&!$("sapanel"))renderStock();else if(S.tab==="rep")renderRep()},()=>{S._costSub=null})}
 function whoStamp(){const se=S.session||{};return{byName:sessName()||"",bySid:se.id||"",byRole:se.role||(S.admin?"owner":"")}}
 /* staff permissions (settings/main.perms = {staffId:{key:bool}}); owner and managers can do everything */
@@ -7683,7 +7687,7 @@ function openProdSheet(id){const p=prodOf(id);if(!p)return;S._psId=id;const c=S.
      if($("pe_sup")){d.supplier=$("pe_sup").value.trim();d.par=$("pe_par").value===""?null:+$("pe_par").value}
      d.group=$("pe_g").value;d.extras=st.extras.filter(x=>x.n&&x.n.trim()).map(x=>({n:x.n.trim(),price:+x.price||0}));d.recipe=st.recipe.filter(r=>r.id&&+r.qty).map(r=>{const ip=prodOf(r.id);const iu=ip?uKey(ip.variant):"Piece";const al=Array.isArray(r.alt)&&r.alt.length?{alt:r.alt}:{};return r.u&&r.u!==iu&&uSame(r.u,iu)?{id:r.id,qty:+r.qty,u:r.u,...al}:{id:r.id,qty:+r.qty,...al}});
      try{await S.db.doc("products/"+id).update(d);if(gl&&$("pe_tp"))await S.db.doc("products/"+gl.id).update({tastePrice:$("pe_tp").value===""?null:+$("pe_tp").value});
-       const cv=$("pe_c").value;const nc={...S.costs};if(cv==="")delete nc[id];else nc[id]=+cv;if((cv===""?undefined:+cv)!==c)await S.db.doc("costs/all").set({map:nc});el.remove();toast(t("saved"))}catch(e){toast(errMsg(e))}}};
+       const cv=$("pe_c").value;if((cv===""?undefined:+cv)!==c){try{await costPut(id,cv)}catch(e){costErr(e);return}}el.remove();toast(t("saved"))}catch(e){toast(errMsg(e))}}};
   draw();el.addEventListener("click",e=>{if(e.target===el||e.target.closest(".vcancel"))el.remove()})}
 
 /* ---------- line icons instead of emoji (one style everywhere) ---------- */
